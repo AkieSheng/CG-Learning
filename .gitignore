@@ -1,0 +1,16 @@
+# Build artifacts
+*.o
+*.exe
+raytracer
+Makefile.depend
+
+# Generated output images
+OutputFiles/
+*.tga
+
+# Editor / temp files
+*~
+*bak
+
+# AS3 not ready yet (tracked only when added explicitly)
+AS3/
