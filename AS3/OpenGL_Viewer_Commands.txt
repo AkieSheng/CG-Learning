@@ -1,0 +1,134 @@
+6.837 Assignment 3 — OpenGL Viewer 调试命令行
+本文件列出所有样例场景及其变体的 -gui 启动命令。
+
+----------------------------------------------------------------
+1. OpenGL Viewer 交互说明
+----------------------------------------------------------------
+
+  键盘：
+    r / R    以当前相机位置执行光线追踪，保存 -output 指定的 TGA
+    q / Q    退出程序
+
+  鼠标：
+    左键拖拽    绕场景中心旋转相机
+    中键拖拽    平移（truck）
+    右键拖拽    推拉（dolly）
+
+  调试相机：在 GL/glCanvas.C 的 display() 中取消注释 drawAxes()，
+            显示 RGB 坐标轴。
+
+  参数说明：
+    -tessellation <theta> <phi>   影响 OpenGL 中 Sphere 的多边形细分
+    -gouraud                      影响 OpenGL 中 Sphere 的 Gouraud 插值
+    -specular_fix                 影响按 r 键时的光线追踪高光（spec *= N·L）
+
+  OpenGL 端 specular fix：
+    修改 GL/glCanvas.h 中 #define SPECULAR_FIX 0 为 1，重新 mingw32-make，
+    再用 -gui 启动。
+
+----------------------------------------------------------------
+2. 标准样例（scene3_01 – scene3_12）
+----------------------------------------------------------------
+
+── 2.1 含 Mesh 场景 ────────────────
+
+  cd TriangleMeshes
+
+  # scene3_01  正交相机 + 立方体
+  ..\raytracer -input ..\InputFiles\scene3_01_cube_orthographic.txt -size 200 200 -output ..\OutputFiles\gui3_01.tga -gui
+
+  # scene3_02  透视相机 + 立方体
+  ..\raytracer -input ..\InputFiles\scene3_02_cube_perspective.txt -size 200 200 -output ..\OutputFiles\gui3_02.tga -gui
+
+  # scene3_03  Bunny 200 三角网格
+  ..\raytracer -input ..\InputFiles\scene3_03_bunny_mesh_200.txt -size 200 200 -output ..\OutputFiles\gui3_03.tga -gui
+
+  # scene3_04  Bunny 1k 三角网格
+  ..\raytracer -input ..\InputFiles\scene3_04_bunny_mesh_1k.txt -size 200 200 -output ..\OutputFiles\gui3_04.tga -gui
+
+  # scene3_05  坐标轴 + 彩色立方体（适合调试相机，可配合 drawAxes）
+  ..\raytracer -input ..\InputFiles\scene3_05_axes_cube.txt -size 200 200 -output ..\OutputFiles\gui3_05.tga -gui
+
+  # scene3_06  复杂 Transform + 立方体
+  ..\raytracer -input ..\InputFiles\scene3_06_crazy_transforms.txt -size 200 200 -output ..\OutputFiles\gui3_06.tga -gui
+
+── 2.2 不含 Mesh 场景 ──────────────────────
+
+  cd AS3
+
+  # scene3_07  平面 + 多球体
+  ./raytracer -input InputFiles/scene3_07_plane.txt -size 200 200 -output OutputFiles/gui3_07.tga -gui -tessellation 10 5
+
+  # scene3_08  单球体（默认细分 flat shading）
+  ./raytracer -input InputFiles/scene3_08_sphere.txt -size 200 200 -output OutputFiles/gui3_08.tga -gui -tessellation 10 5
+
+  # scene3_09  不同 exponent 高光（9 球）
+  ./raytracer -input InputFiles/scene3_09_exponent_variations.txt -size 300 300 -output OutputFiles/gui3_09.tga -gui -tessellation 100 50 -gouraud
+
+  # scene3_10  背面 exponent 变化
+  ./raytracer -input InputFiles/scene3_10_exponent_variations_back.txt -size 300 300 -output OutputFiles/gui3_10.tga -gui -tessellation 100 50 -gouraud
+
+  # scene3_11  特殊漫反射光照
+  ./raytracer -input InputFiles/scene3_11_weird_lighting_diffuse.txt -size 200 200 -output OutputFiles/gui3_11.tga -gui -tessellation 100 50 -gouraud
+
+  # scene3_12  特殊高光光照
+  ./raytracer -input InputFiles/scene3_12_weird_lighting_specular.txt -size 200 200 -output OutputFiles/gui3_12.tga -gui -tessellation 100 50 -gouraud
+
+----------------------------------------------------------------
+3. scene3_08 全部变体
+----------------------------------------------------------------
+
+  说明：仅 OpenGL 预览不同；按 r 光线追踪结果相同。
+
+  cd AS3
+
+  # 变体 A：tessellation 10×5，flat shading（可见多边形面）
+  ./raytracer -input InputFiles/scene3_08_sphere.txt -size 200 200 -output OutputFiles/gui3_08_t10_p5.tga -gui -tessellation 10 5
+
+  # 变体 B：tessellation 20×10，flat shading（更高细分）
+  ./raytracer -input InputFiles/scene3_08_sphere.txt -size 200 200 -output OutputFiles/gui3_08_t20_p10.tga -gui -tessellation 20 10
+
+  # 变体 C：tessellation 10×5，Gouraud 平滑
+  ./raytracer -input InputFiles/scene3_08_sphere.txt -size 200 200 -output OutputFiles/gui3_08_t10_p5_gouraud.tga -gui -tessellation 10 5 -gouraud
+
+  # 变体 D：tessellation 20×10，Gouraud 平滑
+  ./raytracer -input InputFiles/scene3_08_sphere.txt -size 200 200 -output OutputFiles/gui3_08_t20_p10_gouraud.tga -gui -tessellation 20 10 -gouraud
+
+  对比流程：运行变体 A 与 C（同细分，flat vs Gouraud），
+            运行变体 A 与 B（同 flat，低细分 vs 高细分）。
+
+----------------------------------------------------------------
+4. specular fix 变体（scene3_09 / 10 / 12）
+----------------------------------------------------------------
+
+  -specular_fix 在按 r 键光线追踪时生效（高光乘以 N·L）。
+  OpenGL 实时预览不变；若要 OpenGL 也修复，见第 1 节 SPECULAR_FIX 编译选项。
+
+  cd AS3
+
+  # scene3_09 + specular fix（按 r 保存 gui3_09_specfix.tga）
+  ./raytracer -input InputFiles/scene3_09_exponent_variations.txt -size 300 300 -output OutputFiles/gui3_09_specfix.tga -gui -tessellation 100 50 -gouraud -specular_fix
+
+  # scene3_10 + specular fix
+  ./raytracer -input InputFiles/scene3_10_exponent_variations_back.txt -size 300 300 -output OutputFiles/gui3_10_specfix.tga -gui -tessellation 100 50 -gouraud -specular_fix
+
+  # scene3_12 + specular fix
+  ./raytracer -input InputFiles/scene3_12_weird_lighting_specular.txt -size 200 200 -output OutputFiles/gui3_12_specfix.tga -gui -tessellation 100 50 -gouraud -specular_fix
+
+  对比流程：
+    1. 不带 -specular_fix 启动，调整视角后按 r → gui3_09.tga
+    2. 带 -specular_fix 启动，保持相近视角按 r → gui3_09_specfix.tga
+    3. 对比两张 TGA 在掠射角、小 exponent 高光处的差异
+
+----------------------------------------------------------------
+5. OpenGL specular fix 预览（重新编译）
+----------------------------------------------------------------
+
+  1. 编辑 GL/glCanvas.h：#define SPECULAR_FIX 1
+  2. mingw32-make
+  3. 使用第 4 节命令启动 -gui
+  4. 调试完成后改回 SPECULAR_FIX 0 并重新编译
+
+  用于对比的场景：
+    ./raytracer -input InputFiles/scene3_09_exponent_variations.txt -size 300 300 -output OutputFiles/gui3_09_gl_specfix.tga -gui -tessellation 100 50 -gouraud
+    ./raytracer -input InputFiles/scene3_12_weird_lighting_specular.txt -size 200 200 -output OutputFiles/gui3_12_gl_specfix.tga -gui -tessellation 100 50 -gouraud

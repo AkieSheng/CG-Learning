@@ -11,6 +11,3 @@ OutputFiles/
 # Editor / temp files
 *~
 *bak
-
-# AS3 not ready yet (tracked only when added explicitly)
-AS3/

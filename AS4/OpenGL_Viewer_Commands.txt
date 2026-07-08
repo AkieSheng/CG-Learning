@@ -1,0 +1,147 @@
+6.837 Assignment 4 — OpenGL Viewer 调试命令行
+本文件列出 Assignment 4 样例场景及其 -gui / Ray Tree 调试命令。
+
+----------------------------------------------------------------
+0. 运行前准备（Windows PowerShell）
+----------------------------------------------------------------
+
+  # 首次：编译
+  cd E:\Akie\Assignment\AS4
+  mingw32-make
+
+----------------------------------------------------------------
+1. OpenGL Viewer 交互说明
+----------------------------------------------------------------
+
+  键盘：
+    r / R    以当前相机位置执行光线追踪，保存 -output 指定的 TGA
+    t / T    在鼠标位置追踪单像素射线，可视化 Ray Tree（调试用）
+    q / Q    退出程序
+
+  鼠标：
+    左键拖拽    绕场景中心旋转相机
+    中键拖拽    平移（truck）
+    右键拖拽    推拉（dolly）
+
+  Ray Tree 颜色：
+    灰色    主光线（primary ray）
+    绿色    阴影光线（shadow ray）
+    红色    反射光线（reflected ray）
+    蓝色    折射光线（transmitted ray）
+
+  调试相机：在 GL/glCanvas.C 的 display() 中取消注释 drawAxes()，
+            显示 RGB 坐标轴。
+
+  光线追踪参数：
+    -shadows              启用 shadow rays
+    -transparent_shadows  半透明阴影（光路穿过透明体的距离衰减）
+    -bounces <N>          最大递归深度（0 = 仅局部着色）
+    -weight <W>           权重截止阈值（颜色向量模长）
+    -shade_back           透明/双面场景必需
+
+  OpenGL 预览参数：
+    -tessellation <theta> <phi>   Sphere 多边形细分
+    -gouraud                      Sphere Gouraud 插值
+    -specular_fix                 光线追踪高光 spec *= N·L
+
+----------------------------------------------------------------
+2. 无 Mesh 场景（在 AS4 根目录运行）
+----------------------------------------------------------------
+
+  cd E:\Akie\Assignment\AS4
+
+  # scene4_01  球体落在平面上的硬阴影
+  .\raytracer -input InputFiles\scene4_01_sphere_shadow.txt -size 200 200 -output OutputFiles\gui4_01.tga -shadows -gui
+
+  # scene4_02  彩色物体产生的彩色阴影
+  .\raytracer -input InputFiles\scene4_02_colored_shadows.txt -size 200 200 -output OutputFiles\gui4_02.tga -shadows -gui -tessellation 50 25 -gouraud
+
+  # scene4_04  反射球（对比不同 bounces，无 -gui）
+  .\raytracer -input InputFiles\scene4_04_reflective_sphere.txt -size 200 200 -output OutputFiles\out4_04a.tga -shadows -bounces 0 -weight 0.01
+  .\raytracer -input InputFiles\scene4_04_reflective_sphere.txt -size 200 200 -output OutputFiles\out4_04b.tga -shadows -bounces 1 -weight 0.01
+  .\raytracer -input InputFiles\scene4_04_reflective_sphere.txt -size 200 200 -output OutputFiles\out4_04c.tga -shadows -bounces 2 -weight 0.01
+  .\raytracer -input InputFiles\scene4_04_reflective_sphere.txt -size 200 200 -output OutputFiles\out4_04d.tga -shadows -bounces 3 -weight 0.01
+
+  # scene4_04  GUI + Ray Tree
+  .\raytracer -input InputFiles\scene4_04_reflective_sphere.txt -size 200 200 -output OutputFiles\gui4_04.tga -shadows -bounces 2 -weight 0.01 -gui
+
+  调试 Ray Tree：启动 -gui 后，将鼠标移到阴影/反射边界附近，按 t 查看 ray tree。
+
+----------------------------------------------------------------
+3. 含 Mesh 场景（必须先 cd Meshes）
+----------------------------------------------------------------
+
+  以下场景引用 cube.obj 或 diamond.obj，工作目录必须是 Meshes/，
+  否则 Parser 找不到 .obj 文件（assert scene_parser.C:398）。
+
+  cd E:\Akie\Assignment\AS4\Meshes
+
+  ── 3.1 反射 ─────────────────────────────────────
+
+  # scene4_03  镜面地板
+  ..\raytracer -input ..\InputFiles\scene4_03_mirrored_floor.txt -size 200 200 -output ..\OutputFiles\gui4_03.tga -shadows -bounces 1 -weight 0.01 -gui
+
+  ── 3.2 折射/透明（须 -shade_back）────────────────
+
+  # scene4_05  单根透明 bar
+  ..\raytracer -input ..\InputFiles\scene4_05_transparent_bar.txt -size 200 200 -output ..\OutputFiles\gui4_05.tga -shadows -bounces 10 -weight 0.01 -shade_back -gui
+
+  # scene4_06  多根透明 bar（对比 bounces）
+  ..\raytracer -input ..\InputFiles\scene4_06_transparent_bars.txt -size 200 200 -output ..\OutputFiles\out4_06b.tga -shadows -bounces 1 -weight 0.01 -shade_back
+  ..\raytracer -input ..\InputFiles\scene4_06_transparent_bars.txt -size 200 200 -output ..\OutputFiles\out4_06c.tga -shadows -bounces 2 -weight 0.01 -shade_back
+
+  # scene4_06  半透明阴影（Extra Credit）
+  ..\raytracer -input ..\InputFiles\scene4_06_transparent_bars.txt -size 200 200 -output ..\OutputFiles\out4_06_trans.tga -shadows -transparent_shadows -bounces 3 -weight 0.01 -shade_back
+
+  # scene4_07–09  透明球（IOR 1.0 / 1.1 / 2.0）
+  ..\raytracer -input ..\InputFiles\scene4_07_transparent_sphere_1.0.txt -size 200 200 -output ..\OutputFiles\gui4_07.tga -shadows -bounces 5 -weight 0.01 -shade_back -gui -tessellation 30 15
+  ..\raytracer -input ..\InputFiles\scene4_08_transparent_sphere_1.1.txt -size 200 200 -output ..\OutputFiles\gui4_08.tga -shadows -bounces 5 -weight 0.01 -shade_back -gui -tessellation 30 15
+  ..\raytracer -input ..\InputFiles\scene4_09_transparent_sphere_2.0.txt -size 200 200 -output ..\OutputFiles\gui4_09.tga -shadows -bounces 5 -weight 0.01 -shade_back -gui -tessellation 30 15
+
+  ── 3.3 点光源 ───────────────────────────────────
+
+  # scene4_10  点光源距离衰减
+  ..\raytracer -input ..\InputFiles\scene4_10_point_light_distance.txt -size 200 200 -output ..\OutputFiles\gui4_10.tga -shadows -gui
+
+  # scene4_11–13  圆环 + 不同衰减
+  ..\raytracer -input ..\InputFiles\scene4_11_point_light_circle.txt -size 200 200 -output ..\OutputFiles\out4_11.tga -shadows
+  ..\raytracer -input ..\InputFiles\scene4_12_point_light_circle_d_attenuation.txt -size 200 200 -output ..\OutputFiles\out4_12.tga -shadows
+  ..\raytracer -input ..\InputFiles\scene4_13_point_light_circle_d2_attenuation.txt -size 200 200 -output ..\OutputFiles\out4_13.tga -shadows
+
+  ── 3.4 钻石 mesh ───────────────────────────────
+
+  # scene4_14  对比 bounces
+  ..\raytracer -input ..\InputFiles\scene4_14_faceted_gem.txt -size 200 200 -output ..\OutputFiles\out4_14a.tga -shadows -shade_back -bounces 0 -weight 0.01
+  ..\raytracer -input ..\InputFiles\scene4_14_faceted_gem.txt -size 200 200 -output ..\OutputFiles\out4_14c.tga -shadows -shade_back -bounces 2 -weight 0.01
+
+  # scene4_14  GUI + Ray Tree（反射+折射）
+  ..\raytracer -input ..\InputFiles\scene4_14_faceted_gem.txt -size 200 200 -output ..\OutputFiles\gui4_14.tga -shadows -shade_back -bounces 2 -weight 0.01 -gui
+
+----------------------------------------------------------------
+4. 批量渲染（无 GUI，AS4 根目录）
+----------------------------------------------------------------
+
+  cd E:\Akie\Assignment\AS4
+  mingw32-make render
+
+  输出目录：OutputFiles\output4_*.tga（Makefile 已处理 Meshes 路径）
+
+----------------------------------------------------------------
+5. 常见错误
+----------------------------------------------------------------
+
+  错误：Assertion failed file != NULL (scene_parser.C line 398)
+  原因：含 TriangleMesh 的场景未在 Meshes/ 目录下运行
+  修复：cd Meshes，使用 ..\raytracer -input ..\InputFiles\...
+
+  错误：找不到路径 AS4\AS4
+  原因：已在 AS4 内再次执行 cd AS4
+  修复：确认当前目录（pwd），跳过 cd 或 cd 到正确路径
+
+  错误：无法将 ./raytracer 项识别为 cmdlet
+  原因：在 Meshes/ 下使用了 ./raytracer（exe 在上一级）
+  修复：改用 ..\raytracer
+
+  错误：Permission denied（mingw32-make 链接失败）
+  原因：raytracer.exe 被 -gui 窗口占用
+  修复：关闭 GUI 或 taskkill /F /IM raytracer.exe 后重新编译
