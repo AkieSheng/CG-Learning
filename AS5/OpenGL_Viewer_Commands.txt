@@ -1,0 +1,140 @@
+6.837 Assignment 5 — OpenGL Viewer 调试命令行
+本文件列出 Assignment 5 含 -gui 的样例场景及其调试命令。
+
+----------------------------------------------------------------
+0. 运行前准备
+----------------------------------------------------------------
+
+  # 首次：编译
+  cd E:\Akie\Assignment\AS5
+  mingw32-make
+
+  # 批量渲染所有 Sample Results
+  mingw32-make render
+
+----------------------------------------------------------------
+1. OpenGL Viewer 交互说明
+----------------------------------------------------------------
+
+  键盘：
+    r / R    以当前相机位置执行光线追踪，保存 -output 指定的 TGA
+    t / T    在鼠标位置追踪单像素射线，可视化 Ray Tree
+    g / G    切换体素网格可视化模式
+    q / Q    退出程序
+
+  鼠标：
+    左键拖拽    绕场景中心旋转相机
+    中键拖拽    平移（truck）
+    右键拖拽    推拉（dolly）
+
+  体素网格可视化模式（按 g 循环，需 -visualize_grid）：
+    模式 0    绘制占用体素外露面 + 场景包围盒（按图元密度着色）
+    模式 1    绘制 DDA 遍历到的体素面（按遍历顺序着色）
+    模式 2    绘制射线进入网格时穿过的面（按遍历顺序着色）
+
+  颜色渐变（白 → 绿 → 青 → 蓝 → 黄 → 橙 → 红）：
+    模式 0    按单元格重叠图元数量着色（1 个 = 白，越多越红）
+    模式 1/2  按 DDA 遍历顺序着色（第一个格 = 白，越往后越红）
+
+  Ray Tree 线段颜色：
+    灰色    主光线（primary ray）
+    绿色    阴影光线（shadow ray）
+    红色    反射光线（reflected ray）
+    蓝色    折射光线（transmitted ray）
+
+  调试相机：在 GL/glCanvas.C 的 display() 中取消注释 drawAxes()，
+            显示 RGB 坐标轴。
+
+  体素网格参数：
+    -grid <nx> <ny> <nz>   在场景包围盒上划分均匀体素网格
+
+  控制台 printOccupancy：. 空  # 1  2-9 数字  * 为 10+
+
+  光线追踪参数：
+    -shadows              启用 shadow rays
+    -transparent_shadows  半透明阴影
+    -bounces <N>          最大递归深度
+    -weight <W>           权重截止阈值
+    -shade_back           透明/双面场景必需
+
+  OpenGL 预览参数：
+    -tessellation <theta> <phi>   Sphere 多边形细分
+    -gouraud                      Sphere Gouraud 插值
+    -specular_fix                 光线追踪高光 spec *= N·L
+    -normals <file.tga>           输出法线可视化图（|N| 映射为 RGB）
+
+----------------------------------------------------------------
+2. 无 Mesh 场景
+----------------------------------------------------------------
+
+  cd E:\Akie\Assignment\AS5
+
+  ── 2.1 scene5_01  单球体 ────────────────────────
+
+  # 网格 1×1×1
+  .\raytracer -input InputFiles\scene5_01_sphere.txt -size 200 200 -output OutputFiles\gui5_01a.tga -grid 1 1 1 -visualize_grid -gui
+
+  # 网格 5×5×5
+  .\raytracer -input InputFiles\scene5_01_sphere.txt -size 200 200 -output OutputFiles\gui5_01b.tga -grid 5 5 5 -visualize_grid -gui
+
+  # 网格 15×15×15
+  .\raytracer -input InputFiles\scene5_01_sphere.txt -size 200 200 -output OutputFiles\gui5_01c.tga -grid 15 15 15 -visualize_grid -gui
+
+  ── 2.2 scene5_02  多球体 ────────────────────────
+
+  # 网格 15×15×15
+  .\raytracer -input InputFiles\scene5_02_spheres.txt -size 200 200 -output OutputFiles\gui5_02a.tga -grid 15 15 15 -visualize_grid -gui
+
+  # 网格 15×15×3（扁平网格）
+  .\raytracer -input InputFiles\scene5_02_spheres.txt -size 200 200 -output OutputFiles\gui5_02b.tga -grid 15 15 3 -visualize_grid -gui
+
+  ── 2.3 scene5_03  偏心球体 ──────────────────────
+
+  .\raytracer -input InputFiles\scene5_03_offcenter_spheres.txt -size 200 200 -output OutputFiles\gui5_03.tga -grid 20 20 20 -visualize_grid -gui
+
+  ── 2.4 scene5_04  平面测试 ──────────────────────
+
+  # 体素网格预览
+  .\raytracer -input InputFiles\scene5_04_plane_test.txt -size 200 200 -output OutputFiles\gui5_04.tga -grid 15 15 15 -visualize_grid -gui
+
+  # 法线预览
+  .\raytracer -input InputFiles\scene5_04_plane_test.txt -size 200 200 -output OutputFiles\gui5_04_norm.tga -normals OutputFiles\norm5_04.tga -tessellation 30 15 -gouraud -gui
+
+  ── 2.5 scene5_05  球体 + 三角形 ─────────────────
+
+  .\raytracer -input InputFiles\scene5_05_sphere_triangles.txt -size 200 200 -output OutputFiles\gui5_05.tga -grid 20 20 10 -visualize_grid -gui
+
+  ── 2.6 scene5_10  缩放/平移变换 ─────────────────
+
+  # 体素网格预览
+  .\raytracer -input InputFiles\scene5_10_scale_translate.txt -size 200 200 -output OutputFiles\gui5_10.tga -grid 15 15 15 -visualize_grid -gui
+
+  # 法线预览
+  .\raytracer -input InputFiles\scene5_10_scale_translate.txt -size 200 200 -output OutputFiles\gui5_10_norm.tga -normals OutputFiles\norm5_10.tga -tessellation 30 15 -gouraud -gui
+
+  ── 2.7 scene5_11  旋转三角形 ────────────────────
+
+  .\raytracer -input InputFiles\scene5_11_rotated_triangles.txt -size 200 200 -output OutputFiles\gui5_11.tga -grid 15 15 9 -visualize_grid -gui
+
+----------------------------------------------------------------
+3. 含 Mesh 场景
+----------------------------------------------------------------
+
+  以下场景引用 bunny_*.obj 或 cube.obj，工作目录为 Meshes/，
+
+  cd E:\Akie\Assignment\AS5\Meshes
+
+  # scene5_06  bunny 200 面
+  ..\raytracer -input ..\InputFiles\scene5_06_bunny_mesh_200.txt -size 200 200 -output ..\OutputFiles\gui5_06.tga -grid 10 10 7 -visualize_grid -gui
+
+  # scene5_07  bunny 1k 面
+  ..\raytracer -input ..\InputFiles\scene5_07_bunny_mesh_1k.txt -size 200 200 -output ..\OutputFiles\gui5_07.tga -grid 15 15 12 -visualize_grid -gui
+
+  # scene5_08  bunny 5k 面
+  ..\raytracer -input ..\InputFiles\scene5_08_bunny_mesh_5k.txt -size 200 200 -output ..\OutputFiles\gui5_08.tga -grid 20 20 15 -visualize_grid -gui
+
+  # scene5_09  bunny 40k 面
+  ..\raytracer -input ..\InputFiles\scene5_09_bunny_mesh_40k.txt -size 200 200 -output ..\OutputFiles\gui5_09.tga -grid 40 40 33 -visualize_grid -gui
+
+  # scene5_12  嵌套变换 + cube mesh
+  ..\raytracer -input ..\InputFiles\scene5_12_nested_transformations.txt -size 200 200 -output ..\OutputFiles\gui5_12.tga -grid 30 30 30 -visualize_grid -gui

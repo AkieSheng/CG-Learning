@@ -1,0 +1,77 @@
+#ifndef _GRID_H_
+#define _GRID_H_
+
+#include "object3d.h"
+#include "object3dvector.h"
+
+class BoundingBox;
+class MarchingInfo;
+class Ray;
+class Hit;
+class Matrix;
+class PhongMaterial;
+
+// 均匀体素网格
+class Grid : public Object3D {
+
+public:
+  Grid(BoundingBox *bb, int nx, int ny, int nz);
+  virtual ~Grid();
+
+  BoundingBox *getBoundingBox() const { return sceneBounds; }
+
+  int getNX() const { return nx; }
+  int getNY() const { return ny; }
+  int getNZ() const { return nz; }
+
+  Vec3f getVoxelCenter(int i, int j, int k) const;  // 获取体素中心点
+  float getVoxelHalfDiagonal() const;  // 获取体素半对角线长度
+
+  void insertObject(int i, int j, int k, Object3D *obj);  // 将物体插入体素网格
+  int getObjectCount(int i, int j, int k) const;  // 获取体素内物体数量
+  bool isOccupied(int i, int j, int k) const;  // 获取体素占用标记
+
+  void insertObjectInBBox(BoundingBox *bb, Object3D *obj, Matrix *m = NULL);  // 将物体插入包围盒
+
+  void printOccupancy() const;  // [DEBUG] 打印占用情况
+
+  Vec3f getDensityColor(int count) const;  // 获取密度着色颜色
+  Material *getDensityMaterial(int count) const;  // 获取密度着色材质
+
+  void initializeRayMarch(MarchingInfo &mi, const Ray &r, float tmin) const;
+
+  virtual bool intersect(const Ray &r, Hit &h, float tmin);  // 求交
+  virtual bool intersectShadow(const Ray &r, float tmin, float tmax, float &t,
+                               Material **outMaterial);  // 求交阴影
+  virtual void paint(void) const;  // 渲染
+
+private:
+  static const int MAX_DENSITY_LEVELS = 16;  // 最大密度着色等级
+
+  int index(int i, int j, int k) const;  // 获取体素索引
+  bool inBounds(int i, int j, int k) const;  // 判断体素是否在边界内
+  void getVoxelBounds(int i, int j, int k, Vec3f &vmin, Vec3f &vmax) const;  // 获取体素边界
+  void getWorldBBox(BoundingBox *bb, Matrix *m, Vec3f &wmin, Vec3f &wmax) const;  // 获取世界边界
+  void voxelIndexRange(const Vec3f &wmin, const Vec3f &wmax,  // 获取体素索引范围
+                       int &i0, int &i1, int &j0, int &j1, int &k0, int &k1) const;  // 获取体素索引范围
+
+  // 射线与包围盒求交，返回进入/离开参数
+  bool intersectRayBox(const Ray &r, float tmin, float &tEnter, float &tExit,
+                       Vec3f &entryNormal) const;
+
+  // [DEBUG] 记录遍历到的体素与进入面
+  void addRayTreeTraversal(int i, int j, int k, const Vec3f &entryNormal,
+                           int step) const;
+  void addRayTreeHitCell(int i, int j, int k, int step) const;
+  void paintVoxelFace(const Vec3f &a, const Vec3f &b, const Vec3f &c,
+                      const Vec3f &d, const Vec3f &normal, int count) const;
+  int getOccupiedCount() const;
+
+  BoundingBox *sceneBounds;  // 场景包围盒
+  int nx, ny, nz;  // 体素网格分辨率
+  float dx, dy, dz;  // 体素网格边长
+  Object3DVector *cells;  // 体素网格
+  PhongMaterial **densityMaterials;  // 密度着色材质
+};
+
+#endif
