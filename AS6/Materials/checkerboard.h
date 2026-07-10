@@ -4,6 +4,7 @@
 #include "material.h"
 
 class Matrix;
+class Wood;
 
 // 3D 棋盘格程序化材质
 // 储存两个材质的指针，以及指向映射矩阵的指针
@@ -27,6 +28,10 @@ public:
 
 private:
   Material *selectMaterial(const Vec3f &worldPoint) const;
+  const Wood *selectedWood(const Vec3f &worldPoint) const;  // 选择木纹材质
+  float woodCellWeight(const Vec3f &worldPoint, const Wood *wood) const;  // 木纹单元权重
+
+  static const float FLOOR_WOOD_FREQ_BOOST;  // 地板木纹频率系数
 
   Matrix *mapping; // 映射矩阵
   Material *mat1; // 材质1

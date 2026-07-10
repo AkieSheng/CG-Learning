@@ -26,14 +26,16 @@ public:
   virtual void glSetMaterial(void) const;
 
 private:
-  float blendWeight(const Vec3f &worldPoint) const; // 混合权重
+  float blendWeight(const Vec3f &worldPoint) const;  // 混合权重
 
-  Matrix *mapping; // 映射矩阵
-  Material *mat1; // 材质1
-  Material *mat2; // 材质2
-  int octaves; // 八度
-  float frequency; // 频率
-  float amplitude; // 振幅
+  Matrix *mapping;  // 映射矩阵
+  Material *mat1;  // 材质1
+  Material *mat2;  // 材质2
+  int octaves;  // 八度
+  float frequency;  // 频率
+  float amplitude;  // 振幅
+
+  friend class Checkerboard; // 访问 blendWeight
 };
 
 #endif

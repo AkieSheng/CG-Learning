@@ -12,7 +12,6 @@ Noise::~Noise() {
 // 混合权重，采用球坐标系，将噪声映射到[-1,1]
 float Noise::blendWeight(const Vec3f &worldPoint) const {
   Vec3f p = mapToTextureSpace(mapping, worldPoint);
-  p = scaleTex(p, noiseExtraScale(approxMappingScale(mapping))); // 缩放纹理
   return noiseToUnit(fractalNoise(p, octaves));
 }
 

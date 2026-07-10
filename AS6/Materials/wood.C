@@ -11,15 +11,10 @@ Wood::~Wood() {
   delete mapping;
 }
 
-// 混合权重，采用圆柱坐标系，将噪声映射到[-1,1]
+// 混合权重，采用圆柱坐标系
 float Wood::blendWeight(const Vec3f &worldPoint) const {
-  Vec3f p = mapToTextureSpace(mapping, worldPoint);  // 映射到纹理空间
-  p = scaleTex(p, woodExtraScale(approxMappingScale(mapping)));  // 缩放纹理
-  float radius = sqrtf(p.y() * p.y() + p.z() * p.z());
-  double n = fractalNoise(p, octaves);  // 噪声
-  float freq = frequency * woodFrequencyScale();  // 调整频率
-  float v = sinf(freq * radius + amplitude * (float)n);  // sin(freq·radius + amp·N) 年轮纹理
-  return clamp01(v * 0.5f + 0.5f);  // 归一化
+  Vec3f p = mapToTextureSpace(mapping, worldPoint);
+  return woodBlendWeight(p, octaves, frequency, amplitude);
 }
 
 Vec3f Wood::getDiffuseColor(const Vec3f &point) const {

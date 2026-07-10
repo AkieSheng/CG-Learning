@@ -12,48 +12,6 @@ inline bool procOdd(int i) {
   return (i & 1) != 0;
 }
 
-// 从映射矩阵估计 UniformScale
-inline float approxMappingScale(const Matrix *mapping) {
-  if (mapping == NULL)
-    return 1.0f;
-  Vec3f v(1.0f, 0.0f, 0.0f);
-  mapping->TransformDirection(v);
-  return v.Length();
-}
-
-// 缩放纹理坐标
-inline Vec3f scaleTex(const Vec3f &p, float s) {
-  return Vec3f(p.x() * s, p.y() * s, p.z() * s);
-}
-
-// 按场景映射尺度追加纹理缩放
-inline float checkerExtraScale(float mappingScale) {
-  // scene6_13 红蓝球
-  if (mappingScale > 1.5f && mappingScale < 2.5f)
-    return 2.0f;
-  // scene6_13/14 地板
-  if (mappingScale > 0.6f && mappingScale < 0.9f)
-    return 0.5f;
-  // scene6_18 地板
-  if (mappingScale > 2.5f && mappingScale < 3.5f)
-    return 4.0f;
-  return 1.0f;
-}
-
-inline float marbleExtraScale(float mappingScale) {
-  // scene6_17 瓶身
-  if (mappingScale > 0.4f && mappingScale < 0.6f)
-    return 0.5f;
-  return 1.0f;
-}
-
-inline float noiseExtraScale(float mappingScale) {
-  // scene6_17 地盘
-  if (mappingScale > 0.2f && mappingScale < 0.4f)
-    return 0.5f;
-  return 1.0f;
-}
-
 // 15/16 频率实验
 // MARBLE_FREQ_SCALE / WOOD_FREQ_SCALE = 0.5, 1, 2, 3
 // -- marble freq 1.5/3/6/9，wood freq 3.5/7/14/21
@@ -108,6 +66,17 @@ inline double fractalNoise(const Vec3f &p, int octaves) {
     weight *= 0.5;
   }
   return sum;
+}
+
+// 木纹单元权重
+inline float woodBlendWeight(const Vec3f &texPoint, int octaves,
+                             float frequency, float amplitude,
+                             float freqBoost = 1.0f) {
+  float radius = sqrtf(texPoint.y() * texPoint.y() + texPoint.z() * texPoint.z());
+  double n = fractalNoise(texPoint, octaves);  // 噪声
+  float freq = frequency * woodFrequencyScale() * freqBoost;  // 调整频率
+  float v = sinf(freq * radius + amplitude * (float)n);  // sin(freq·radius + amp·N) 木纹纹路效果
+  return clamp01(v * 0.5f + 0.5f);  // 归一化
 }
 
 // 线性插值
