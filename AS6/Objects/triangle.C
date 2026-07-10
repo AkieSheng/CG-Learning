@@ -35,8 +35,29 @@ void Triangle::debugPrintBoundingBox(int depth) const {
 }
 
 // 将图元栅格化
+// 有变换时先变换三个顶点，再取世界空间最小 AABB（special case）
 void Triangle::insertIntoGrid(Grid *g, Matrix *m) {
-  Object3D::insertIntoGrid(g, m);
+  if (g == NULL)
+    return;
+
+  if (m == NULL) {
+    Object3D::insertIntoGrid(g, NULL);
+    return;
+  }
+
+  Vec3f v0 = a, v1 = b, v2 = c;
+  m->Transform(v0);
+  m->Transform(v1);
+  m->Transform(v2);
+
+  Vec3f wmin(fminf(fminf(v0.x(), v1.x()), v2.x()),
+             fminf(fminf(v0.y(), v1.y()), v2.y()),
+             fminf(fminf(v0.z(), v1.z()), v2.z()));
+  Vec3f wmax(fmaxf(fmaxf(v0.x(), v1.x()), v2.x()),
+             fmaxf(fmaxf(v0.y(), v1.y()), v2.y()),
+             fmaxf(fmaxf(v0.z(), v1.z()), v2.z()));
+
+  g->insertObjectInWorldAABB(wmin, wmax, this, m);
 }
 
 // 射线-三角形求交（使用 Möller–Trumbore 算法）

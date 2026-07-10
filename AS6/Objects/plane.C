@@ -48,15 +48,13 @@ bool Plane::intersectShadow(const Ray &r, float tmin, float tmax, float &t,
 
   // 计算交点t
   float hitT = (d - normal.Dot3(r.getOrigin())) / denom;  // t = (d - O·n) / (D·n)
-  // 如果 outMaterial 为 NULL，则返回最近交点
   if (hitT >= tmin && hitT <= tmax) {
     t = hitT;
+    if (outMaterial != NULL)
+      *outMaterial = material;
     return true;
   }
-  // 如果 outMaterial 不为 NULL，则返回物体材质
-  if (outMaterial != NULL)
-    *outMaterial = material;
-  return false;  // 无交点
+  return false;
 }
 
 // OpenGL 绘制

@@ -12,6 +12,7 @@ Checkerboard::~Checkerboard() {
 // 根据世界点选择材质
 Material *Checkerboard::selectMaterial(const Vec3f &worldPoint) const {
   Vec3f p = mapToTextureSpace(mapping, worldPoint);
+  p = scaleTex(p, checkerExtraScale(approxMappingScale(mapping))); // 缩放纹理
   int ix = (int)floor(p.x());
   int iy = (int)floor(p.y());
   int iz = (int)floor(p.z());

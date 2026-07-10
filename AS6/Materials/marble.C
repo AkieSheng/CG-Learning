@@ -14,9 +14,11 @@ Marble::~Marble() {
 
 // 混合权重
 float Marble::blendWeight(const Vec3f &worldPoint) const {
-  Vec3f p = mapToTextureSpace(mapping, worldPoint); // 映射到纹理空间
-  double n = fractalNoise(p, octaves); // 噪声
-  float v = sinf(frequency * p.x() + amplitude * (float)n);  // sin(freq·x + amp·N) 大理石纹路效果
+  Vec3f p = mapToTextureSpace(mapping, worldPoint);  // 映射到纹理空间
+  p = scaleTex(p, marbleExtraScale(approxMappingScale(mapping)));  // 缩放纹理
+  double n = fractalNoise(p, octaves);  // 噪声
+  float freq = frequency * marbleFrequencyScale();
+  float v = sinf(freq * p.x() + amplitude * (float)n);  // sin(freq·x + amp·N) 大理石纹路效果
   return clamp01(v * 0.5f + 0.5f);  // 归一化到[0,1]
 }
 

@@ -343,6 +343,18 @@ void Grid::insertObjectInBBox(BoundingBox *bb, Object3D *obj, Matrix *m) {
   // 获取包围盒的世界坐标
   Vec3f wmin, wmax;
   getWorldBBox(bb, m, wmin, wmax);
+  insertObjectInWorldAABB(wmin, wmax, obj, m);
+}
+
+// 用世界空间 AABB 插入体素
+void Grid::insertObjectInWorldAABB(const Vec3f &wminIn, const Vec3f &wmaxIn,
+                                   Object3D *obj, Matrix *m) {
+  if (obj == NULL)
+    return;
+
+  const float pad = 1e-4f * (dx + dy + dz);
+  Vec3f wmin(wminIn.x() - pad, wminIn.y() - pad, wminIn.z() - pad);
+  Vec3f wmax(wmaxIn.x() + pad, wmaxIn.y() + pad, wmaxIn.z() + pad);
 
   // 获取体素索引范围
   int i0, i1, j0, j1, k0, k1;

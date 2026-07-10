@@ -23,48 +23,17 @@ void Sphere::insertIntoGrid(Grid *g, Matrix *m) {
   if (g == NULL)
     return;
 
-  // 计算测试半径
-  float halfDiag = g->getVoxelHalfDiagonal();
-  float testRadius = radius + halfDiag;
-
-  // 计算逆变换矩阵
-  Matrix inv;
-  if (m != NULL)
-    m->Inverse(inv);
-
-  // 计算包围盒边界
-  Vec3f rmin = bbox->getMin();
-  Vec3f rmax = bbox->getMax();
+  // 有变换时用 AABB 插入
   if (m != NULL) {
-    // 计算包围盒8个顶点
-    Vec3f corners[8] = {
-      Vec3f(rmin.x(), rmin.y(), rmin.z()),
-      Vec3f(rmax.x(), rmin.y(), rmin.z()),
-      Vec3f(rmin.x(), rmax.y(), rmin.z()),
-      Vec3f(rmax.x(), rmax.y(), rmin.z()),
-      Vec3f(rmin.x(), rmin.y(), rmax.z()),
-      Vec3f(rmax.x(), rmin.y(), rmax.z()),
-      Vec3f(rmin.x(), rmax.y(), rmax.z()),
-      Vec3f(rmax.x(), rmax.y(), rmax.z())
-    };
-    m->Transform(corners[0]);  // 变换矩阵
-    rmin = corners[0];
-    rmax = corners[0];
-    for (int i = 1; i < 8; i++) {
-      // 应用变换矩阵
-      m->Transform(corners[i]);
-      // 计算最小边界
-      rmin = Vec3f(fminf(rmin.x(), corners[i].x()),
-                   fminf(rmin.y(), corners[i].y()),
-                   fminf(rmin.z(), corners[i].z()));
-      // 计算最大边界
-      rmax = Vec3f(fmaxf(rmax.x(), corners[i].x()),
-                   fmaxf(rmax.y(), corners[i].y()),
-                   fmaxf(rmax.z(), corners[i].z()));
-    }
+    Object3D::insertIntoGrid(g, m);
+    return;
   }
 
-  // 计算体素索引范围
+  float testRadius = radius + g->getVoxelHalfDiagonal();
+
+  Vec3f rmin = bbox->getMin();
+  Vec3f rmax = bbox->getMax();
+
   Vec3f bbMin = g->getBoundingBox()->getMin();
   Vec3f bbMax = g->getBoundingBox()->getMax();
   float dx = (bbMax.x() - bbMin.x()) / g->getNX();
@@ -76,7 +45,6 @@ void Sphere::insertIntoGrid(Grid *g, Matrix *m) {
   int j1 = (int)((rmax.y() - bbMin.y()) / dy);
   int k0 = (int)((rmin.z() - bbMin.z()) / dz);
   int k1 = (int)((rmax.z() - bbMin.z()) / dz);
-  // 缩小到体素网格边界内
   if (i0 < 0) i0 = 0;
   if (j0 < 0) j0 = 0;
   if (k0 < 0) k0 = 0;
@@ -84,17 +52,13 @@ void Sphere::insertIntoGrid(Grid *g, Matrix *m) {
   if (j1 >= g->getNY()) j1 = g->getNY() - 1;
   if (k1 >= g->getNZ()) k1 = g->getNZ() - 1;
 
-  Object3D *stored = g->wrapForGrid(this, m);  // 包装物体
+  Object3D *stored = g->wrapForGrid(this, NULL);
 
-  // 遍历体素网格，将球体栅格化到体素网格
+  // 遍历体素网格，判断球体是否与体素相交
   for (int i = i0; i <= i1; i++) {
     for (int j = j0; j <= j1; j++) {
       for (int k = k0; k <= k1; k++) {
         Vec3f voxelCenter = g->getVoxelCenter(i, j, k);
-        // 应用逆变换矩阵
-        if (m != NULL)
-          inv.Transform(voxelCenter);
-        // 若体素中心到球心距离 <= 测试半径，则插入体素
         if ((voxelCenter - center).Length() <= testRadius)
           g->insertObject(i, j, k, stored);
       }

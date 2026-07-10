@@ -125,8 +125,12 @@ static float cellExitT(const MarchingInfo &mi) {
   return fminf(fminf(mi.getTNextX(), mi.getTNextY()), mi.getTNextZ());
 }
 
+// 地板等贴在 cell 出口面的图元：几何 t 与 DDA 的 t_next 有浮点偏差
+// （发现半开/严格闭区间都会漏交，下一格又可能已出界导致了点状缺失）。
+static const float CELL_T_EPSILON = 1e-3f;
+
 static bool hitInCell(float t, float cellTMin, float cellTMax) {
-  return t >= cellTMin && t < cellTMax;
+  return t >= cellTMin - CELL_T_EPSILON && t <= cellTMax + CELL_T_EPSILON;
 }
 
 // 准备法线
@@ -207,7 +211,8 @@ bool RayTracer::rayCastFast(const Ray &ray, Hit &hit, float tmin) const {
       Object3D *obj = cell->getObject(o);
       if (!isMarked(obj)) {
         markObject(obj);
-        Hit candidate(bestHit);
+        // 用 Hit 缓存交点信息
+        Hit candidate(max_t, NULL, Vec3f(0, 0, 0));
         if (obj->intersect(ray, candidate, tmin))
           obj->setMarkedIntersection(candidate);
         else
@@ -217,13 +222,13 @@ bool RayTracer::rayCastFast(const Ray &ray, Hit &hit, float tmin) const {
       if (obj->getHasMarkedIntersection()) {
         const Hit &candidate = obj->getMarkedHit();
         float t = candidate.getT();
-        if (hitInCell(t, cellTMin, cellTMax)) {
+        if (hitInCell(t, cellTMin, cellTMax) && t < bestHit.getT()) {
           bestHit = candidate;
           found = true;
         }
       }
     }
-    if (found && bestHit.getT() < cellTMax) {
+    if (found && bestHit.getT() <= cellTMax + CELL_T_EPSILON) {
       hit = bestHit;
       return true;
     }
@@ -330,7 +335,8 @@ bool RayTracer::rayCastShadow(const Ray &ray, float tmin, float tmax, float &t,
         markObject(obj);
         float hitT;
         Material *hitMat = NULL;
-        if (obj->intersectShadow(ray, tmin, bestT, hitT, &hitMat))
+        // 用 tmax 缓存真实交点
+        if (obj->intersectShadow(ray, tmin, tmax, hitT, &hitMat))
           obj->setMarkedIntersection(Hit(hitT, hitMat, Vec3f(0, 0, 0)));
         else
           obj->clearMarkedIntersection();
@@ -442,8 +448,9 @@ Vec3f RayTracer::computeLocalShading(const Ray &ray, const Hit &hit,
       lightColor = componentMultiply(lightColor, shadowAtten);
     }
 
-    Hit shadedHit(hit.getT(), material, normal); // 反射/折射着色点
-    color += material->Shade(ray, shadedHit, lightDir, lightColor); // 反射/折射着色
+    Hit shadedHit(hit);
+    shadedHit.set(hit.getT(), material, normal, ray);
+    color += material->Shade(ray, shadedHit, lightDir, lightColor);
   }
   return color;
 }
@@ -511,6 +518,7 @@ Vec3f RayTracer::traceRayRecursive(Ray &ray, float tmin, int bounces,
       float iorStack[MAX_IOR_DEPTH];
       for (int i = 0; i < iorDepth; i++)
         iorStack[i] = outsideIOR[i];
+      RayTracingStats::IncrementNumNonShadowRays(); // 递归次数 + 1
       Vec3f reflected = traceRayRecursive(reflectedRay, RAY_EPSILON, bounces + 1, newWeight, indexOfRefraction, reflectedHit, iorStack, iorDepth); // 递归
       RayTree::AddReflectedSegment(reflectedRay, 0.0f, reflectedHit.getT()); // 添加反射段
       color += componentMultiply(reflectiveColor, reflected); // 反射色 + 反射命中
@@ -554,6 +562,7 @@ Vec3f RayTracer::traceRayRecursive(Ray &ray, float tmin, int bounces,
         Ray transmittedRay(origin, transmittedDir); // 折射射线
         float newWeight = weight * transparentColor.Length(); // 新权重
         Hit transmittedHit(max_t, NULL, Vec3f(0, 0, 0)); // 折射命中
+        RayTracingStats::IncrementNumNonShadowRays(); // 递归次数 + 1
         Vec3f transmitted = traceRayRecursive(transmittedRay, RAY_EPSILON, bounces + 1, newWeight, nextIOR, transmittedHit, iorStack, nextDepth); // 递归
         RayTree::AddTransmittedSegment(transmittedRay, 0.0f,
                                        transmittedHit.getT()); // 添加折射段

@@ -32,6 +32,8 @@ public:
   bool isOccupied(int i, int j, int k) const;  // 获取体素占用标记
 
   void insertObjectInBBox(BoundingBox *bb, Object3D *obj, Matrix *m = NULL);  // 将物体插入包围盒
+  void insertObjectInWorldAABB(const Vec3f &wmin, const Vec3f &wmax,
+                               Object3D *obj, Matrix *m = NULL);
 
   void printOccupancy() const;  // [DEBUG] 打印占用情况
 
