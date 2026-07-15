@@ -108,17 +108,23 @@ scene.gltf + scene.bin + textures/
 - [x] 节点 `matrix` 与 TRS 变换、逆转置法线矩阵、负行列式绕序处理
 
 ### IBL 与输出
-- [x] 程序化环境 cubemap（渐变天空 + 太阳高光）
-- [x] Split-Sum 近似（辐照度卷积 + CPU GGX 重要性采样预滤波 + BRDF LUT）
+- [x] 程序化环境 cubemap（渐变天空 + 增强镜面亮斑）
+- [x] Split-Sum 近似（RGB16F 辐照度卷积 + CPU GGX 重要性采样预滤波 + BRDF LUT）
 - [x] `skybox.frag` 背景
 - [x] 替换平坦 `uAmbientColor` 为漫反射/镜面 IBL
+- [x] 镜面偏置能量配比（抬 specularEnv、压 diffuse/hemi），改善金属/木材光泽
+- [x] 固定工作室主光（模型上方、初始相机侧偏左）+ 背光轮廓；环境漫反射底保留
 - [x] RGBA16F 线性 HDR 场景缓冲
 - [x] 最终 ACES 色调映射与线性到 sRGB 编码
+- [x] 场景 FBO 8x MSAA（失败时自动降到 4x/2x/单采样）
+- [x] 1.0× / 1.5× / 2.0× 内部超采样可选（默认 1.5×，`S` 切换）；FXAA 默认关（`F` 切换）
+- [x] 材质贴图各向异性过滤（上限 8x）
 - [ ] 从文件加载真实 HDRI / EXR 环境
 - [ ] 反射探针、SSR 或平面反射
 
 ### 玻璃 / 透明
 - [x] `KHR_materials_transmission` 基础实现（环境反射 + 屏幕空间场景折射）
+- [x] 透射仅替换漫反射能量并保留镜面；染色玻璃按底色恢复 alpha 与吸收，避免镜片消失或掠射发白
 - [x] 透明物体两遍渲染（不透明 → 透明，按相机距离从远到近排序）
 - [x] 双面/透明背面法线按 `gl_FrontFacing` 翻转
 - [ ] OIT（顺序无关透明）；当前按 Mesh 中心排序，交叠表面仍可能错误
@@ -130,7 +136,7 @@ scene.gltf + scene.bin + textures/
 
 ## 编译与运行
 
-**当前构建环境**：Windows、MinGW-w64 g++（C++11）、freeglut、OpenGL 3.3+ 驱动，以及 `ThirdParty/tinygltf`（缺失时见文末 clone 命令）。OpenGL 3.3 函数由 `ThirdParty/gl_loader` 通过 WGL 加载
+**当前构建环境**：Windows、MinGW-w64 g++（C++11）、freeglut、OpenGL 3.3+ 驱动，以及 `ThirdParty/tinygltf`（缺失时见文末 clone 命令）。OpenGL 3.3 函数由 `ThirdParty/gl_loader` 通过 WGL 加载。场景可按窗口分辨率的 1.0× / 1.5× / 2.0× 绘制（默认 1.5×，`S` 循环切换），再线性降采样到窗口；FXAA 默认关闭，按 `F` 开关。
 
 Makefile 使用 Windows 库（`opengl32`、`glu32`）及 `del` 清理命令，不能直接用于 Linux/macOS。在 `AS/` 目录下执行：
 
@@ -170,7 +176,7 @@ Windows PowerShell 运行示例：`.\pbr_viewer.exe -model Models/chess_set/scen
 ./pbr_viewer -model Models/wuthering_waves_sigillum/scene.gltf
 ```
 
-**操作**：左键旋转 · 右键/中键平移 · 滚轮或 `+`/`-` 缩放 · `Q`/`Esc` 退出
+**操作**：左键旋转 · 右键/中键平移 · 滚轮或 `+`/`-` 缩放 · `S` 切换 1.0×/1.5×/2.0× 超采样 · `F` 开关 FXAA · `Q`/`Esc` 退出
 
 控制台会输出加载信息，例如：`GltfLoader (tinygltf): N mesh(es), M material(s)` 与 `Scene: bounds [...] camera dist=...`，可用于排查相机/包围盒问题。
 
@@ -207,7 +213,7 @@ git clone --depth 1 https://github.com/syoyo/tinygltf.git ThirdParty/tinygltf
 - AO 只作用于环境光；clearcoat 会扣除底层 Fresnel 能量
 - 输出先写入线性 HDR FBO，再由 `tonemap.frag` 完成 ACES 与 sRGB 编码
 
-注：当前 IBL 来自代码生成的工作室环境，不是真实 HDRI；金属和玻璃只能反射该环境及屏幕空间折射采样到的背景，不能完整反射场景中的其他模型。
+注：当前 IBL 来自程序化工作室环境（压低漫反射底、主光+背光镜面峰 + RGB16F 辐照度），非真实 HDRI；主光固定在模型上方、初始相机侧偏左。金属和玻璃只能反射该环境及屏幕空间折射采样到的背景，不能完整反射场景中的其他模型。
 
 ## 许可证
 

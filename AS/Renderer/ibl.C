@@ -12,7 +12,7 @@ static const int PREFILTER_SAMPLE_COUNT = 64;
 static const int BRDF_LUT_SIZE = 512;
 static const float PI = 3.14159265359f;
 
-// 平滑工作室渐变（天空盒可见 + 辐照度漫反射）—— 无窄高光
+// 平滑工作室渐变（天空盒可见 + 辐照度漫反射）
 static void proceduralSkyDiffuse(float dx, float dy, float dz,
                                  float *r, float *g, float *b) {
   float len = sqrtf(dx * dx + dy * dy + dz * dz);
@@ -20,38 +20,27 @@ static void proceduralSkyDiffuse(float dx, float dy, float dz,
   dx /= len; dy /= len; dz /= len;
 
   float t = 0.5f * (dy + 1.0f);
-  float ground = 0.34f;
-  float sky    = 0.50f;
+  float ground = 0.055f;
+  float sky    = 0.10f;
   float base = ground * (1.0f - t) + sky * t;
   *r = base * 1.02f;
   *g = base;
   *b = base * 0.98f;
 
-  // 仅宽柔光，积分后均匀填充、不会在天空出现亮点
-  float kx = 0.40f, ky = 0.72f, kz = 0.56f;
+  // 极弱宽填充：与主光同向，作环境底
+  float kx = -0.28f, ky = 0.86f, kz = 0.43f;
   float klen = sqrtf(kx * kx + ky * ky + kz * kz);
   kx /= klen; ky /= klen; kz /= klen;
   float keyDot = dx * kx + dy * ky + dz * kz;
   if (keyDot > 0.0f) {
-    float keyWide = powf(keyDot, 5.0f) * 0.55f;
+    float keyWide = powf(keyDot, 8.0f) * 0.06f;
     *r += keyWide;
     *g += keyWide;
-    *b += keyWide * 1.03f;
-  }
-
-  float fx = -0.55f, fy = 0.45f, fz = 0.30f;
-  float flen = sqrtf(fx * fx + fy * fy + fz * fz);
-  fx /= flen; fy /= flen; fz /= flen;
-  float fillDot = dx * fx + dy * fy + dz * fz;
-  if (fillDot > 0.0f) {
-    float fill = powf(fillDot, 8.0f) * 0.40f;
-    *r += fill;
-    *g += fill;
-    *b += fill;
+    *b += keyWide * 1.02f;
   }
 }
 
-// 天空盒显示：暗灰平滑渐变（抬头环顾不见灯珠）
+// 天空盒显示：暗灰平滑渐变
 static void proceduralSkyDisplay(float dx, float dy, float dz,
                                  float *r, float *g, float *b) {
   float len = sqrtf(dx * dx + dy * dy + dz * dz);
@@ -67,7 +56,7 @@ static void proceduralSkyDisplay(float dx, float dy, float dz,
   *b = base * 1.02f;
 }
 
-// 照明 HDR：漫反射底 + 极窄高光斑（只在镜面反射/预滤波中可见）
+// 照明 HDR：漫反射底 + 强对比镜面亮斑
 static void proceduralSkyLighting(float dx, float dy, float dz,
                                   float *r, float *g, float *b) {
   proceduralSkyDiffuse(dx, dy, dz, r, g, b);
@@ -76,34 +65,26 @@ static void proceduralSkyLighting(float dx, float dy, float dz,
   if (len < 1e-6f) len = 1.0f;
   dx /= len; dy /= len; dz /= len;
 
-  float kx = 0.40f, ky = 0.72f, kz = 0.56f;
+  // 主光：模型上方、初始相机侧（+Z），并偏画面左侧（-X）
+  // 与 Renderer 的固定方向光一致，作为同一盏工作室灯的反射亮斑。
+  float kx = -0.28f, ky = 0.86f, kz = 0.43f;
   float klen = sqrtf(kx * kx + ky * ky + kz * kz);
   kx /= klen; ky /= klen; kz /= klen;
   float keyDot = dx * kx + dy * ky + dz * kz;
   if (keyDot > 0.0f) {
-    float keySharp = powf(keyDot, 180.0f) * 6.0f;
+    float keySharp = powf(keyDot, 120.0f) * 29.0f;
     *r += keySharp;
     *g += keySharp;
     *b += keySharp * 1.05f;
   }
 
-  float fx = -0.55f, fy = 0.45f, fz = 0.30f;
-  float flen = sqrtf(fx * fx + fy * fy + fz * fz);
-  fx /= flen; fy /= flen; fz /= flen;
-  float fillDot = dx * fx + dy * fy + dz * fz;
-  if (fillDot > 0.0f) {
-    float fillSharp = powf(fillDot, 160.0f) * 2.5f;
-    *r += fillSharp;
-    *g += fillSharp;
-    *b += fillSharp;
-  }
-
+  // 背光轮廓：保留背面金属可读性
   float bx = 0.0f, by = 0.55f, bz = -0.72f;
   float blen = sqrtf(bx * bx + by * by + bz * bz);
   bx /= blen; by /= blen; bz /= blen;
   float backDot = dx * bx + dy * by + dz * bz;
   if (backDot > 0.0f) {
-    float backSharp = powf(backDot, 140.0f) * 2.0f;
+    float backSharp = powf(backDot, 90.0f) * 4.0f;
     *r += backSharp;
     *g += backSharp;
     *b += backSharp * 1.03f;
@@ -139,7 +120,7 @@ static void normalize3(float *x, float *y, float *z) {
   if (len > 1e-6f) { *x /= len; *y /= len; *z /= len; }
 }
 
-// ---- GGX Split-Sum 预滤波（与 brdf_lut.frag 同一套重要性采样）----
+// GGX Split-Sum 预滤波
 static float radicalInverseVdC(unsigned int bits) {
   bits = (bits << 16u) | (bits >> 16u);
   bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);
@@ -371,7 +352,7 @@ bool IBL::createIrradianceMap() {
   glGenTextures(1, &irradianceMap);
   glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
 
-  std::vector<unsigned char> pixels((size_t)IRRADIANCE_SIZE * IRRADIANCE_SIZE * 3);
+  std::vector<float> pixels((size_t)IRRADIANCE_SIZE * IRRADIANCE_SIZE * 3);
   for (int face = 0; face < 6; face++) {
     for (int y = 0; y < IRRADIANCE_SIZE; y++) {
       for (int x = 0; x < IRRADIANCE_SIZE; x++) {
@@ -381,13 +362,13 @@ bool IBL::createIrradianceMap() {
         cubemapUVToDir(face, u, v, &dx, &dy, &dz);
         convolveIrradiance(dx, dy, dz, &r, &g, &b);
         size_t idx = (size_t)(y * IRRADIANCE_SIZE + x) * 3;
-        pixels[idx + 0] = (unsigned char)(fminf(r * 255.0f, 255.0f));
-        pixels[idx + 1] = (unsigned char)(fminf(g * 255.0f, 255.0f));
-        pixels[idx + 2] = (unsigned char)(fminf(b * 255.0f, 255.0f));
+        pixels[idx + 0] = r;
+        pixels[idx + 1] = g;
+        pixels[idx + 2] = b;
       }
     }
-    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, GL_RGB,
-                 IRRADIANCE_SIZE, IRRADIANCE_SIZE, 0, GL_RGB, GL_UNSIGNED_BYTE, &pixels[0]);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, GL_RGB16F,
+                 IRRADIANCE_SIZE, IRRADIANCE_SIZE, 0, GL_RGB, GL_FLOAT, &pixels[0]);
   }
 
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);

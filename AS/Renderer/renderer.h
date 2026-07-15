@@ -5,7 +5,7 @@
 #include "shader_program.h"
 #include "ibl.h"
 
-// PBR 渲染器：线性 HDR 场景 FBO + 屏幕空间折射 + 最终 ACES/sRGB
+// PBR 渲染器：MSAA HDR FBO + 屏幕空间折射 + ACES/sRGB + FXAA
 class Renderer {
 public:
   Renderer();
@@ -19,17 +19,22 @@ public:
   void setLightDirection(const Vec3f &dir);
   void setLightColor(const Vec3f &color);
   void setAmbientColor(const Vec3f &color);
+  bool toggleFXAA();
+  float cycleSupersampling();
 
 private:
   bool loadShaders();
   void setupGLState();
   bool createSceneTargets(int width, int height);
   void destroySceneTargets();
+  void updateRenderSize();
+  float currentRenderScale() const;
   void bindCommonPBRUniforms(Scene &scene);
   void drawMeshes(Scene &scene, bool transparentPassOnly,
                   const std::vector<Mesh *> *opaque,
                   const std::vector<Mesh *> *transparent);
   void drawSingleMesh(Mesh *mesh, bool transparentPass);
+  void resolveMsaaToSceneColor();
   void captureSceneColorSample();
   void blitTonemapToScreen();
 
@@ -41,23 +46,34 @@ private:
   ShaderProgram tonemapShader;
   IBL ibl;
 
-  // 线性 HDR 场景
-  unsigned int sceneFBO;
+  // MSAA HDR 场景缓冲
+  unsigned int msaaFBO;
+  unsigned int msaaColorRbo;
+  unsigned int msaaDepthRbo;
+  int msaaSamples;
+
+  // 单采样 resolve 目标（tonemap / 折射源）
+  unsigned int resolveFBO;
   unsigned int sceneColorTex;
-  unsigned int sceneDepthRbo;
-  // 不透明后的场景颜色拷贝，供屏幕空间折射采样
   unsigned int sceneSampleTex;
+  // 无 MSAA 时的单采样深度
+  unsigned int sceneDepthRbo;
+
   unsigned int fullscreenVAO;
 
-  // 视口宽高
   int viewportWidth;
   int viewportHeight;
+  int renderWidth;
+  int renderHeight;
+  int renderScaleMode;
+  bool fxaaEnabled;
 
   Vec3f lightDirection;
   Vec3f lightColor;
-  Vec3f ambientColor;  // 环境光颜色
+  Vec3f ambientColor;
 
   static const int SCENE_SAMPLE_UNIT = 14;
+  static const int TARGET_MSAA_SAMPLES = 8;
 };
 
 #endif

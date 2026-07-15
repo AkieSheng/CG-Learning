@@ -56,7 +56,7 @@ bool Application::initialize(int argc, char **argv, const std::string &path) {
   glutMouseFunc(mouseButtonCallback);
   glutMotionFunc(mouseMotionCallback);
 
-  printf("Controls: LMB=rotate, RMB/MMB=pan, wheel/+/-=zoom, Q=quit\n");
+  printf("Controls: LMB=rotate, RMB/MMB=pan, wheel/+/-=zoom, S=supersampling, F=FXAA, Q=quit\n");
   return true;
 }
 
@@ -87,6 +87,16 @@ void Application::keyboardCallback(unsigned char key, int x, int y) {
     case 'q':
     case 'Q':
       exit(0);
+      break;
+    case 'f':
+    case 'F': {
+      bool enabled = instance->renderer.toggleFXAA();
+      fprintf(stderr, "FXAA: %s\n", enabled ? "on" : "off");
+      break;
+    }
+    case 's':
+    case 'S':
+      instance->renderer.cycleSupersampling();
       break;
     case '+':
     case '=':

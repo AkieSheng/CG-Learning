@@ -66,6 +66,22 @@ typedef char GLchar;
 #endif
 #endif
 
+#ifndef GL_READ_FRAMEBUFFER
+#define GL_READ_FRAMEBUFFER               0x8CA8
+#endif
+#ifndef GL_DRAW_FRAMEBUFFER
+#define GL_DRAW_FRAMEBUFFER               0x8CA9
+#endif
+#ifndef GL_MAX_SAMPLES
+#define GL_MAX_SAMPLES                    0x8D57
+#endif
+#ifndef GL_TEXTURE_MAX_ANISOTROPY_EXT
+#define GL_TEXTURE_MAX_ANISOTROPY_EXT     0x84FE
+#endif
+#ifndef GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT
+#define GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT 0x84FF
+#endif
+
 typedef void (APIENTRY *PFNGLGENVERTEXARRAYSPROC)(GLsizei, GLuint *);
 typedef void (APIENTRY *PFNGLBINDVERTEXARRAYPROC)(GLuint);
 typedef void (APIENTRY *PFNGLDELETEVERTEXARRAYSPROC)(GLsizei, const GLuint *);
@@ -107,7 +123,9 @@ typedef void (APIENTRY *PFNGLGENRENDERBUFFERSPROC)(GLsizei, GLuint *);
 typedef void (APIENTRY *PFNGLDELETERENDERBUFFERSPROC)(GLsizei, const GLuint *);
 typedef void (APIENTRY *PFNGLBINDRENDERBUFFERPROC)(GLenum, GLuint);
 typedef void (APIENTRY *PFNGLRENDERBUFFERSTORAGEPROC)(GLenum, GLenum, GLsizei, GLsizei);
+typedef void (APIENTRY *PFNGLRENDERBUFFERSTORAGEMULTISAMPLEPROC)(GLenum, GLsizei, GLenum, GLsizei, GLsizei);
 typedef void (APIENTRY *PFNGLFRAMEBUFFERRENDERBUFFERPROC)(GLenum, GLenum, GLenum, GLuint);
+typedef void (APIENTRY *PFNGLBLITFRAMEBUFFERPROC)(GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GLenum);
 
 extern PFNGLGENVERTEXARRAYSPROC glGenVertexArrays;
 extern PFNGLBINDVERTEXARRAYPROC glBindVertexArray;
@@ -150,7 +168,9 @@ extern PFNGLGENRENDERBUFFERSPROC glGenRenderbuffers;
 extern PFNGLDELETERENDERBUFFERSPROC glDeleteRenderbuffers;
 extern PFNGLBINDRENDERBUFFERPROC glBindRenderbuffer;
 extern PFNGLRENDERBUFFERSTORAGEPROC glRenderbufferStorage;
+extern PFNGLRENDERBUFFERSTORAGEMULTISAMPLEPROC glRenderbufferStorageMultisample;
 extern PFNGLFRAMEBUFFERRENDERBUFFERPROC glFramebufferRenderbuffer;
+extern PFNGLBLITFRAMEBUFFERPROC glBlitFramebuffer;
 
 bool loadOpenGLFunctions();
 

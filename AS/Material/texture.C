@@ -75,6 +75,14 @@ bool Texture::loadFromFile(const std::string &path, bool srgb) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+  // 各向异性过滤：减轻斜视 mip 发糊；上限钳到 8 以控制开销
+  GLfloat maxAniso = 1.0f;
+  glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAniso);
+  if (maxAniso > 1.0f) {
+    GLfloat aniso = maxAniso > 8.0f ? 8.0f : maxAniso;
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso);
+  }
+
   if (uploadData != expanded.data())
     stbi_image_free(data);
   return true;

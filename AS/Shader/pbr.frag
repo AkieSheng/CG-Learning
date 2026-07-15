@@ -268,7 +268,8 @@ void main() {
     vec3 kS = F;
     vec3 kD = (vec3(1.0) - kS) * (1.0 - metallic);
 
-    vec3 Lo = (kD * albedo / PI + specular) * uLightColor * NdotL * uDirectLightScale;
+    vec3 diffuseDirect = kD * albedo / PI * uLightColor * NdotL * uDirectLightScale;
+    vec3 specularDirect = specular * uLightColor * NdotL * uDirectLightScale;
 
     vec3 diffuseIBL = vec3(0.0);
     vec3 specularIBL = vec3(0.0);
@@ -277,9 +278,22 @@ void main() {
         vec3 kD_ibl = (vec3(1.0) - F_ibl) * (1.0 - metallic);
         diffuseIBL = texture(uIrradianceMap, N).rgb * albedo * kD_ibl * uDiffuseEnvScale;
         specularIBL = sampleSpecularIBL(N, V, roughness, F0, NdotV) * uSpecularEnvScale;
-        // 半球填充：模拟地面反弹，Sketchfab 工作室感（非 emissive）
+        // 金属：略抬镜面峰，但中间调向 albedo 色相收敛，避免灰环境冲成橙黄
+        if (metallic > 0.01) {
+            float albLum = max(dot(albedo, vec3(0.2126, 0.7152, 0.0722)), 1e-4);
+            vec3 metalChroma = albedo / albLum;
+            float specLum = max(dot(specularIBL, vec3(0.2126, 0.7152, 0.0722)), 1e-4);
+            // 压暗金属中间调、拉开高光与体色对比
+            float midCompress = mix(1.0, 0.68 / (0.68 + specLum), metallic);
+            specularIBL *= midCompress;
+            float compressedLum = max(dot(specularIBL, vec3(0.2126, 0.7152, 0.0722)), 1e-4);
+            // 纠正色相，不再二次乘 albedo（F0 已含金属色）
+            specularIBL = mix(specularIBL, metalChroma * compressedLum, metallic * 0.55);
+            specularIBL *= (1.0 + 0.15 * metallic);
+        }
+        // 半球填充：模拟地面反弹
         float hemi = clamp(N.y * 0.5 + 0.5, 0.0, 1.0);
-        vec3 hemiFill = mix(vec3(0.20), vec3(0.36), hemi);
+        vec3 hemiFill = mix(vec3(0.14), vec3(0.26), hemi);
         diffuseIBL += hemiFill * albedo * kD_ibl * uHemiFillScale;
     } else {
         diffuseIBL = uAmbientColor * albedo * kD;
@@ -291,13 +305,95 @@ void main() {
         ao = mix(1.0, ao, uOcclusionStrength);
     }
 
-    // AO 只调制环境项，不混合直接光
-    vec3 color = (diffuseIBL + specularIBL) * ao + Lo;
+    vec3 diffusePart = diffuseIBL * ao + diffuseDirect;
+    vec3 specularPart = specularIBL * ao + specularDirect;
+    vec3 color = diffusePart + specularPart;
 
     if (uHasEmissiveMap) {
         color += texture(uEmissiveMap, vTexCoord).rgb * uEmissiveFactor;
     } else if (length(uEmissiveFactor) > 0.0) {
         color += uEmissiveFactor;
+    }
+
+    float outAlpha = baseColor.a;
+
+    // KHR_materials_transmission：仅替换漫反射能量，保留镜面高光
+    if (uHasTransmission && uTransmissionFactor > 0.0 && metallic < 0.99) {
+        float transmission = uTransmissionFactor;
+        if (uHasTransmissionMap) {
+            transmission *= texture(uTransmissionMap, vTexCoord).r;
+        }
+        transmission = clamp(transmission, 0.0, 1.0);
+
+        if (transmission > 0.001) {
+            float ior = max(uIor, 1.0);
+
+            vec3 refractN = N;
+            float eta = 1.0 / ior;
+            if (dot(N, V) < 0.0) {
+                refractN = -N;
+                eta = ior;
+            }
+
+            float F0d = dielectricF0(ior);
+            float Fresnel = fresnelSchlick(NdotV, vec3(F0d)).r;
+            float tintLum = dot(albedo, vec3(0.2126, 0.7152, 0.0722));
+            float tintStrength = clamp(1.0 - tintLum, 0.0, 1.0);
+            vec3 lensTint = max(albedo, vec3(0.02));
+            float frontWeight = pow(NdotV, 0.55);
+            float grazingWeight = pow(1.0 - NdotV, 2.0);
+
+            // 染色镜片掠射反射用更高 roughness，避免 prefilter 窄亮斑打成白条
+            float reflectRough = max(roughness, mix(0.12, 0.42, grazingWeight * tintStrength));
+            vec3 reflected = sampleEnvironment(reflect(-V, N), reflectRough);
+            reflected *= mix(vec3(1.0), lensTint * 3.2, tintStrength);
+            // 限制染色镜片反射亮度，根因：HDR 环境峰 + Fresnel 在侧面趋近 1
+            float refLum = dot(reflected, vec3(0.2126, 0.7152, 0.0722));
+            float tintRefLum = max(dot(lensTint, vec3(0.2126, 0.7152, 0.0722)), 0.02);
+            float maxRefLum = tintRefLum * mix(3.0, 0.55, tintStrength);
+            if (refLum > maxRefLum)
+                reflected *= maxRefLum / refLum;
+
+            vec3 incoming = -V;
+            vec3 refractDir;
+            vec3 refracted;
+            float thick = uHasVolume ? max(uVolumeThickness, 0.05)
+                                     : mix(0.28, 0.62, tintStrength);
+
+            if (snellRefract(incoming, refractN, eta, refractDir)) {
+                if (uHasSceneColor) {
+                    refracted = sampleSceneRefraction(vWorldPos, refractDir, roughness, thick);
+                } else {
+                    refracted = sampleEnvironment(refractDir, roughness);
+                }
+                refracted = applyVolumeAttenuation(refracted, thick);
+                refracted *= lensTint;
+                if (!uHasVolume && tintStrength > 0.05) {
+                    vec3 attColor = max(lensTint, vec3(0.03));
+                    vec3 coeff = -log(attColor) / mix(0.08, 0.028, tintStrength);
+                    refracted *= exp(-coeff * thick * mix(1.15, 2.6, frontWeight));
+                }
+            } else {
+                refracted = reflected;
+            }
+
+            vec3 glassColor = reflected * Fresnel + refracted * (1.0 - Fresnel);
+            // 正面压暗：透射路径仍偏亮时拉回更深的镜片底色
+            glassColor = mix(glassColor, lensTint * mix(0.08, 0.28, frontWeight),
+                             tintStrength * transmission * mix(0.70, 0.95, frontWeight));
+            // 侧面压白：掠射时向更深 tint 收敛
+            glassColor = mix(glassColor, lensTint * 0.32, grazingWeight * tintStrength * 0.90);
+
+            diffusePart = mix(diffusePart, glassColor, transmission);
+
+            // 透射已含 Fresnel 反射，削弱独立镜面以免侧面双重高光
+            float specKeep = 1.0 - transmission * mix(0.50, 0.90, tintStrength);
+            specularPart *= specKeep;
+            color = diffusePart + specularPart;
+
+            float lensAlpha = max(baseColor.a, 0.18 + 0.72 * tintStrength);
+            outAlpha = mix(baseColor.a, lensAlpha, transmission);
+        }
     }
 
     // KHR_materials_clearcoat：镜面层 + 底层能量扣除
@@ -328,61 +424,6 @@ void main() {
         float ccNdotL = max(dot(ccN, L), 0.0);
         color += ccSpec * ccFactor * uLightColor * ccNdotL * uDirectLightScale;
         color += sampleSpecularIBL(ccN, V, ccRough, ccF0, ccNdotV) * ccFactor * uSpecularEnvScale;
-    }
-
-    float outAlpha = baseColor.a;
-
-    // KHR_materials_transmission：环境反射 + 屏幕空间折射（Framebuffer）
-    if (uHasTransmission && uTransmissionFactor > 0.0 && metallic < 0.99) {
-        float transmission = uTransmissionFactor;
-        if (uHasTransmissionMap) {
-            transmission *= texture(uTransmissionMap, vTexCoord).r;
-        }
-        transmission = clamp(transmission, 0.0, 1.0);
-
-        if (transmission > 0.001) {
-            float ior = max(uIor, 1.0);
-
-            // 薄壁双面：根据朝向选择 eta（空气 <-> 介质）
-            vec3 refractN = N;
-            float eta = 1.0 / ior;
-            if (dot(N, V) < 0.0) {
-                refractN = -N;
-                eta = ior;
-            }
-
-            float F0d = dielectricF0(ior);
-            float Fresnel = fresnelSchlick(NdotV, vec3(F0d)).r;
-
-            // 透射替换漫反射：从表面颜色中去掉对应漫射能量
-            color *= (1.0 - transmission);
-
-            vec3 reflected = sampleEnvironment(reflect(-V, N), roughness);
-
-            vec3 incoming = -V;
-            vec3 refractDir;
-            vec3 refracted;
-            float thick = uHasVolume ? max(uVolumeThickness, 0.05) : mix(0.08, 0.25, clamp(ior - 1.0, 0.0, 1.0));
-
-            if (snellRefract(incoming, refractN, eta, refractDir)) {
-                if (uHasSceneColor) {
-                    refracted = sampleSceneRefraction(vWorldPos, refractDir, roughness, thick);
-                } else {
-                    refracted = sampleEnvironment(refractDir, roughness);
-                }
-                refracted = applyVolumeAttenuation(refracted, thick);
-                refracted *= albedo;
-            } else {
-                refracted = reflected;
-            }
-
-            // Fresnel 混合反射与折射
-            vec3 glassColor = reflected * Fresnel + refracted * (1.0 - Fresnel);
-            color += transmission * glassColor;
-
-            // 透射已合成背景：用不透明 alpha，避免与 framebuffer 二次混合变暗
-            outAlpha = mix(baseColor.a, 1.0, transmission);
-        }
     }
 
     if (uOutputLinear) {

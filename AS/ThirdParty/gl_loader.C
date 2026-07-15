@@ -42,7 +42,9 @@ PFNGLGENRENDERBUFFERSPROC glGenRenderbuffers = NULL;
 PFNGLDELETERENDERBUFFERSPROC glDeleteRenderbuffers = NULL;
 PFNGLBINDRENDERBUFFERPROC glBindRenderbuffer = NULL;
 PFNGLRENDERBUFFERSTORAGEPROC glRenderbufferStorage = NULL;
+PFNGLRENDERBUFFERSTORAGEMULTISAMPLEPROC glRenderbufferStorageMultisample = NULL;
 PFNGLFRAMEBUFFERRENDERBUFFERPROC glFramebufferRenderbuffer = NULL;
+PFNGLBLITFRAMEBUFFERPROC glBlitFramebuffer = NULL;
 
 #ifdef _WIN32
 static void *getProc(const char *name) {
@@ -106,7 +108,10 @@ bool loadOpenGLFunctions() {
   LOAD_FN(glDeleteRenderbuffers, PFNGLDELETERENDERBUFFERSPROC, "glDeleteRenderbuffers");
   LOAD_FN(glBindRenderbuffer, PFNGLBINDRENDERBUFFERPROC, "glBindRenderbuffer");
   LOAD_FN(glRenderbufferStorage, PFNGLRENDERBUFFERSTORAGEPROC, "glRenderbufferStorage");
+  LOAD_FN(glRenderbufferStorageMultisample, PFNGLRENDERBUFFERSTORAGEMULTISAMPLEPROC,
+          "glRenderbufferStorageMultisample");
   LOAD_FN(glFramebufferRenderbuffer, PFNGLFRAMEBUFFERRENDERBUFFERPROC, "glFramebufferRenderbuffer");
+  LOAD_FN(glBlitFramebuffer, PFNGLBLITFRAMEBUFFERPROC, "glBlitFramebuffer");
   return true;
 }
 
