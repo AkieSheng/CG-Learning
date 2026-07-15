@@ -12,8 +12,5 @@ OutputFiles/
 *~
 *bak
 
-# Large Sketchfab assets (keep locally; download separately)
-AS/Models/
-
 # Large Sketchfab glTF assets (keep local; do not push)
 AS/Models/
