@@ -25,6 +25,8 @@ public:
   Vec3f getPosition() const { return position; }
   Vec3f getTarget() const { return target; }
   float getDistance() const { return distance; }
+  float getNear() const { return nearZ; }
+  float getFar() const { return farZ; }
   Vec3f getFront() const;  // 获取视线方向
   Vec3f getUp() const { return worldUp; }
 
@@ -40,6 +42,8 @@ private:
   float pitch;  // 绕X轴旋转角
   float fovY;  // 垂直FOV
   float aspect;  // 宽高比
+  float nearZ;  // 近裁剪平面距离
+  float farZ;  // 远裁剪平面距离
 
   Vec3f position;
   Matrix viewMatrix;  // 视图矩阵

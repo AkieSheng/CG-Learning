@@ -15,60 +15,17 @@ Texture::~Texture() {
   destroy();
 }
 
-bool Texture::loadFromFile(const std::string &path, bool srgb) {
+void Texture::uploadRGBA(const unsigned char *rgba, int width, int height, bool srgb) {
   destroy();
   srgbColorSpace = srgb;
+  texWidth = width;
+  texHeight = height;
 
-  int channels = 0;
-
-  // 纹理不翻转
-  stbi_set_flip_vertically_on_load(false);
-
-  unsigned char *data = stbi_load(path.c_str(), &texWidth, &texHeight, &channels, 0);
-  if (!data) {
-    fprintf(stderr, "Failed to load texture: %s\n", path.c_str());
-    return false;
-  }
-
-  GLenum internalFormat = GL_RGB;
-  GLenum format = GL_RGB;
-  std::vector<unsigned char> expanded;
-  unsigned char *uploadData = data;
-
-  if (channels == 1) {
-    internalFormat = GL_RED;
-    format = GL_RED;
-  } else if (channels == 2) {
-    // 灰度+Alpha 等双通道贴图扩展为 RGBA
-    expanded.resize((size_t)texWidth * (size_t)texHeight * 4);
-    size_t pixels = (size_t)texWidth * (size_t)texHeight;
-    for (size_t i = 0; i < pixels; i++) {
-      unsigned char lum = data[i * 2 + 0];
-      unsigned char alpha = data[i * 2 + 1];
-      expanded[i * 4 + 0] = lum;
-      expanded[i * 4 + 1] = lum;
-      expanded[i * 4 + 2] = lum;
-      expanded[i * 4 + 3] = alpha;
-    }
-    stbi_image_free(data);
-    uploadData = expanded.data();
-    internalFormat = srgb ? GL_SRGB_ALPHA : GL_RGBA;
-    format = GL_RGBA;
-  } else if (channels == 3) {
-    internalFormat = srgb ? GL_SRGB : GL_RGB;
-    format = GL_RGB;
-  } else if (channels == 4) {
-    internalFormat = srgb ? GL_SRGB_ALPHA : GL_RGBA;
-    format = GL_RGBA;
-  } else {
-    fprintf(stderr, "Unsupported channel count %d in texture: %s\n", channels, path.c_str());
-    stbi_image_free(data);
-    return false;
-  }
-
+  GLenum internalFormat = srgb ? GL_SRGB_ALPHA : GL_RGBA;
   glGenTextures(1, &textureId);
   glBindTexture(GL_TEXTURE_2D, textureId);
-  glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, texWidth, texHeight, 0, format, GL_UNSIGNED_BYTE, uploadData);
+  glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, texWidth, texHeight, 0,
+               GL_RGBA, GL_UNSIGNED_BYTE, rgba);
   glGenerateMipmap(GL_TEXTURE_2D);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -82,9 +39,42 @@ bool Texture::loadFromFile(const std::string &path, bool srgb) {
     GLfloat aniso = maxAniso > 8.0f ? 8.0f : maxAniso;
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso);
   }
+}
 
-  if (uploadData != expanded.data())
-    stbi_image_free(data);
+bool Texture::loadPixelsRGBA(const std::string &path,
+                             std::vector<unsigned char> &rgba,
+                             int &outWidth, int &outHeight) {
+  rgba.clear();
+  outWidth = outHeight = 0;
+
+  stbi_set_flip_vertically_on_load(false);
+  int channels = 0;
+  unsigned char *data = stbi_load(path.c_str(), &outWidth, &outHeight, &channels, 4);
+  if (!data) {
+    fprintf(stderr, "Failed to load texture pixels: %s\n", path.c_str());
+    return false;
+  }
+
+  size_t bytes = (size_t)outWidth * (size_t)outHeight * 4;
+  rgba.assign(data, data + bytes);
+  stbi_image_free(data);
+  return true;
+}
+
+Texture *Texture::createFromRGBA(const unsigned char *rgba, int width, int height,
+                                 bool srgb) {
+  if (!rgba || width <= 0 || height <= 0) return NULL;
+  Texture *tex = new Texture();
+  tex->uploadRGBA(rgba, width, height, srgb);
+  return tex;
+}
+
+bool Texture::loadFromFile(const std::string &path, bool srgb) {
+  std::vector<unsigned char> rgba;
+  int w = 0, h = 0;
+  if (!loadPixelsRGBA(path, rgba, w, h))
+    return false;
+  uploadRGBA(rgba.data(), w, h, srgb);
   return true;
 }
 

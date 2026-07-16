@@ -84,14 +84,18 @@ scene.gltf + scene.bin + textures/
 
 推荐本地调试模型与特性：
 
-| 模型 | PBR 贴图 | 扩展 |
-|------|----------|------|
+| 模型 | PBR 贴图 | 扩展 / 说明 |
+|------|----------|-------------|
 | macbook | baseColor, metallicRoughness, normal | — |
 | chess_set | baseColor, metallicRoughness | `KHR_materials_clearcoat` |
+| low_poly_chess_set | 无（仅因子） | 基础 Metallic-Roughness |
 | aviator_sunglasses | — | `KHR_materials_transmission`, BLEND |
 | glass_pack / lmu_glass | transmission 贴图 | `KHR_materials_transmission` |
 | crystal_stone_rock | + emissive | `alphaMode: BLEND` |
-| wuthering_waves_sigillum | 无贴图 | — |
+| cosmetic_serum_bottle | baseColor | 产品瓶、因子金属度/粗糙度 |
+| ship_in_a_bottle | baseColor, MR, normal | `transmission` + `clearcoat` + BLEND |
+| primogem…genshin | 无（仅因子） | Mora 带 emissive |
+| bouquet…tropicales | diffuse / specularGlossiness / normal | 加载时自动 SpecGloss→MR 烘焙 |
 
 ## 当前实现状态
 
@@ -105,6 +109,7 @@ scene.gltf + scene.bin + textures/
 - [x] `GltfLoader` 转换层：`tinygltf::Model` → `Mesh` + `PBRMaterial`
 - [x] 场景图遍历、accessor 解码、切线自动生成
 - [x] `KHR_materials_transmission` / `ior` / `volume` / `clearcoat` 扩展解析
+- [x] `KHR_materials_pbrSpecularGlossiness` → Metallic-Roughness 加载时烘焙
 - [x] 节点 `matrix` 与 TRS 变换、逆转置法线矩阵、负行列式绕序处理
 
 ### IBL 与输出
@@ -160,20 +165,28 @@ Windows PowerShell 运行示例：`.\pbr_viewer.exe -model Models/chess_set/scen
 |------|------|------|
 | MacBook | 默认 PBR + 法线贴图 | `./pbr_viewer -model Models/macbook_air_notebook_pbr/scene.gltf` |
 | 国际象棋 | 清漆 `clearcoat` | `./pbr_viewer -model Models/chess_set/scene.gltf` |
+| 低模象棋 | 无贴图、仅 MR 因子 | `./pbr_viewer -model Models/low_poly_chess_set/scene.gltf` |
 | 飞行员墨镜 | 玻璃 `transmission` + BLEND | `./pbr_viewer -model Models/aviator_sunglasses/scene.gltf` |
 | 玻璃杯瓶套装 | transmission 贴图 | `./pbr_viewer -model Models/the_ultimate_glass_pack_cups_and_bottles/scene.gltf` |
 | 大厅玻璃天花板 | 大场景玻璃（~157MB bin） | `./pbr_viewer -model Models/lmu_main_hall_ceiling_glass_pbr_texture/scene.gltf` |
 | 水晶石 | emissive + BLEND | `./pbr_viewer -model Models/crystal_stone_rock/scene.gltf` |
-| Sigillum | 无贴图 | `./pbr_viewer -model Models/wuthering_waves_sigillum/scene.gltf` |
+| 精华液瓶 | 产品级 baseColor + 粗糙玻璃感 | `./pbr_viewer -model Models/cosmetic_serum_bottle/scene.gltf` |
+| 瓶中船 | transmission + clearcoat 综合验证 | `./pbr_viewer -model Models/ship_in_a_bottle/scene.gltf` |
+| 原石/摩拉/星尘 | 因子金属 + emissive | `./pbr_viewer -model Models/primogemmorastardust_from_genshin_impact_free/scene.gltf` |
+| 热带花束 | SpecGloss→MR 自动烘焙 | `./pbr_viewer -model Models/bouquet_de_fleurs_tropicales__new_version_pbr/scene.gltf` |
 
 ```bash
 ./pbr_viewer -model Models/macbook_air_notebook_pbr/scene.gltf
 ./pbr_viewer -model Models/chess_set/scene.gltf
+./pbr_viewer -model Models/low_poly_chess_set/scene.gltf
 ./pbr_viewer -model Models/aviator_sunglasses/scene.gltf
 ./pbr_viewer -model Models/the_ultimate_glass_pack_cups_and_bottles/scene.gltf
 ./pbr_viewer -model Models/lmu_main_hall_ceiling_glass_pbr_texture/scene.gltf
 ./pbr_viewer -model Models/crystal_stone_rock/scene.gltf
-./pbr_viewer -model Models/wuthering_waves_sigillum/scene.gltf
+./pbr_viewer -model Models/cosmetic_serum_bottle/scene.gltf
+./pbr_viewer -model Models/ship_in_a_bottle/scene.gltf
+./pbr_viewer -model Models/primogemmorastardust_from_genshin_impact_free/scene.gltf
+./pbr_viewer -model Models/bouquet_de_fleurs_tropicales__new_version_pbr/scene.gltf
 ```
 
 **操作**：左键旋转 · 右键/中键平移 · 滚轮或 `+`/`-` 缩放 · `S` 切换 1.0×/1.5×/2.0× 超采样 · `F` 开关 FXAA · `Q`/`Esc` 退出
@@ -196,7 +209,7 @@ void getBounds(Vec3f& bmin, Vec3f& bmax) const;
 3. 每个 primitive → `Mesh::upload()` + `PBRMaterial`
 4. 纹理仍由 `Texture::loadFromFile()` 上传（sRGB/线性空间分离）
 
-当前加载器针对本地静态 ASCII `.gltf` 路径实现，支持外部 `.bin` 和 PNG/JPEG URI。顶点属性要求 `FLOAT`，索引支持 `UNSIGNED_BYTE`、`UNSIGNED_SHORT`、`UNSIGNED_INT`，图元按 `TRIANGLES` 绘制。尚未支持 `.glb`、data URI/内嵌图像、skin、animation、morph target、多套材质 UV 选择等通用 glTF 功能。
+当前加载器针对本地静态 ASCII `.gltf` 路径实现，支持外部 `.bin` 和 PNG/JPEG URI。顶点属性要求 `FLOAT`，索引支持 `UNSIGNED_BYTE`、`UNSIGNED_SHORT`、`UNSIGNED_INT`，图元按 `TRIANGLES` 绘制。尚未支持 `.glb`、data URI/内嵌图像、skin、animation、morph target、多套材质 UV 选择等通用 glTF 功能。`KHR_materials_pbrSpecularGlossiness` 在加载时按 Khronos 启发式烘焙为 Metallic-Roughness 因子/贴图（线性空间转换后写入 sRGB baseColor + 线性 MR）。
 
 若 `ThirdParty/tinygltf` 缺失，执行：
 ```bash

@@ -60,10 +60,65 @@ typedef char GLchar;
 #define GL_RGB16F                         0x881B
 #define GL_RG16F                          0x822F
 #define GL_HALF_FLOAT                     0x140B
-#define GL_TEXTURE_CUBE_MAP_POSITIVE_X    0x8515
 #ifndef GL_DEPTH_COMPONENT
 #define GL_DEPTH_COMPONENT                0x1902
 #endif
+#endif
+
+#ifndef GL_CLAMP_TO_BORDER
+#define GL_CLAMP_TO_BORDER                0x812D
+#endif
+#ifndef GL_TEXTURE_BORDER_COLOR
+#define GL_TEXTURE_BORDER_COLOR           0x1004
+#endif
+#ifndef GL_TEXTURE_COMPARE_MODE
+#define GL_TEXTURE_COMPARE_MODE           0x884C
+#endif
+#ifndef GL_COMPARE_REF_TO_TEXTURE
+#define GL_COMPARE_REF_TO_TEXTURE         0x884E
+#endif
+#ifndef GL_POLYGON_OFFSET_FILL
+#define GL_POLYGON_OFFSET_FILL            0x8037
+#endif
+#ifndef GL_FRONT
+#define GL_FRONT                          0x0404
+#endif
+#ifndef GL_CW
+#define GL_CW                             0x0900
+#endif
+#ifndef GL_NONE
+#define GL_NONE                           0
+#endif
+
+#ifndef GL_DEPTH_COMPONENT32F
+#define GL_DEPTH_COMPONENT32F             0x8CAC
+#endif
+#ifndef GL_DEPTH_COMPONENT16
+#define GL_DEPTH_COMPONENT16              0x81A5
+#endif
+#ifndef GL_DEPTH24_STENCIL8
+#define GL_DEPTH24_STENCIL8               0x88F0
+#endif
+#ifndef GL_DEPTH_STENCIL
+#define GL_DEPTH_STENCIL                  0x84F9
+#endif
+#ifndef GL_DEPTH_STENCIL_ATTACHMENT
+#define GL_DEPTH_STENCIL_ATTACHMENT       0x821A
+#endif
+#ifndef GL_UNSIGNED_INT_24_8
+#define GL_UNSIGNED_INT_24_8              0x84FA
+#endif
+#ifndef GL_UNSIGNED_INT
+#define GL_UNSIGNED_INT                   0x1405
+#endif
+#ifndef GL_UNSIGNED_SHORT
+#define GL_UNSIGNED_SHORT                 0x1403
+#endif
+#ifndef GL_NO_ERROR
+#define GL_NO_ERROR                       0
+#endif
+#ifndef GL_INVALID_VALUE
+#define GL_INVALID_VALUE                  0x0501
 #endif
 
 #ifndef GL_READ_FRAMEBUFFER

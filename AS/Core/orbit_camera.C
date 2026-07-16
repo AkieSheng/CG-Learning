@@ -12,7 +12,9 @@ OrbitCamera::OrbitCamera()
     yaw(0.0f),
     pitch(20.0f),
     fovY(45.0f),
-    aspect(1.0f) {
+    aspect(1.0f),
+    nearZ(0.01f),
+    farZ(100.0f) {
   viewMatrix.SetToIdentity();
   projectionMatrix.SetToIdentity();
   updatePosition();
@@ -107,8 +109,14 @@ void OrbitCamera::updateMatrices() {
 
   float fovRad = fovY * (float)M_PI / 180.0f;
   float tanHalf = tanf(fovRad * 0.5f);
-  float nearZ = 0.1f;
-  float farZ = 1000.0f;
+  // 当相机距离超过 far 时放大裁剪范围
+  nearZ = 0.1f;
+  farZ = 1000.0f;
+  if (distance > farZ * 0.45f) {
+    nearZ = distance * 0.01f;
+    if (nearZ < 0.1f) nearZ = 0.1f;
+    farZ = distance * 10.0f;
+  }
 
   projectionMatrix.Clear();
   projectionMatrix.Set(0, 0, 1.0f / (aspect * tanHalf));

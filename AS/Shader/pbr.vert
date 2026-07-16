@@ -10,11 +10,13 @@ out vec3 vNormal;
 out vec3 vTangent;
 out vec3 vBitangent;
 out vec2 vTexCoord;
+out vec4 vLightSpacePos;
 
 uniform mat4 uModel;
 uniform mat4 uView;
 uniform mat4 uProjection;
 uniform mat3 uNormalMatrix;
+uniform mat4 uLightViewProjection;
 
 void main() {
     vec4 worldPos = uModel * vec4(aPosition, 1.0);
@@ -24,6 +26,7 @@ void main() {
     vTangent = normalize(uNormalMatrix * aTangent.xyz);
     vBitangent = cross(vNormal, vTangent) * aTangent.w;
     vTexCoord = aTexCoord;
+    vLightSpacePos = uLightViewProjection * worldPos;
 
     gl_Position = uProjection * uView * worldPos;
 }

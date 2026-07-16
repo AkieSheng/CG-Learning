@@ -9,14 +9,20 @@
 
 // 打印可用模型
 static void printUsage(const char *prog) {
+  printf("Usage: %s -model <path/to/scene.gltf>\n\n", prog);
   printf("Available models in Models/:\n");
   printf("  Models/macbook_air_notebook_pbr/scene.gltf\n");
   printf("  Models/chess_set/scene.gltf\n");
+  printf("  Models/low_poly_chess_set/scene.gltf\n");
   printf("  Models/crystal_stone_rock/scene.gltf\n");
   printf("  Models/aviator_sunglasses/scene.gltf\n");
   printf("  Models/the_ultimate_glass_pack_cups_and_bottles/scene.gltf\n");
   printf("  Models/lmu_main_hall_ceiling_glass_pbr_texture/scene.gltf\n");
-  printf("  Models/wuthering_waves_sigillum/scene.gltf\n");
+  printf("  Models/cosmetic_serum_bottle/scene.gltf\n");
+  printf("  Models/ship_in_a_bottle/scene.gltf\n");
+  printf("  Models/primogemmorastardust_from_genshin_impact_free/scene.gltf\n");
+  printf("  Models/bouquet_de_fleurs_tropicales__new_version_pbr/scene.gltf\n");
+  printf("    (SpecGloss materials are auto-converted to Metallic-Roughness)\n");
 }
 
 int main(int argc, char **argv) {

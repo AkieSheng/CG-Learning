@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <cmath>
 #include <algorithm>
+#include <vector>
+#include <string>
 
 static std::string getDirectory(const std::string &path) {
   size_t pos = path.find_last_of("/\\");
@@ -151,6 +153,263 @@ static Texture *loadTextureFromModel(const tinygltf::Model &model,
     return NULL;
   }
   return tex;
+}
+
+static bool resolveTexturePath(const tinygltf::Model &model,
+                               const std::string &basePath,
+                               int textureIndex, std::string &outPath) {
+  if (textureIndex < 0 || textureIndex >= (int)model.textures.size()) return false;
+  int imageIndex = model.textures[textureIndex].source;
+  if (imageIndex < 0 || imageIndex >= (int)model.images.size()) return false;
+  const std::string &uri = model.images[imageIndex].uri;
+  if (uri.empty()) return false;
+  outPath = basePath + uri;
+  return true;
+}
+
+static float clamp01(float v) {
+  return std::max(0.0f, std::min(1.0f, v));
+}
+
+static float srgbToLinear(float c) {
+  return (c <= 0.04045f) ? (c / 12.92f) : powf((c + 0.055f) / 1.055f, 2.4f);
+}
+
+static float linearToSrgb(float c) {
+  c = std::max(0.0f, c);
+  return (c <= 0.0031308f) ? (c * 12.92f) : (1.055f * powf(c, 1.0f / 2.4f) - 0.055f);
+}
+
+static const float *srgbToLinearLut() {
+  static float lut[256];
+  static bool ready = false;
+  if (!ready) {
+    for (int i = 0; i < 256; i++)
+      lut[i] = srgbToLinear((float)i / 255.0f);
+    ready = true;
+  }
+  return lut;
+}
+
+static unsigned char linearToSrgbByte(float c) {
+  static unsigned char lut[1025];
+  static bool ready = false;
+  if (!ready) {
+    for (int i = 0; i <= 1024; i++)
+      lut[i] = (unsigned char)(linearToSrgb((float)i / 1024.0f) * 255.0f + 0.5f);
+    ready = true;
+  }
+  c = clamp01(c);
+  int idx = (int)(c * 1024.0f + 0.5f);
+  if (idx > 1024) idx = 1024;
+  return lut[idx];
+}
+
+static float perceivedBrightness(float r, float g, float b) {
+  return sqrtf(0.299f * r * r + 0.587f * g * g + 0.114f * b * b);
+}
+
+// Khronos / glTF Toolkit：Specular-Glossiness → Metallic-Roughness（线性空间）
+static void convertSpecGlossPixel(float diffuseR, float diffuseG, float diffuseB, float diffuseA,
+                                  float specularR, float specularG, float specularB,
+                                  float glossiness,
+                                  float &outBaseR, float &outBaseG, float &outBaseB, float &outBaseA,
+                                  float &outMetallic, float &outRoughness) {
+  const float dielectricSpecular = 0.04f;
+  const float epsilon = 1e-6f;
+
+  float oneMinusSpecularStrength =
+      1.0f - std::max(specularR, std::max(specularG, specularB));
+  float diffuseBrightness = perceivedBrightness(diffuseR, diffuseG, diffuseB);
+  float specularBrightness = perceivedBrightness(specularR, specularG, specularB);
+
+  float metallic = 0.0f;
+  if (specularBrightness >= dielectricSpecular) {
+    float a = dielectricSpecular;
+    float b = diffuseBrightness * oneMinusSpecularStrength / (1.0f - dielectricSpecular)
+              + specularBrightness - 2.0f * dielectricSpecular;
+    float c = dielectricSpecular - specularBrightness;
+    float D = std::max(b * b - 4.0f * a * c, 0.0f);
+    metallic = clamp01((-b + sqrtf(D)) / (2.0f * a));
+  }
+
+  float invOneMinusMetal = 1.0f / std::max(1.0f - metallic, epsilon);
+  float invMetal = 1.0f / std::max(metallic, epsilon);
+  float scaleDiff = oneMinusSpecularStrength / (1.0f - dielectricSpecular) * invOneMinusMetal;
+
+  float baseFromDiffR = diffuseR * scaleDiff;
+  float baseFromDiffG = diffuseG * scaleDiff;
+  float baseFromDiffB = diffuseB * scaleDiff;
+
+  float baseFromSpecR = (specularR - dielectricSpecular * (1.0f - metallic)) * invMetal;
+  float baseFromSpecG = (specularG - dielectricSpecular * (1.0f - metallic)) * invMetal;
+  float baseFromSpecB = (specularB - dielectricSpecular * (1.0f - metallic)) * invMetal;
+
+  float w = metallic * metallic;
+  outBaseR = clamp01(baseFromDiffR * (1.0f - w) + baseFromSpecR * w);
+  outBaseG = clamp01(baseFromDiffG * (1.0f - w) + baseFromSpecG * w);
+  outBaseB = clamp01(baseFromDiffB * (1.0f - w) + baseFromSpecB * w);
+  outBaseA = clamp01(diffuseA);
+  outMetallic = metallic;
+  outRoughness = clamp01(1.0f - glossiness);
+}
+
+static void sampleRGBANearestBytes(const std::vector<unsigned char> &rgba, int w, int h,
+                                   int x, int y, unsigned char out[4]) {
+  x = std::max(0, std::min(w - 1, x));
+  y = std::max(0, std::min(h - 1, y));
+  size_t i = ((size_t)y * (size_t)w + (size_t)x) * 4;
+  out[0] = rgba[i + 0];
+  out[1] = rgba[i + 1];
+  out[2] = rgba[i + 2];
+  out[3] = rgba[i + 3];
+}
+
+// 将 KHR_materials_pbrSpecularGlossiness 烘焙为 Metallic-Roughness 因子/贴图
+static bool applySpecularGlossinessConversion(const tinygltf::Material &gm,
+                                              const tinygltf::Model &model,
+                                              const std::string &basePath,
+                                              PBRMaterial *mat) {
+  tinygltf::ExtensionMap::const_iterator it =
+      gm.extensions.find("KHR_materials_pbrSpecularGlossiness");
+  if (it == gm.extensions.end()) return false;
+
+  const tinygltf::Value &ext = it->second;
+
+  float diffuseFactor[4] = {1, 1, 1, 1};
+  float specularFactor[3] = {1, 1, 1};
+  float glossinessFactor = 1.0f;
+  int diffuseTexIndex = -1;
+  int specGlossTexIndex = -1;
+
+  if (ext.Has("diffuseFactor") && ext.Get("diffuseFactor").IsArray()) {
+    const tinygltf::Value &arr = ext.Get("diffuseFactor");
+    for (int i = 0; i < 4 && i < (int)arr.ArrayLen(); i++)
+      diffuseFactor[i] = (float)arr.Get(i).GetNumberAsDouble();
+  }
+  if (ext.Has("specularFactor") && ext.Get("specularFactor").IsArray()) {
+    const tinygltf::Value &arr = ext.Get("specularFactor");
+    for (int i = 0; i < 3 && i < (int)arr.ArrayLen(); i++)
+      specularFactor[i] = (float)arr.Get(i).GetNumberAsDouble();
+  }
+  if (ext.Has("glossinessFactor"))
+    glossinessFactor = (float)ext.Get("glossinessFactor").GetNumberAsDouble();
+  if (ext.Has("diffuseTexture") && ext.Get("diffuseTexture").Has("index"))
+    diffuseTexIndex = ext.Get("diffuseTexture").Get("index").GetNumberAsInt();
+  if (ext.Has("specularGlossinessTexture") &&
+      ext.Get("specularGlossinessTexture").Has("index"))
+    specGlossTexIndex =
+        ext.Get("specularGlossinessTexture").Get("index").GetNumberAsInt();
+
+  std::vector<unsigned char> diffusePixels, specGlossPixels;
+  int diffW = 0, diffH = 0, sgW = 0, sgH = 0;
+  bool hasDiffTex = false, hasSgTex = false;
+
+  if (diffuseTexIndex >= 0) {
+    std::string path;
+    if (resolveTexturePath(model, basePath, diffuseTexIndex, path) &&
+        Texture::loadPixelsRGBA(path, diffusePixels, diffW, diffH))
+      hasDiffTex = true;
+    else
+      fprintf(stderr, "GltfLoader: SpecGloss diffuse texture failed\n");
+  }
+  if (specGlossTexIndex >= 0) {
+    std::string path;
+    if (resolveTexturePath(model, basePath, specGlossTexIndex, path) &&
+        Texture::loadPixelsRGBA(path, specGlossPixels, sgW, sgH))
+      hasSgTex = true;
+    else
+      fprintf(stderr, "GltfLoader: SpecGloss specularGlossiness texture failed\n");
+  }
+
+  delete mat->baseColorTexture;
+  delete mat->metallicRoughnessTexture;
+  mat->baseColorTexture = NULL;
+  mat->metallicRoughnessTexture = NULL;
+
+  if (!hasDiffTex && !hasSgTex) {
+    float baseR, baseG, baseB, baseA, metallic, roughness;
+    // diffuseFactor / specularFactor 已是线性值
+    convertSpecGlossPixel(
+        diffuseFactor[0], diffuseFactor[1], diffuseFactor[2], diffuseFactor[3],
+        specularFactor[0], specularFactor[1], specularFactor[2], glossinessFactor,
+        baseR, baseG, baseB, baseA, metallic, roughness);
+    mat->baseColorFactor[0] = baseR;
+    mat->baseColorFactor[1] = baseG;
+    mat->baseColorFactor[2] = baseB;
+    mat->baseColorFactor[3] = baseA;
+    mat->metallicFactor = metallic;
+    mat->roughnessFactor = roughness;
+    fprintf(stderr, "GltfLoader: converted SpecGloss→MR (factors only) for '%s'\n",
+           mat->name.c_str());
+    return true;
+  }
+
+  int outW = std::max(hasDiffTex ? diffW : 1, hasSgTex ? sgW : 1);
+  int outH = std::max(hasDiffTex ? diffH : 1, hasSgTex ? sgH : 1);
+  std::vector<unsigned char> baseColorOut((size_t)outW * (size_t)outH * 4);
+  std::vector<unsigned char> mrOut((size_t)outW * (size_t)outH * 4);
+
+  const float *toLinear = srgbToLinearLut();
+  for (int y = 0; y < outH; y++) {
+    for (int x = 0; x < outW; x++) {
+      // 因子为线性；贴图 RGB 为 sRGB，A/glossiness 为线性
+      float diffLin[4] = {
+          diffuseFactor[0], diffuseFactor[1], diffuseFactor[2], diffuseFactor[3]};
+      float specLin[3] = {
+          specularFactor[0], specularFactor[1], specularFactor[2]};
+      float gloss = glossinessFactor;
+
+      if (hasDiffTex) {
+        unsigned char s[4];
+        int sx = (diffW == outW) ? x : (x * diffW / outW);
+        int sy = (diffH == outH) ? y : (y * diffH / outH);
+        sampleRGBANearestBytes(diffusePixels, diffW, diffH, sx, sy, s);
+        diffLin[0] *= toLinear[s[0]];
+        diffLin[1] *= toLinear[s[1]];
+        diffLin[2] *= toLinear[s[2]];
+        diffLin[3] *= (float)s[3] / 255.0f;
+      }
+      if (hasSgTex) {
+        unsigned char s[4];
+        int sx = (sgW == outW) ? x : (x * sgW / outW);
+        int sy = (sgH == outH) ? y : (y * sgH / outH);
+        sampleRGBANearestBytes(specGlossPixels, sgW, sgH, sx, sy, s);
+        specLin[0] *= toLinear[s[0]];
+        specLin[1] *= toLinear[s[1]];
+        specLin[2] *= toLinear[s[2]];
+        gloss *= (float)s[3] / 255.0f;
+      }
+
+      float baseR, baseG, baseB, baseA, metallic, roughness;
+      convertSpecGlossPixel(
+          diffLin[0], diffLin[1], diffLin[2], diffLin[3],
+          specLin[0], specLin[1], specLin[2], gloss,
+          baseR, baseG, baseB, baseA, metallic, roughness);
+
+      size_t i = ((size_t)y * (size_t)outW + (size_t)x) * 4;
+      baseColorOut[i + 0] = linearToSrgbByte(baseR);
+      baseColorOut[i + 1] = linearToSrgbByte(baseG);
+      baseColorOut[i + 2] = linearToSrgbByte(baseB);
+      baseColorOut[i + 3] = (unsigned char)(clamp01(baseA) * 255.0f + 0.5f);
+      // glTF MR：G=roughness，B=metallic
+      mrOut[i + 0] = 255;
+      mrOut[i + 1] = (unsigned char)(roughness * 255.0f + 0.5f);
+      mrOut[i + 2] = (unsigned char)(metallic * 255.0f + 0.5f);
+      mrOut[i + 3] = 255;
+    }
+  }
+
+  mat->baseColorTexture = Texture::createFromRGBA(baseColorOut.data(), outW, outH, true);
+  mat->metallicRoughnessTexture = Texture::createFromRGBA(mrOut.data(), outW, outH, false);
+  mat->baseColorFactor[0] = mat->baseColorFactor[1] = mat->baseColorFactor[2] = 1.0f;
+  mat->baseColorFactor[3] = 1.0f;
+  mat->metallicFactor = 1.0f;
+  mat->roughnessFactor = 1.0f;
+
+  fprintf(stderr, "GltfLoader: converted SpecGloss→MR (%dx%d) for '%s'\n",
+         outW, outH, mat->name.c_str());
+  return true;
 }
 
 static void parseMaterialExtensions(const tinygltf::Material &gm,
@@ -334,6 +593,9 @@ PBRMaterial *GltfLoader::buildMaterial(int materialIndex) {
     gm.occlusionTexture.index, false);
   mat->emissiveTexture = loadTextureFromModel(*model, basePath,
     gm.emissiveTexture.index, true);
+
+  // Specular-Glossiness → Metallic-Roughness（覆盖 MR 因子/贴图）
+  applySpecularGlossinessConversion(gm, *model, basePath, mat);
 
   parseMaterialExtensions(gm, *model, basePath, mat);
   materials[materialIndex] = mat;

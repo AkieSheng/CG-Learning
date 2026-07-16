@@ -28,7 +28,7 @@ static void proceduralSkyDiffuse(float dx, float dy, float dz,
   *b = base * 0.98f;
 
   // 极弱宽填充：与主光同向，作环境底
-  float kx = -0.28f, ky = 0.86f, kz = 0.43f;
+  float kx = -0.54f, ky = 0.50f, kz = 0.68f;
   float klen = sqrtf(kx * kx + ky * ky + kz * kz);
   kx /= klen; ky /= klen; kz /= klen;
   float keyDot = dx * kx + dy * ky + dz * kz;
@@ -65,14 +65,14 @@ static void proceduralSkyLighting(float dx, float dy, float dz,
   if (len < 1e-6f) len = 1.0f;
   dx /= len; dy /= len; dz /= len;
 
-  // 主光：模型上方、初始相机侧（+Z），并偏画面左侧（-X）
+  // 主光：降低高度以拉长阴影；偏左、偏初始相机侧（+Z）
   // 与 Renderer 的固定方向光一致，作为同一盏工作室灯的反射亮斑。
-  float kx = -0.28f, ky = 0.86f, kz = 0.43f;
+  float kx = -0.54f, ky = 0.50f, kz = 0.68f;
   float klen = sqrtf(kx * kx + ky * ky + kz * kz);
   kx /= klen; ky /= klen; kz /= klen;
   float keyDot = dx * kx + dy * ky + dz * kz;
   if (keyDot > 0.0f) {
-    float keySharp = powf(keyDot, 120.0f) * 29.0f;
+    float keySharp = powf(keyDot, 140.0f) * 36.0f;
     *r += keySharp;
     *g += keySharp;
     *b += keySharp * 1.05f;

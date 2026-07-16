@@ -5,6 +5,7 @@ in vec3 vNormal;
 in vec3 vTangent;
 in vec3 vBitangent;
 in vec2 vTexCoord;
+in vec4 vLightSpacePos;
 
 out vec4 FragColor;
 
@@ -78,6 +79,20 @@ uniform vec2 uFramebufferSize;
 uniform mat4 uView;
 uniform mat4 uProjection;
 
+// 方向光阴影
+uniform bool uUseShadows;
+uniform sampler2D uShadowMap;
+uniform float uShadowBias;
+
+// 工作室水平灯带（沿长度采样近似）
+uniform bool uUseLightStrips;
+uniform int uLightStripCount;
+uniform vec3 uStripCenter[3];
+uniform vec3 uStripHalfRight[3];
+uniform vec3 uStripHalfUp[3];
+uniform vec3 uStripNormal[3];
+uniform vec3 uStripColor[3];
+
 const float PI = 3.14159265359;
 const float EXPOSURE = 1.0;
 
@@ -123,6 +138,33 @@ vec3 getClearcoatNormal() {
     return normalize(TBN * tangentNormal);
 }
 
+// 方向光 shadow map：透视除法 + slope bias + 3x3 PCF
+float sampleShadow(vec3 N, vec3 L) {
+    if (!uUseShadows)
+        return 1.0;
+
+    vec3 projCoords = vLightSpacePos.xyz / max(vLightSpacePos.w, 1e-6);
+    projCoords = projCoords * 0.5 + 0.5;
+
+    if (projCoords.z > 1.0 || projCoords.x < 0.0 || projCoords.x > 1.0 ||
+        projCoords.y < 0.0 || projCoords.y > 1.0) {
+        return 1.0;
+    }
+
+    float bias = max(uShadowBias * (1.0 - max(dot(N, L), 0.0)), uShadowBias * 0.25);
+    float currentDepth = projCoords.z - bias;
+    vec2 texelSize = 1.0 / vec2(textureSize(uShadowMap, 0));
+
+    float shadow = 0.0;
+    for (int x = -1; x <= 1; ++x) {
+        for (int y = -1; y <= 1; ++y) {
+            float closest = texture(uShadowMap, projCoords.xy + vec2(x, y) * texelSize).r;
+            shadow += currentDepth > closest ? 0.0 : 1.0;
+        }
+    }
+    return shadow / 9.0;
+}
+
 float DistributionGGX(vec3 N, vec3 H, float roughness) {
     float a = roughness * roughness;
     float a2 = a * a;
@@ -158,6 +200,45 @@ vec3 evaluateSpecularBRDF(vec3 N, vec3 V, vec3 L, vec3 H, vec3 F0, float roughne
     vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);
     float denom = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001;
     return (NDF * G * F) / denom;
+}
+
+// 单条灯带：沿长度 5 点采样，做点光衰减的 Cook-Torrance
+void accumulateStripLight(int stripIndex, vec3 N, vec3 V, vec3 albedo, vec3 F0,
+                          float roughness, vec3 kD,
+                          inout vec3 diffuseOut, inout vec3 specularOut) {
+    vec3 center = uStripCenter[stripIndex];
+    vec3 halfR = uStripHalfRight[stripIndex];
+    vec3 halfU = uStripHalfUp[stripIndex];
+    vec3 stripN = normalize(uStripNormal[stripIndex]);
+    vec3 radiance = uStripColor[stripIndex];
+
+    const int SAMPLES = 5;
+    for (int i = 0; i < SAMPLES; ++i) {
+        float t = (float(i) / float(SAMPLES - 1)) * 2.0 - 1.0;
+        vec3 samplePos = center + halfR * t;
+        vec3 toLight = samplePos - vWorldPos;
+        float dist2 = max(dot(toLight, toLight), 1e-4);
+        float dist = sqrt(dist2);
+        vec3 L = toLight / dist;
+
+        float facing = max(-dot(stripN, L), 0.0);
+        if (facing <= 0.0)
+            continue;
+
+        float NdotL = max(dot(N, L), 0.0);
+        if (NdotL <= 0.0)
+            continue;
+
+        // 距离衰减 + 灯带面积权重
+        float area = max(2.0 * length(halfR) * 2.0 * length(halfU), 1e-4);
+        float atten = (area / float(SAMPLES)) * facing / (dist2 + 0.15);
+        vec3 lightColor = radiance * atten;
+
+        vec3 H = normalize(V + L);
+        vec3 specular = evaluateSpecularBRDF(N, V, L, H, F0, roughness);
+        diffuseOut += kD * albedo / PI * lightColor * NdotL;
+        specularOut += specular * lightColor * NdotL;
+    }
 }
 
 // AS4 Snell 折射：eta = index_i / index_t
@@ -270,6 +351,18 @@ void main() {
 
     vec3 diffuseDirect = kD * albedo / PI * uLightColor * NdotL * uDirectLightScale;
     vec3 specularDirect = specular * uLightColor * NdotL * uDirectLightScale;
+    float shadow = sampleShadow(N, L);
+    diffuseDirect *= shadow;
+    specularDirect *= shadow;
+
+    if (uUseLightStrips) {
+        for (int i = 0; i < 3; ++i) {
+            if (i >= uLightStripCount)
+                break;
+            accumulateStripLight(i, N, V, albedo, F0, roughness, kD,
+                                 diffuseDirect, specularDirect);
+        }
+    }
 
     vec3 diffuseIBL = vec3(0.0);
     vec3 specularIBL = vec3(0.0);
@@ -422,7 +515,7 @@ void main() {
 
         vec3 ccSpec = evaluateSpecularBRDF(ccN, V, L, ccH, ccF0, ccRough);
         float ccNdotL = max(dot(ccN, L), 0.0);
-        color += ccSpec * ccFactor * uLightColor * ccNdotL * uDirectLightScale;
+        color += ccSpec * ccFactor * uLightColor * ccNdotL * uDirectLightScale * shadow;
         color += sampleSpecularIBL(ccN, V, ccRough, ccF0, ccNdotV) * ccFactor * uSpecularEnvScale;
     }
 
