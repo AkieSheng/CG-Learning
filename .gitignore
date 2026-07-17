@@ -15,4 +15,4 @@ OutputFiles/
 # Large Sketchfab glTF assets (keep local; do not push)
 AS/Models/
 
-References/
+Reference/
