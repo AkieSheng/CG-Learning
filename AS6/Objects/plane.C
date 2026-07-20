@@ -1,7 +1,9 @@
 #include "plane.h"
+
 #include "grid.h"
 #include "raytracing_stats.h"
 #include "gl_headers.h"
+
 #include <cmath>
 #include <cstdio>
 

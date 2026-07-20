@@ -44,7 +44,6 @@ struct Grid : Object3D {
   auto intersectShadow(Ray const& r, float tmin, float tmax, float& t,
                        Material** outMaterial) -> bool override;
 
-private:
   auto index(int i, int j, int k) const -> int;
   auto getVoxelBounds(int i, int j, int k, Vec3f& vmin, Vec3f& vmax) const -> void;
   auto getWorldBBox(BoundingBox* bb, Matrix* m, Vec3f& wmin, Vec3f& wmax) const -> void;

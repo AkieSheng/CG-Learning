@@ -1,10 +1,11 @@
 #pragma once
 
-#include <string>
 #include "scene.h"
 #include "renderer.h"
+#include <string>
 
-struct Application final {
+struct Application final
+{
   Application();
   ~Application();
 

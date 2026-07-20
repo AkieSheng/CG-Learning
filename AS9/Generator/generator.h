@@ -19,7 +19,6 @@ struct Generator {
 
   virtual auto Restart() -> void;
 
-protected:
   auto jitterColor() -> Vec3f;
   auto jitterScalar(float base, float randomness) -> float;
 

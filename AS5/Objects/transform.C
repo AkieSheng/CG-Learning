@@ -1,8 +1,10 @@
 #include "transform.h"
+
 #include "triangle.h"
 #include "grid.h"
 #include "boundingbox.h"
 #include "gl_headers.h"
+
 #include <cmath>
 #include <cstdio>
 

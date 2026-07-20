@@ -1,5 +1,6 @@
-#include <cstdio>
 #include "raytracing_stats.h"
+
+#include <cstdio>
 
 int RayTracingStats::width;
 int RayTracingStats::height;
@@ -17,8 +18,8 @@ unsigned long long RayTracingStats::num_grid_cells_traversed;
 
 
 
-auto RayTracingStats::Initialize(int _width, int _height, BoundingBox *_bbox, 
-				 int nx, int ny, int nz) -> void {
+auto RayTracingStats::Initialize(int _width, int _height, BoundingBox *_bbox,
+         int nx, int ny, int nz) -> void {
   width = _width;
   height = _height;
   bbox = _bbox;
@@ -36,11 +37,11 @@ auto RayTracingStats::Initialize(int _width, int _height, BoundingBox *_bbox,
 
 
 auto RayTracingStats::PrintStatistics() -> void {
-  
+
   int delta_time = time(nullptr) - start_time;
   if (delta_time == 0) delta_time = 1;
   int secs  = delta_time % 60;
-  int min   = (delta_time / 60) % 60; 
+  int min   = (delta_time / 60) % 60;
   int hours = delta_time / (60*60);
   int num_rays = num_nonshadow_rays + num_shadow_rays;
   float rays_per_sec =  float(num_rays) / float(delta_time);
@@ -53,10 +54,10 @@ auto RayTracingStats::PrintStatistics() -> void {
   ::printf("  total time                 %ld:%02d:%02d\n",hours,min,secs);
   ::printf("  num pixels                 %d (%dx%d)\n", width*height,width,height);
   ::printf("  scene bounds               ");
-  if (bbox == nullptr) ::printf("nullptr\n"); 
+  if (bbox == nullptr) ::printf("nullptr\n");
   else bbox->Print();
   ::printf("  num grid cells             ");
-  if (num_x == 0) ::printf("nullptr\n"); 
+  if (num_x == 0) ::printf("nullptr\n");
   else ::printf("%d (%dx%dx%d)\n", num_x*num_y*num_z,num_x,num_y,num_z);
   ::printf("  num non-shadow rays        %lld\n", num_nonshadow_rays);
   ::printf("  num shadow rays            %lld\n", num_shadow_rays);
@@ -67,7 +68,7 @@ auto RayTracingStats::PrintStatistics() -> void {
   ::printf("  intersections per ray      %0.1f\n",intersections_per_ray);
   ::printf("  cells traversed per ray    %0.1f\n",traversed_per_ray);
   ::printf("********************************************\n");
-  
+
 }
 
 

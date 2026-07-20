@@ -1,4 +1,5 @@
 #include "glCanvas.h"
+
 #include "scene_parser.h"
 #include "light.h"
 #include "camera.h"
@@ -7,7 +8,6 @@
 #include "material.h"
 #include "grid.h"
 #include "boundingbox.h"
-
 
 #include <GL/gl.h>
 #include <GL/glut.h>
@@ -38,7 +38,7 @@ int GLCanvas::mouseY;
 
 #ifdef SPECULAR_FIX
 
-int SPECULAR_FIX_WHICH_PASS = 0;
+  int SPECULAR_FIX_WHICH_PASS = 0;
 #endif
 
 
@@ -148,24 +148,24 @@ auto GLCanvas::display(void) -> void {
 
 
 
-    
+
 
     SPECULAR_FIX_WHICH_PASS = 0;
     scene->getGroup()->paint();
-    
+
     glDepthFunc(GL_EQUAL);
     glEnable(GL_BLEND);
-    
+
 
     SPECULAR_FIX_WHICH_PASS = 1;
     glBlendFunc(GL_DST_COLOR, GL_ZERO);
     scene->getGroup()->paint();
-    
+
 
     SPECULAR_FIX_WHICH_PASS = 2;
     glBlendFunc(GL_ONE, GL_ONE);
     scene->getGroup()->paint();
-    
+
     glDepthFunc(GL_LESS);
     glDisable(GL_BLEND);
 
@@ -247,7 +247,7 @@ auto GLCanvas::motion(int x, int y) -> void {
 auto GLCanvas::keyboard(unsigned char key, int i, int j) -> void {
   switch (key) {
   case 'r':  case 'R':
-    ::printf("Rendering scene... "); 
+    ::printf("Rendering scene... ");
     fflush(stdout);
     if (renderFunction) renderFunction();
     ::printf("done.\n");
@@ -257,7 +257,7 @@ auto GLCanvas::keyboard(unsigned char key, int i, int j) -> void {
     int width = glutGet(GLUT_WINDOW_WIDTH);
     int height = glutGet(GLUT_WINDOW_HEIGHT);
 
-    j = height-j; 
+    j = height-j;
     int max = (width > height) ? width : height;
 
 
@@ -290,10 +290,10 @@ auto GLCanvas::keyboard(unsigned char key, int i, int j) -> void {
 
 
 
-auto GLCanvas::initialize(SceneParser *_scene, 
-			  void (*_renderFunction)(void), 
-			  void (*_traceRayFunction)(float,float), 
-			  Grid *_grid, bool _visualize_grid) -> void {
+auto GLCanvas::initialize(SceneParser *_scene,
+        void (*_renderFunction)(void),
+        void (*_traceRayFunction)(float,float),
+        Grid *_grid, bool _visualize_grid) -> void {
   scene = _scene;
   grid = _grid;
   visualize_grid = _visualize_grid;

@@ -1,8 +1,8 @@
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-
 #include "texture.h"
 #include "gl_headers.h"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 #include <algorithm>
 #include <cstdio>
@@ -14,7 +14,8 @@ Texture::Texture() {}
 Texture::~Texture() { destroy(); }
 
 auto Texture::uploadRGBA(unsigned char const* rgba, int width, int height,
-                         bool srgb) -> void {
+                         bool srgb) -> void
+{
   destroy();
   srgbColorSpace = srgb;
   texWidth = width;
@@ -41,7 +42,8 @@ auto Texture::uploadRGBA(unsigned char const* rgba, int width, int height,
 
 auto Texture::loadPixelsRGBA(std::string const& path,
                              std::vector<unsigned char>& rgba, int& outWidth,
-                             int& outHeight) -> bool {
+                             int& outHeight) -> bool
+{
   rgba.clear();
   outWidth = outHeight = 0;
 
@@ -61,31 +63,33 @@ auto Texture::loadPixelsRGBA(std::string const& path,
 }
 
 auto Texture::createFromRGBA(unsigned char const* rgba, int width, int height,
-                             bool srgb) -> Texture* {
-  if (!rgba || width <= 0 || height <= 0) {
+                             bool srgb) -> Texture*
+{
+  if (!rgba || width <= 0 || height <= 0)
     return nullptr;
-  }
   Texture* tex = new Texture();
   tex->uploadRGBA(rgba, width, height, srgb);
   return tex;
 }
 
-auto Texture::loadFromFile(std::string const& path, bool srgb) -> bool {
+auto Texture::loadFromFile(std::string const& path, bool srgb) -> bool
+{
   std::vector<unsigned char> rgba;
   int w = 0, h = 0;
-  if (!loadPixelsRGBA(path, rgba, w, h)) {
+  if (!loadPixelsRGBA(path, rgba, w, h))
     return false;
-  }
   uploadRGBA(rgba.data(), w, h, srgb);
   return true;
 }
 
-auto Texture::bind(unsigned int unit) const -> void {
+auto Texture::bind(unsigned int unit) const -> void
+{
   ::glActiveTexture(GL_TEXTURE0 + unit);
   ::glBindTexture(GL_TEXTURE_2D, textureId);
 }
 
-auto Texture::destroy() -> void {
+auto Texture::destroy() -> void
+{
   if (textureId != 0) {
     ::glDeleteTextures(1, &textureId);
     textureId = 0;
@@ -93,7 +97,8 @@ auto Texture::destroy() -> void {
 }
 
 auto Texture::createSolid(unsigned char r, unsigned char g, unsigned char b,
-                          unsigned char a) -> Texture* {
+                          unsigned char a) -> Texture*
+{
   Texture* tex = new Texture();
   unsigned char data[4] = {r, g, b, a};
   ::glGenTextures(1, &tex->textureId);
@@ -107,6 +112,7 @@ auto Texture::createSolid(unsigned char r, unsigned char g, unsigned char b,
   return tex;
 }
 
-auto Texture::createDefaultNormal() -> Texture* {
+auto Texture::createDefaultNormal() -> Texture*
+{
   return createSolid(128, 128, 255, 255);
 }

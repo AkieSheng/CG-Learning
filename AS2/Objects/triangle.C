@@ -1,29 +1,28 @@
 #include "triangle.h"
+
 #include <cmath>
 
-auto Triangle::intersect(Ray const& r, Hit& h, float tmin) -> bool {
+auto Triangle::intersect(Ray const& r, Hit& h, float tmin) -> bool
+{
   auto edge1 = b - a;
   auto edge2 = c - a;
   Vec3f pvec;
   Vec3f::Cross3(pvec, r.getDirection(), edge2);
   auto det = edge1.Dot3(pvec);
-  if (::fabsf(det) < 1e-8f) {
+  if (::fabsf(det) < 1e-8f)
     return false;
-  }
 
   auto invDet = 1.0f / det;
   auto tvec = r.getOrigin() - a;
   auto u = tvec.Dot3(pvec) * invDet;
-  if (u < 0.0f || u > 1.0f) {
+  if (u < 0.0f || u > 1.0f)
     return false;
-  }
 
   Vec3f qvec;
   Vec3f::Cross3(qvec, tvec, edge1);
   auto v = r.getDirection().Dot3(qvec) * invDet;
-  if (v < 0.0f || u + v > 1.0f) {
+  if (v < 0.0f || u + v > 1.0f)
     return false;
-  }
 
   auto t = edge2.Dot3(qvec) * invDet;
   if (t >= tmin && t < h.getT()) {

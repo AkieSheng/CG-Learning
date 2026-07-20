@@ -1,10 +1,10 @@
+#include "image.h"
+
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
 #include <cassert>
 #include <cmath>
-
-#include "image.h"
 
 namespace {
 

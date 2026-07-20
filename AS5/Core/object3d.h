@@ -22,7 +22,6 @@ struct Object3D {
   virtual auto insertIntoGrid(Grid* g, Matrix* m) -> void;
   virtual auto debugPrintBoundingBox(int depth) const -> void;
 
-protected:
   Material* material{};
   BoundingBox* bbox{};
 };

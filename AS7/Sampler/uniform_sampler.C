@@ -1,18 +1,21 @@
 #include "uniform_sampler.h"
-#include <math.h>
-#include <assert.h>
-#include <stdio.h>
+#include <cassert>
+#include <cmath>
+#include <cstdio>
 
-UniformSampler::UniformSampler(int num_samples) : Sampler(num_samples) {
+UniformSampler::UniformSampler(int num_samples) : Sampler(num_samples)
+{
   gridSize = static_cast<int>(::sqrtf((float)numSamples) + 0.5f);
-  if (gridSize * gridSize != numSamples) {
+  if (gridSize * gridSize != numSamples)
+  {
     ::printf("[DEBUG] UniformSampler: num_samples=%d is not a perfect square "
            "(nearest d=%d)\n", numSamples, gridSize);
     assert(0);
   }
 }
 
-Vec2f UniformSampler::getSamplePosition(int n) {
+Vec2f UniformSampler::getSamplePosition(int n)
+{
   assert(n >= 0 && n < numSamples);
 
   int ix = n % gridSize;

@@ -4,7 +4,8 @@
 #include <cstdio>
 
 struct PerlinNoise final {
-  static auto noise(double x, double y, double z) -> double {
+  static auto noise(double x, double y, double z) -> double
+  {
     int X = static_cast<int>(::floor(x)) & 255;
     int Y = static_cast<int>(::floor(y)) & 255;
     int Z = static_cast<int>(::floor(z)) & 255;
@@ -29,14 +30,16 @@ struct PerlinNoise final {
                           grad(p[BB + 1], x - 1, y - 1, z - 1))));
   }
 
-private:
-  static auto fade(double t) -> double {
+  static auto fade(double t) -> double
+  {
     return t * t * t * (t * (t * 6 - 15) + 10);
   }
-  static auto lerp(double t, double a, double b) -> double {
+  static auto lerp(double t, double a, double b) -> double
+  {
     return a + t * (b - a);
   }
-  static auto grad(int hash, double x, double y, double z) -> double {
+  static auto grad(int hash, double x, double y, double z) -> double
+  {
     int h = hash & 15;
     double u = h < 8 ? x : y;
     double v = h < 4 ? y : h == 12 || h == 14 ? x : z;

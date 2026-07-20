@@ -1,18 +1,20 @@
 #pragma once
 
-#include <string>
-#include <vector>
 #include "mesh.h"
 #include "vectors.h"
 #include "matrix.h"
+#include <string>
+#include <vector>
 
-namespace tinygltf {
+namespace tinygltf
+{
 class Model;
 class TinyGLTF;
 struct Primitive;
 }
 
-struct GltfLoader final {
+struct GltfLoader final
+{
   GltfLoader();
   ~GltfLoader();
 

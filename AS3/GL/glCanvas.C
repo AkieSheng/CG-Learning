@@ -1,11 +1,14 @@
 #include "glCanvas.h"
+
 #include "scene_parser.h"
 #include "light.h"
 #include "camera.h"
 #include "group.h"
 #include "gl_headers.h"
+
 #include <cstdio>
 #include <cstdlib>
+
 
 void (*GLCanvas::renderFunction)(void);
 SceneParser* GLCanvas::scene;
@@ -15,7 +18,8 @@ int GLCanvas::mouseY;
 
 int SPECULAR_FIX_WHICH_PASS = 0;
 
-auto GLCanvas::drawAxes() -> void {
+auto GLCanvas::drawAxes() -> void
+{
   ::glDisable(GL_LIGHTING);
   ::glColor3f(1.0, 0.0, 0.0);
   ::glBegin(GL_LINES);
@@ -60,7 +64,8 @@ auto GLCanvas::drawAxes() -> void {
   ::glEnd();
 }
 
-auto GLCanvas::display() -> void {
+auto GLCanvas::display() -> void
+{
   auto bgColor = scene->getBackgroundColor();
   ::glClearColor(bgColor.x(), bgColor.y(), bgColor.z(), 1.0);
   ::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -105,18 +110,21 @@ auto GLCanvas::display() -> void {
   ::glutSwapBuffers();
 }
 
-auto GLCanvas::reshape(int w, int h) -> void {
+auto GLCanvas::reshape(int w, int h) -> void
+{
   ::glViewport(0, 0, static_cast<GLsizei>(w), static_cast<GLsizei>(h));
   scene->getCamera()->glInit(w, h);
 }
 
-auto GLCanvas::mouse(int button, int state, int x, int y) -> void {
+auto GLCanvas::mouse(int button, int state, int x, int y) -> void
+{
   mouseButton = button;
   mouseX = x;
   mouseY = y;
 }
 
-auto GLCanvas::motion(int x, int y) -> void {
+auto GLCanvas::motion(int x, int y) -> void
+{
   if (mouseButton == GLUT_LEFT_BUTTON) {
     scene->getCamera()->rotateCamera(0.005f * (mouseX - x), 0.005f * (mouseY - y));
     mouseX = x;
@@ -134,15 +142,15 @@ auto GLCanvas::motion(int x, int y) -> void {
   ::glutPostRedisplay();
 }
 
-auto GLCanvas::keyboard(unsigned char key, int x, int y) -> void {
+auto GLCanvas::keyboard(unsigned char key, int x, int y) -> void
+{
   switch (key) {
   case 'r':
   case 'R':
     ::printf("Rendering scene... ");
     ::fflush(stdout);
-    if (renderFunction) {
+    if (renderFunction)
       renderFunction();
-    }
     ::printf("done.\n");
     break;
   case 'q':

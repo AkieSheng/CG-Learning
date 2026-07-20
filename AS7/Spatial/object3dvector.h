@@ -7,7 +7,8 @@ struct Object3D;
 using Object3DPtr = Object3D*;
 
 struct Object3DVector final {
-  Object3DVector() {
+  Object3DVector()
+  {
     num_objects = 0;
     size = 10;
     objects = new Object3D*[size];
@@ -15,18 +16,22 @@ struct Object3DVector final {
       objects[i] = nullptr;
   }
 
-  ~Object3DVector() { delete[] objects; }
+  ~Object3DVector()
+  { delete[] objects; }
 
   auto getNumObjects() const -> int { return num_objects; }
-  auto getObject(int i) const -> Object3D* {
+  auto getObject(int i) const -> Object3D*
+  {
     assert(i >= 0 && i < num_objects);
     assert(objects[i] != nullptr);
     return objects[i];
   }
 
-  auto addObject(Object3D* o) -> void {
+  auto addObject(Object3D* o) -> void
+  {
     assert(o != nullptr);
-    if (size == num_objects) {
+    if (size == num_objects)
+    {
       int new_size = size * 2;
       Object3D** new_objects = new Object3D*[new_size];
       for (int i = 0; i < size; i++)

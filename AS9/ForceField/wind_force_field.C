@@ -1,9 +1,9 @@
 #include "wind_force_field.h"
-
 #include <cassert>
 #include <cmath>
 
-auto WindForceField::getAcceleration(Vec3f const& position, float mass, float t) const -> Vec3f {
+auto WindForceField::getAcceleration(Vec3f const& position, float mass, float t) const -> Vec3f
+{
   assert(mass > 0);
 
   auto wx = ::sinf(2.0f * t + 0.5f * position.y());

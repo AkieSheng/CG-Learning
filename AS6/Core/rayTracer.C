@@ -1,4 +1,5 @@
 #include "rayTracer.h"
+
 #include "scene_parser.h"
 #include "group.h"
 #include "material.h"
@@ -11,6 +12,7 @@
 #include "marchinginfo.h"
 #include "object3dvector.h"
 #include "raytracing_stats.h"
+
 #include <cmath>
 #include <cassert>
 #include <cstdio>
@@ -535,7 +537,7 @@ auto RayTracer::traceRayRecursive(Ray &ray, float tmin, int bounces,
       for (int i = 0; i < iorDepth; i++)
         iorStack[i] = outsideIOR[i];
       int nextDepth = iorDepth;
-      
+
       if (nDotD < 0.0f) {
 
         index_i = indexOfRefraction;

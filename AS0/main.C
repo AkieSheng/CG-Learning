@@ -1,13 +1,14 @@
-#include <cstdlib>
-#include <cstdio>
-#include <cstring>
-#include <cassert>
-#include <ctime>
-
 #include "image.h"
 #include "ifs.h"
 
-auto main(int argc, char* argv[]) -> int {
+#include <cassert>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <ctime>
+
+auto main(int argc, char* argv[]) -> int
+{
   char* input_file = nullptr;
   auto num_points = 10000;
   auto num_iters = 10;

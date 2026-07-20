@@ -1,9 +1,7 @@
 #include "runge_kutta_integrator.h"
-
+#include <cassert>
 #include "particle.h"
 #include "forcefield.h"
-
-#include <cassert>
 
 auto RungeKuttaIntegrator::Update(Particle* particle, ForceField* forcefield, float t, float dt)
     -> void {

@@ -1,12 +1,14 @@
 #include "material.h"
+
 #include "glCanvas.h"
 #include "gl_options.h"
 #include "gl_headers.h"
+
 #include <cmath>
 #include <cassert>
 
 #ifdef SPECULAR_FIX
-extern int SPECULAR_FIX_WHICH_PASS;
+  extern int SPECULAR_FIX_WHICH_PASS;
 #endif
 
 

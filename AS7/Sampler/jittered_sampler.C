@@ -1,19 +1,22 @@
 #include "jittered_sampler.h"
-#include <math.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <stdio.h>
+#include <cassert>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
 
-JitteredSampler::JitteredSampler(int num_samples) : Sampler(num_samples) {
+JitteredSampler::JitteredSampler(int num_samples) : Sampler(num_samples)
+{
   gridSize = static_cast<int>(::sqrtf((float)numSamples) + 0.5f);
-  if (gridSize * gridSize != numSamples) {
+  if (gridSize * gridSize != numSamples)
+  {
     ::printf("[DEBUG] JitteredSampler: num_samples=%d is not a perfect square "
            "(nearest d=%d)\n", numSamples, gridSize);
     assert(0);
   }
 }
 
-Vec2f JitteredSampler::getSamplePosition(int n) {
+Vec2f JitteredSampler::getSamplePosition(int n)
+{
   assert(n >= 0 && n < numSamples);
 
   int ix = n % gridSize;

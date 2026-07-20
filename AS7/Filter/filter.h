@@ -5,8 +5,10 @@
 struct Film;
 
 struct Filter {
-  Filter() {}
-  virtual ~Filter() {}
+  Filter()
+  { }
+  virtual ~Filter()
+  { }
 
   virtual auto getColor(int i, int j, Film* film) -> Vec3f;
 

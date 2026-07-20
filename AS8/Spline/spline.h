@@ -6,8 +6,10 @@ struct ArgParser;
 struct TriangleMesh;
 
 struct Spline {
-  Spline() {}
-  virtual ~Spline() {}
+  Spline()
+  { }
+  virtual ~Spline()
+  { }
 
   virtual auto Paint(ArgParser* args) -> void = 0;
   virtual auto OutputBezier(FILE* file) -> void = 0;

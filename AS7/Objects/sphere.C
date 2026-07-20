@@ -1,22 +1,25 @@
 #include "sphere.h"
+#include <cmath>
 #include "grid.h"
 #include "boundingbox.h"
 #include "matrix.h"
 #include "raytracing_stats.h"
-#include <math.h>
 
 Sphere::Sphere(Vec3f center, float radius, Material *m)
-    : center(center), radius(radius) {
+    : center(center), radius(radius)
+{
   material = m;
   Vec3f rVec(radius, radius, radius);
   bbox = new BoundingBox(center - rVec, center + rVec);
 }
 
-void Sphere::insertIntoGrid(Grid *g, Matrix *m) {
+void Sphere::insertIntoGrid(Grid *g, Matrix *m)
+{
   if (g == nullptr)
     return;
 
-  if (m != nullptr) {
+  if (m != nullptr)
+  {
     Object3D::insertIntoGrid(g, m);
     return;
   }
@@ -57,7 +60,8 @@ void Sphere::insertIntoGrid(Grid *g, Matrix *m) {
   }
 }
 
-bool Sphere::intersect(Ray const&r, Hit &h, float tmin) {
+bool Sphere::intersect(Ray const&r, Hit &h, float tmin)
+{
   RayTracingStats::IncrementNumIntersections();
   Vec3f oc = r.getOrigin() - center;
   Vec3f dir = r.getDirection();
@@ -89,7 +93,8 @@ bool Sphere::intersect(Ray const&r, Hit &h, float tmin) {
 }
 
 bool Sphere::intersectShadow(Ray const&r, float tmin, float tmax, float &t,
-                             Material **outMaterial) {
+                             Material **outMaterial)
+{
   Vec3f oc = r.getOrigin() - center;
   Vec3f dir = r.getDirection();
   float a = dir.Dot3(dir);
@@ -103,7 +108,8 @@ bool Sphere::intersectShadow(Ray const&r, float tmin, float tmax, float &t,
   float tNear = (-b - sqrt_disc) / (2.0f * a);
   float tFar = (-b + sqrt_disc) / (2.0f * a);
 
-  if (outMaterial == nullptr) {
+  if (outMaterial == nullptr)
+  {
     if ((tNear >= tmin && tNear <= tmax) || (tFar >= tmin && tFar <= tmax)) {
       t = (tNear >= tmin && tNear <= tmax) ? tNear : tFar;
       return true;
@@ -113,15 +119,18 @@ bool Sphere::intersectShadow(Ray const&r, float tmin, float tmax, float &t,
 
   bool hit = false;
   float bestT = tmax;
-  if (tNear >= tmin && tNear < bestT) {
+  if (tNear >= tmin && tNear < bestT)
+  {
     bestT = tNear;
     hit = true;
   }
-  if (tFar >= tmin && tFar < bestT) {
+  if (tFar >= tmin && tFar < bestT)
+  {
     bestT = tFar;
     hit = true;
   }
-  if (hit) {
+  if (hit)
+  {
     t = bestT;
     *outMaterial = material;
   }

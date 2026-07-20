@@ -4,16 +4,20 @@
 #include "vectors.h"
 
 struct Ray final {
-  Ray() {}
-  Ray(Vec3f const& orig, Vec3f const& dir) {
+  Ray()
+  { }
+  Ray(Vec3f const& orig, Vec3f const& dir)
+  {
     origin = orig;
     direction = dir;
   }
-  Ray(Ray const& r) { *this = r; }
+  Ray(Ray const& r)
+  { *this = r; }
 
   auto getOrigin() const -> Vec3f const& { return origin; }
   auto getDirection() const -> Vec3f const& { return direction; }
-  auto pointAtParameter(float t) const -> Vec3f {
+  auto pointAtParameter(float t) const -> Vec3f
+  {
     return origin + direction * t;
   }
 

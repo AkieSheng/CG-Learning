@@ -2,7 +2,8 @@
 
 #include "vectors.h"
 
-struct Material {
+struct Material
+{
   Material(Vec3f const& d_color) { diffuseColor = d_color; }
   virtual ~Material() {}
 

@@ -3,7 +3,9 @@
 #include "object3d.h"
 #include "vectors.h"
 
-struct Plane final : Object3D {
+
+struct Plane final : Object3D
+{
   Plane(Vec3f normal, float d, Material* m)
       : normal(normal), d(d) {
     material = m;

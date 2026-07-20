@@ -1,7 +1,6 @@
 #include "marchinginfo.h"
+#include <cmath>
 #include "raytracing_stats.h"
-
-#include <math.h>
 
 static const float MARCH_INF = 1.0e30f;
 
@@ -11,12 +10,16 @@ MarchingInfo::MarchingInfo()
       t_next_x(MARCH_INF), t_next_y(MARCH_INF), t_next_z(MARCH_INF),
       d_tx(MARCH_INF), d_ty(MARCH_INF), d_tz(MARCH_INF),
       sign_x(0), sign_y(0), sign_z(0),
-      normal(Vec3f(0, 0, 0)) {}
+      normal(Vec3f(0, 0, 0))
+      { }
 
-void MarchingInfo::nextCell() {
+void MarchingInfo::nextCell()
+{
   RayTracingStats::IncrementNumGridCellsTraversed();
-  if (t_next_x < t_next_y) {
-    if (t_next_x < t_next_z) {
+  if (t_next_x < t_next_y)
+  {
+    if (t_next_x < t_next_z)
+    {
       i += sign_x;
       tmin = t_next_x;
       t_next_x += d_tx;
@@ -28,7 +31,8 @@ void MarchingInfo::nextCell() {
       normal = Vec3f(0.0f, 0.0f, -(float)sign_z);
     }
   } else {
-    if (t_next_y < t_next_z) {
+    if (t_next_y < t_next_z)
+    {
       j += sign_y;
       tmin = t_next_y;
       t_next_y += d_ty;
@@ -59,19 +63,35 @@ Vec3f MarchingInfo::getNormal() const { return normal; }
 bool MarchingInfo::isValid() const { return valid; }
 float MarchingInfo::getTExit() const { return t_exit; }
 
-void MarchingInfo::setTMin(float t) { tmin = t; }
-void MarchingInfo::setI(int v) { i = v; }
-void MarchingInfo::setJ(int v) { j = v; }
-void MarchingInfo::setK(int v) { k = v; }
-void MarchingInfo::setTNextX(float t) { t_next_x = t; }
-void MarchingInfo::setTNextY(float t) { t_next_y = t; }
-void MarchingInfo::setTNextZ(float t) { t_next_z = t; }
-void MarchingInfo::setDTx(float d) { d_tx = d; }
-void MarchingInfo::setDTy(float d) { d_ty = d; }
-void MarchingInfo::setDTz(float d) { d_tz = d; }
-void MarchingInfo::setSignX(int s) { sign_x = s; }
-void MarchingInfo::setSignY(int s) { sign_y = s; }
-void MarchingInfo::setSignZ(int s) { sign_z = s; }
-void MarchingInfo::setNormal(Vec3f const&n) { normal = n; }
-void MarchingInfo::setTExit(float t) { t_exit = t; }
-void MarchingInfo::setValid(bool v) { valid = v; }
+void MarchingInfo::setTMin(float t)
+{ tmin = t; }
+void MarchingInfo::setI(int v)
+{ i = v; }
+void MarchingInfo::setJ(int v)
+{ j = v; }
+void MarchingInfo::setK(int v)
+{ k = v; }
+void MarchingInfo::setTNextX(float t)
+{ t_next_x = t; }
+void MarchingInfo::setTNextY(float t)
+{ t_next_y = t; }
+void MarchingInfo::setTNextZ(float t)
+{ t_next_z = t; }
+void MarchingInfo::setDTx(float d)
+{ d_tx = d; }
+void MarchingInfo::setDTy(float d)
+{ d_ty = d; }
+void MarchingInfo::setDTz(float d)
+{ d_tz = d; }
+void MarchingInfo::setSignX(int s)
+{ sign_x = s; }
+void MarchingInfo::setSignY(int s)
+{ sign_y = s; }
+void MarchingInfo::setSignZ(int s)
+{ sign_z = s; }
+void MarchingInfo::setNormal(Vec3f const&n)
+{ normal = n; }
+void MarchingInfo::setTExit(float t)
+{ t_exit = t; }
+void MarchingInfo::setValid(bool v)
+{ valid = v; }

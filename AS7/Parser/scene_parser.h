@@ -24,18 +24,21 @@ struct SceneParser final {
   auto getBackgroundColor() const -> Vec3f { return background_color; }
   auto getAmbientLight() const -> Vec3f { return ambient_light; }
   auto getNumLights() const -> int { return num_lights; }
-  auto getLight(int i) const -> Light* {
+  auto getLight(int i) const -> Light*
+  {
     assert(i >= 0 && i < num_lights);
     return lights[i];
   }
   auto getNumMaterials() const -> int { return num_materials; }
-  auto getMaterial(int i) const -> Material* {
+  auto getMaterial(int i) const -> Material*
+  {
     assert(i >= 0 && i < num_materials);
     return materials[i];
   }
   auto getGroup() const -> Group* { return group; }
 
-  SceneParser() { assert(0); }
+  SceneParser()
+  { assert(0); }
 
   auto parseFile() -> void;
   auto parseOrthographicCamera() -> void;

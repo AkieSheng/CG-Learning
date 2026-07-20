@@ -1,5 +1,7 @@
 #include "rayTree.h"
+
 #include "gl_headers.h"
+
 
 int RayTree::activated = 0;
 Segment RayTree::main_segment;
@@ -7,7 +9,8 @@ SegmentVector RayTree::shadow_segments;
 SegmentVector RayTree::reflected_segments;
 SegmentVector RayTree::transmitted_segments;
 
-auto RayTree::Print() -> void {
+auto RayTree::Print() -> void
+{
   main_segment.Print("main       ");
   for (auto i = 0; i < shadow_segments.getNumSegments(); i++) {
     shadow_segments.getSegment(i).Print("shadow     ");
@@ -40,7 +43,8 @@ auto RayTree::paintHelper(Vec4f const& m, Vec4f const& s, Vec4f const& r,
   ::glEnd();
 }
 
-auto RayTree::paint() -> void {
+auto RayTree::paint() -> void
+{
   ::glLineWidth(2);
   ::glDisable(GL_LIGHTING);
 

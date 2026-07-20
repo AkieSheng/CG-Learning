@@ -16,13 +16,13 @@ struct RayTracingStats final {
 
   static auto IncrementNumIntersections() -> void { num_intersections++; }
 
-  static auto IncrementNumGridCellsTraversed() -> void {
+  static auto IncrementNumGridCellsTraversed() -> void
+  {
     num_grid_cells_traversed++;
   }
 
   static auto PrintStatistics() -> void;
 
-private:
   static int width;
   static int height;
   static BoundingBox* bbox;

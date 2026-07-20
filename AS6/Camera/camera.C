@@ -1,6 +1,8 @@
-#include "gl_headers.h"
 #include "camera.h"
+
+#include "gl_headers.h"
 #include "matrix.h"
+
 #include <cmath>
 
 
@@ -129,7 +131,7 @@ auto PerspectiveCamera::generateRay(Vec2f point) -> Ray {
 auto PerspectiveCamera::getTMin()const -> float {
   return 1e-4f;
 }
- 
+
 auto PerspectiveCamera::updateHorizontal() -> void {
   direction.Normalize();
   Vec3f screenUp = getScreenUp(direction, up);

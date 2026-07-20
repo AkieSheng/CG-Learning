@@ -7,13 +7,14 @@
 struct Parser;
 
 struct GLCanvas final {
-  GLCanvas() {}
-  ~GLCanvas() {}
+  GLCanvas()
+  { }
+  ~GLCanvas()
+  { }
 
   static auto initialize(Parser* parser, float refresh, float dt, int integrator_color,
                          int draw_vectors, float acceleration_scale, int motion_blur) -> void;
 
-private:
   static Parser* parser;
   static Vec3f camera_pos;
   static int width;

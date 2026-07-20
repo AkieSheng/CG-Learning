@@ -1,9 +1,10 @@
 #pragma once
 
-#include <string>
 #include <map>
+#include <string>
 
-struct ShaderProgram final {
+struct ShaderProgram final
+{
   ShaderProgram();
   ~ShaderProgram();
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vectors.h"
+
 #include <cassert>
 #include <cstdio>
 
@@ -12,14 +13,16 @@ struct Sphere;
 
 constexpr auto MAX_PARSER_TOKEN_LENGTH = 100;
 
-struct SceneParser final {
+struct SceneParser final
+{
   SceneParser(char const* filename);
   ~SceneParser();
 
   auto getCamera() const -> Camera* { return camera; }
   auto getBackgroundColor() const -> Vec3f { return background_color; }
   auto getNumMaterials() const -> int { return num_materials; }
-  auto getMaterial(int i) const -> Material* {
+  auto getMaterial(int i) const -> Material*
+  {
     assert((i >= 0) && (i < num_materials));
     return materials[i];
   }

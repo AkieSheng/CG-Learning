@@ -6,13 +6,16 @@
 const float Checkerboard::FLOOR_WOOD_FREQ_BOOST = 3.0f;
 
 Checkerboard::Checkerboard(Matrix *m, Material *m1, Material *m2)
-    : mapping(m), mat1(m1), mat2(m2) {}
+    : mapping(m), mat1(m1), mat2(m2)
+    { }
 
-Checkerboard::~Checkerboard() {
+Checkerboard::~Checkerboard()
+{
   delete mapping;
 }
 
-Material *Checkerboard::selectMaterial(Vec3f const&worldPoint) const {
+Material *Checkerboard::selectMaterial(Vec3f const&worldPoint) const
+{
   Vec3f p = mapToTextureSpace(mapping, worldPoint);
   int ix = static_cast<int>(::floor(p.x()));
   int iy = static_cast<int>(::floor(p.y()));
@@ -22,7 +25,8 @@ Material *Checkerboard::selectMaterial(Vec3f const&worldPoint) const {
   return mat1;
 }
 
-Wood const*Checkerboard::selectedWood(Vec3f const&worldPoint) const {
+Wood const*Checkerboard::selectedWood(Vec3f const&worldPoint) const
+{
   return dynamic_cast<Wood const*>(selectMaterial(worldPoint));
 }
 
@@ -33,7 +37,8 @@ float Checkerboard::woodCellWeight(Vec3f const&worldPoint,
                          FLOOR_WOOD_FREQ_BOOST);
 }
 
-Vec3f Checkerboard::getDiffuseColor(Vec3f const&point) const {
+Vec3f Checkerboard::getDiffuseColor(Vec3f const&point) const
+{
   Wood const*wood = selectedWood(point);
   if (wood == nullptr)
     return selectMaterial(point)->getDiffuseColor(point);
@@ -42,7 +47,8 @@ Vec3f Checkerboard::getDiffuseColor(Vec3f const&point) const {
                   wood->mat2->getDiffuseColor(point), t);
 }
 
-Vec3f Checkerboard::getSpecularColor(Vec3f const&point) const {
+Vec3f Checkerboard::getSpecularColor(Vec3f const&point) const
+{
   Wood const*wood = selectedWood(point);
   if (wood == nullptr)
     return selectMaterial(point)->getSpecularColor(point);
@@ -51,7 +57,8 @@ Vec3f Checkerboard::getSpecularColor(Vec3f const&point) const {
                   wood->mat2->getSpecularColor(point), t);
 }
 
-float Checkerboard::getExponent(Vec3f const&point) const {
+float Checkerboard::getExponent(Vec3f const&point) const
+{
   Wood const*wood = selectedWood(point);
   if (wood == nullptr)
     return selectMaterial(point)->getExponent(point);
@@ -60,7 +67,8 @@ float Checkerboard::getExponent(Vec3f const&point) const {
                    wood->mat2->getExponent(point), t);
 }
 
-Vec3f Checkerboard::getReflectiveColor(Vec3f const&point) const {
+Vec3f Checkerboard::getReflectiveColor(Vec3f const&point) const
+{
   Wood const*wood = selectedWood(point);
   if (wood == nullptr)
     return selectMaterial(point)->getReflectiveColor(point);
@@ -69,7 +77,8 @@ Vec3f Checkerboard::getReflectiveColor(Vec3f const&point) const {
                   wood->mat2->getReflectiveColor(point), t);
 }
 
-Vec3f Checkerboard::getTransparentColor(Vec3f const&point) const {
+Vec3f Checkerboard::getTransparentColor(Vec3f const&point) const
+{
   Wood const*wood = selectedWood(point);
   if (wood == nullptr)
     return selectMaterial(point)->getTransparentColor(point);
@@ -78,7 +87,8 @@ Vec3f Checkerboard::getTransparentColor(Vec3f const&point) const {
                   wood->mat2->getTransparentColor(point), t);
 }
 
-float Checkerboard::getIndexOfRefraction(Vec3f const&point) const {
+float Checkerboard::getIndexOfRefraction(Vec3f const&point) const
+{
   Wood const*wood = selectedWood(point);
   if (wood == nullptr)
     return selectMaterial(point)->getIndexOfRefraction(point);

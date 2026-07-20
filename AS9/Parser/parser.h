@@ -17,13 +17,14 @@ struct Parser final {
   ~Parser();
 
   auto getNumSystems() -> int { return num_systems; }
-  auto getSystem(int i) -> System* {
+  auto getSystem(int i) -> System*
+  {
     assert(i >= 0 && i < num_systems);
     return systems[i];
   }
 
-private:
-  Parser() { assert(0); }
+  Parser()
+  { assert(0); }
 
   auto ParseSystem() -> System*;
   auto ParseGenerator() -> Generator*;

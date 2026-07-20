@@ -3,9 +3,11 @@
 #include "object3d.h"
 #include "vectors.h"
 
-struct Sphere final : Object3D {
+struct Sphere final : Object3D
+{
   Sphere(Vec3f center, float radius, Material* m)
-      : center(center), radius(radius) {
+      : center(center), radius(radius)
+  {
     material = m;
   }
 

@@ -1,11 +1,12 @@
+#include "application.h"
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <string>
 
-#include "application.h"
-
-static auto printUsage(char const* prog) -> void {
+static auto printUsage(char const* prog) -> void
+{
   std::printf("Usage: %s -model <path/to/scene.gltf>\n\n", prog);
   std::printf("Available models in Models/:\n");
   std::printf("  Models/macbook_air_notebook_pbr/scene.gltf\n");
@@ -22,12 +23,14 @@ static auto printUsage(char const* prog) -> void {
   std::printf("    (SpecGloss materials are auto-converted to Metallic-Roughness)\n");
 }
 
-auto main(int argc, char** argv) -> int {
+auto main(int argc, char** argv) -> int
+{
   std::string modelPath;
 
   for (int i = 1; i < argc; i++) {
     if (!std::strcmp(argv[i], "-model") && i + 1 < argc) {
-      modelPath = argv[++i];
+      i += 1;
+      modelPath = argv[i];
     } else if (!std::strcmp(argv[i], "-h") || !std::strcmp(argv[i], "--help")) {
       printUsage(argv[0]);
       return 0;

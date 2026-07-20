@@ -4,7 +4,8 @@
 #include "ray.h"
 #include "hit.h"
 
-struct Object3D {
+struct Object3D
+{
   Object3D() : material(nullptr) {}
   virtual ~Object3D() {}
 

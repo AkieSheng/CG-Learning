@@ -19,7 +19,6 @@ struct Noise final : Material {
              Vec3f const& lightColor) const -> Vec3f override;
   auto glSetMaterial() const -> void override;
 
-private:
   auto blendWeight(Vec3f const& worldPoint) const -> float;
 
   Matrix* mapping{};

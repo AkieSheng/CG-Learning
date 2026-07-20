@@ -3,7 +3,8 @@
 #include "image.h"
 #include "matrix.h"
 
-struct IFS final {
+struct IFS final
+{
   IFS();
   ~IFS();
 

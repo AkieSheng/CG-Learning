@@ -1,19 +1,23 @@
 #pragma once
 
-#include <iostream>
-#include "vectors.h"
 #include "ray.h"
+#include "vectors.h"
+
+#include <iostream>
 
 struct Material;
 
-struct Hit final {
+struct Hit final
+{
   Hit() { material = nullptr; }
-  Hit(float _t, Material* m, Vec3f n) {
+  Hit(float _t, Material* m, Vec3f n)
+  {
     t = _t;
     material = m;
     normal = n;
   }
-  Hit(Hit const& h) {
+  Hit(Hit const& h)
+  {
     t = h.t;
     material = h.material;
     normal = h.normal;
@@ -26,7 +30,8 @@ struct Hit final {
   auto getNormal() const -> Vec3f { return normal; }
   auto getIntersectionPoint() const -> Vec3f { return intersectionPoint; }
 
-  auto set(float _t, Material* m, Vec3f n, Ray const& ray) -> void {
+  auto set(float _t, Material* m, Vec3f n, Ray const& ray) -> void
+  {
     t = _t;
     material = m;
     normal = n;
@@ -39,7 +44,8 @@ struct Hit final {
   Vec3f intersectionPoint{};
 };
 
-inline auto operator<<(std::ostream& os, Hit const& h) -> std::ostream& {
+inline auto operator << (std::ostream& os, Hit const& h) -> std::ostream&
+{
   os << "Hit <" << h.getT() << ", " << h.getNormal() << ">";
   return os;
 }

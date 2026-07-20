@@ -10,18 +10,19 @@ ShaderProgram::ShaderProgram() {}
 
 ShaderProgram::~ShaderProgram() { destroy(); }
 
-static auto readFile(std::string const& path) -> std::string {
+static auto readFile(std::string const& path) -> std::string
+{
   std::ifstream file(path.c_str(), std::ios::in | std::ios::binary);
-  if (!file) {
+  if (!file)
     return "";
-  }
   std::stringstream buffer;
   buffer << file.rdbuf();
   return buffer.str();
 }
 
 auto ShaderProgram::compileShader(unsigned int type, char const* source)
-    -> unsigned int {
+    -> unsigned int
+{
   unsigned int shader = ::glCreateShader(type);
   ::glShaderSource(shader, 1, &source, nullptr);
   ::glCompileShader(shader);
@@ -38,7 +39,8 @@ auto ShaderProgram::compileShader(unsigned int type, char const* source)
   return shader;
 }
 
-auto ShaderProgram::linkProgram(unsigned int vert, unsigned int frag) -> bool {
+auto ShaderProgram::linkProgram(unsigned int vert, unsigned int frag) -> bool
+{
   program = ::glCreateProgram();
   ::glAttachShader(program, vert);
   ::glAttachShader(program, frag);
@@ -58,7 +60,8 @@ auto ShaderProgram::linkProgram(unsigned int vert, unsigned int frag) -> bool {
 }
 
 auto ShaderProgram::loadFromFiles(std::string const& vertPath,
-                                  std::string const& fragPath) -> bool {
+                                  std::string const& fragPath) -> bool
+{
   std::string vertSrc = readFile(vertPath);
   std::string fragSrc = readFile(fragPath);
   if (vertSrc.empty() || fragSrc.empty()) {
@@ -70,13 +73,13 @@ auto ShaderProgram::loadFromFiles(std::string const& vertPath,
 }
 
 auto ShaderProgram::loadFromSource(char const* vertSrc, char const* fragSrc)
-    -> bool {
+    -> bool
+{
   destroy();
   unsigned int vert = compileShader(GL_VERTEX_SHADER, vertSrc);
   unsigned int frag = compileShader(GL_FRAGMENT_SHADER, fragSrc);
-  if (!vert || !frag) {
+  if (!vert || !frag)
     return false;
-  }
 
   bool ok = linkProgram(vert, frag);
   ::glDeleteShader(vert);
@@ -86,7 +89,8 @@ auto ShaderProgram::loadFromSource(char const* vertSrc, char const* fragSrc)
 
 auto ShaderProgram::use() const -> void { ::glUseProgram(program); }
 
-auto ShaderProgram::destroy() -> void {
+auto ShaderProgram::destroy() -> void
+{
   if (program) {
     ::glDeleteProgram(program);
     program = 0;
@@ -94,44 +98,51 @@ auto ShaderProgram::destroy() -> void {
   uniformCache.clear();
 }
 
-auto ShaderProgram::getUniformLocation(std::string const& name) const -> int {
+auto ShaderProgram::getUniformLocation(std::string const& name) const -> int
+{
   std::map<std::string, int>::const_iterator it = uniformCache.find(name);
-  if (it != uniformCache.end()) {
+  if (it != uniformCache.end())
     return it->second;
-  }
   int loc = ::glGetUniformLocation(program, name.c_str());
   uniformCache[name] = loc;
   return loc;
 }
 
-auto ShaderProgram::setBool(std::string const& name, bool value) const -> void {
+auto ShaderProgram::setBool(std::string const& name, bool value) const -> void
+{
   ::glUniform1i(getUniformLocation(name), value ? 1 : 0);
 }
 
-auto ShaderProgram::setInt(std::string const& name, int value) const -> void {
+auto ShaderProgram::setInt(std::string const& name, int value) const -> void
+{
   ::glUniform1i(getUniformLocation(name), value);
 }
 
-auto ShaderProgram::setFloat(std::string const& name, float value) const -> void {
+auto ShaderProgram::setFloat(std::string const& name, float value) const -> void
+{
   ::glUniform1f(getUniformLocation(name), value);
 }
 
 auto ShaderProgram::setVec2(std::string const& name, float x, float y) const
-    -> void {
+    -> void
+{
   ::glUniform2f(getUniformLocation(name), x, y);
 }
 
 auto ShaderProgram::setVec3(std::string const& name, float x, float y,
-                            float z) const -> void {
+                            float z) const -> void
+{
   ::glUniform3f(getUniformLocation(name), x, y, z);
 }
 
 auto ShaderProgram::setVec4(std::string const& name, float x, float y, float z,
-                            float w) const -> void {
+                            float w) const -> void
+{
   ::glUniform4f(getUniformLocation(name), x, y, z, w);
 }
 
 auto ShaderProgram::setMat4(std::string const& name, float const* value) const
-    -> void {
+    -> void
+{
   ::glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, value);
 }

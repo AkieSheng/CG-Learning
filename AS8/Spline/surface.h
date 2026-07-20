@@ -5,7 +5,8 @@
 struct Curve;
 
 struct Surface : Spline {
-  Surface() {}
+  Surface()
+  { }
   ~Surface() override {}
 
   auto moveControlPoint(int selectedPoint, float x, float y) -> void override {}

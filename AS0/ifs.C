@@ -1,17 +1,19 @@
-#include <cstdlib>
-#include <cstdio>
-#include <cassert>
-
 #include "ifs.h"
+
+#include <cassert>
+#include <cstdio>
+#include <cstdlib>
 
 IFS::IFS() = default;
 
-IFS::~IFS() {
+IFS::~IFS()
+{
   delete[] transforms;
   delete[] probabilities;
 }
 
-auto IFS::Input(char const* filename) -> void {
+auto IFS::Input(char const* filename) -> void
+{
   assert(filename != nullptr);
 
   auto* input = ::fopen(filename, "r");
@@ -34,7 +36,8 @@ auto IFS::Input(char const* filename) -> void {
   ::fclose(input);
 }
 
-auto IFS::Render(Image* image, int num_points, int num_iters) const -> void {
+auto IFS::Render(Image* image, int num_points, int num_iters) const -> void
+{
   assert(image != nullptr);
   assert(n > 0);
   assert(num_points > 0);
@@ -63,8 +66,7 @@ auto IFS::Render(Image* image, int num_points, int num_iters) const -> void {
 
     auto x = int(v.x() * (width - 1));
     auto y = int(v.y() * (height - 1));
-    if ((x >= 0) && (x < width) && (y >= 0) && (y < height)) {
+    if ((x >= 0) && (x < width) && (y >= 0) && (y < height))
       image->SetPixel(x, y, Vec3f(1, 1, 1));
-    }
   }
 }

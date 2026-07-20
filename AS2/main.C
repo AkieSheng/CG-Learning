@@ -1,9 +1,3 @@
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <cassert>
-#include <cmath>
-
 #include "image.h"
 #include "scene_parser.h"
 #include "hit.h"
@@ -12,7 +6,14 @@
 #include "material.h"
 #include "light.h"
 
-struct RayTracerArgs {
+#include <cassert>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+
+struct RayTracerArgs
+{
   char* input_file{};
   int width{100};
   int height{100};
@@ -24,7 +25,8 @@ struct RayTracerArgs {
   bool shade_back{false};
 };
 
-static auto parseArgs(int argc, char* argv[], RayTracerArgs& args) -> void {
+static auto parseArgs(int argc, char* argv[], RayTracerArgs& args) -> void
+{
   args.input_file = nullptr;
   args.width = 100;
   args.height = 100;
@@ -77,12 +79,14 @@ static auto parseArgs(int argc, char* argv[], RayTracerArgs& args) -> void {
   assert(args.output_file != nullptr);
 }
 
-static auto componentMultiply(Vec3f const& a, Vec3f const& b) -> Vec3f {
+static auto componentMultiply(Vec3f const& a, Vec3f const& b) -> Vec3f
+{
   return Vec3f(a.x() * b.x(), a.y() * b.y(), a.z() * b.z());
 }
 
 static auto shadeDiffuse(Hit const& hit, Vec3f const& normal,
-                         Vec3f const& ambient, SceneParser& parser) -> Vec3f {
+                         Vec3f const& ambient, SceneParser& parser) -> Vec3f
+{
   auto objectColor = hit.getMaterial()->getDiffuseColor();
   auto color = componentMultiply(ambient, objectColor);
 
@@ -92,28 +96,29 @@ static auto shadeDiffuse(Hit const& hit, Vec3f const& normal,
     parser.getLight(i)->getIllumination(hit.getIntersectionPoint(),
                                         lightDir, lightColor);
     auto diffuse = normal.Dot3(lightDir);
-    if (diffuse > 0.0f) {
+    if (diffuse > 0.0f)
       color += componentMultiply(lightColor, objectColor) * diffuse;
-    }
   }
   return color;
 }
 
-static auto shadeNormal(Vec3f const& normal) -> Vec3f {
+static auto shadeNormal(Vec3f const& normal) -> Vec3f
+{
   return Vec3f(::fabsf(normal.x()), ::fabsf(normal.y()), ::fabsf(normal.z()));
 }
 
 static auto prepareNormal(Ray const& ray, Hit const& hit, bool shade_back,
-                          bool& backFacing) -> Vec3f {
+                          bool& backFacing) -> Vec3f
+{
   auto normal = hit.getNormal();
   backFacing = ray.getDirection().Dot3(normal) > 0.0f;
-  if (shade_back && backFacing) {
+  if (shade_back && backFacing)
     normal = normal * -1.0f;
-  }
   return normal;
 }
 
-auto main(int argc, char* argv[]) -> int {
+auto main(int argc, char* argv[]) -> int
+{
   RayTracerArgs args;
   parseArgs(argc, argv, args);
 
@@ -162,24 +167,20 @@ auto main(int argc, char* argv[]) -> int {
         normalImage.SetPixel(x, y, shadeNormal(hit.getNormal()));
 
         auto gray = (args.depth_max - hit.getT()) / (args.depth_max - args.depth_min);
-        if (gray < 0.0f) {
+        if (gray < 0.0f)
           gray = 0.0f;
-        }
-        if (gray > 1.0f) {
+        if (gray > 1.0f)
           gray = 1.0f;
-        }
         depthImage.SetPixel(x, y, Vec3f(gray, gray, gray));
       }
     }
   }
 
   image.SaveTGA(args.output_file);
-  if (args.depth_file != nullptr) {
+  if (args.depth_file != nullptr)
     depthImage.SaveTGA(args.depth_file);
-  }
-  if (args.normals_file != nullptr) {
+  if (args.normals_file != nullptr)
     normalImage.SaveTGA(args.normals_file);
-  }
 
   return 0;
 }

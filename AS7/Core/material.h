@@ -5,7 +5,8 @@
 #include "hit.h"
 
 struct Material {
-  virtual ~Material() {}
+  virtual ~Material()
+  { }
 
   virtual auto getDiffuseColor(Vec3f const& point) const -> Vec3f = 0;
   virtual auto getSpecularColor(Vec3f const& point) const -> Vec3f;

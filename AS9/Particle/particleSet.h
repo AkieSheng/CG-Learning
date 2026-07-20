@@ -5,7 +5,8 @@
 #include "particle.h"
 
 struct ParticleSet final {
-  ParticleSet(int n) {
+  ParticleSet(int n)
+  {
     size = n;
     num_particles = 0;
     particles = new Particle*[size];
@@ -13,7 +14,8 @@ struct ParticleSet final {
       particles[i] = nullptr;
     }
   }
-  ~ParticleSet() {
+  ~ParticleSet()
+  {
     for (auto i = 0; i < num_particles; i++) {
       delete particles[i];
     }
@@ -21,15 +23,18 @@ struct ParticleSet final {
   }
 
   auto getNumParticles() const -> int { return num_particles; }
-  auto Get(int i) const -> Particle* {
+  auto Get(int i) const -> Particle*
+  {
     assert(i >= 0 && i < num_particles);
     assert(particles[i] != nullptr);
     return particles[i];
   }
 
-  auto Add(Particle* p) -> void {
+  auto Add(Particle* p) -> void
+  {
     assert(p != nullptr);
-    if (num_particles == size) {
+    if (num_particles == size)
+    {
       auto** new_particles = new Particle*[size * 2];
       for (auto i = 0; i < size; i++) {
         new_particles[i] = particles[i];
@@ -44,10 +49,13 @@ struct ParticleSet final {
     num_particles++;
   }
 
-  auto RemoveDead() -> void {
+  auto RemoveDead() -> void
+  {
     auto i = 0;
-    while (1) {
-      if (i == num_particles) {
+    while (1)
+    {
+      if (i == num_particles)
+      {
         break;
       }
       assert(particles[i] != nullptr);
@@ -61,7 +69,8 @@ struct ParticleSet final {
       }
     }
     for (i = 0; i < size; i++) {
-      if (i < num_particles) {
+      if (i < num_particles)
+      {
         assert(particles[i] != nullptr);
         assert(!particles[i]->isDead());
       } else {
@@ -70,8 +79,8 @@ struct ParticleSet final {
     }
   }
 
-private:
-  ParticleSet() { assert(0); }
+  ParticleSet()
+  { assert(0); }
 
   int num_particles{};
   int size{};

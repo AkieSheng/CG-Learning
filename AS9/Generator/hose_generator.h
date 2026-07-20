@@ -9,7 +9,6 @@ struct HoseGenerator final : Generator {
 
   auto Generate(float current_time, int i) -> Particle* override;
 
-private:
   Vec3f position{};
   float position_randomness{};
   Vec3f velocity{};

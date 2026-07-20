@@ -6,15 +6,19 @@
 #include <cassert>
 
 struct ArgParser final {
-  ArgParser(int argc, char* argv[]) {
+  ArgParser(int argc, char* argv[])
+  {
     DefaultValues();
     ParseArguments(argc, argv);
   }
-  ~ArgParser() {}
+  ~ArgParser()
+  { }
 
-  ArgParser() { assert(0); }
+  ArgParser()
+  { assert(0); }
 
-  auto DefaultValues() -> void {
+  auto DefaultValues() -> void
+  {
     input_file = nullptr;
     output_file = nullptr;
     output_bezier_file = nullptr;
@@ -25,35 +29,43 @@ struct ArgParser final {
     patch_tessellation = 10;
   }
 
-  auto ParseArguments(int argc, char* argv[]) -> void {
+  auto ParseArguments(int argc, char* argv[]) -> void
+  {
     for (auto i = 1; i < argc; i++) {
       if (!::strcmp(argv[i], "-input")) {
         i++;
         assert(i < argc);
         input_file = argv[i];
-      } else if (!::strcmp(argv[i], "-output")) {
+      } else if (!::strcmp(argv[i], "-output"))
+      {
         i++;
         assert(i < argc);
         output_file = argv[i];
-      } else if (!::strcmp(argv[i], "-output_bezier")) {
+      } else if (!::strcmp(argv[i], "-output_bezier"))
+      {
         i++;
         assert(i < argc);
         output_bezier_file = argv[i];
-      } else if (!::strcmp(argv[i], "-output_bspline")) {
+      } else if (!::strcmp(argv[i], "-output_bspline"))
+      {
         i++;
         assert(i < argc);
         output_bspline_file = argv[i];
-      } else if (!::strcmp(argv[i], "-gui")) {
+      } else if (!::strcmp(argv[i], "-gui"))
+      {
         gui = 1;
-      } else if (!::strcmp(argv[i], "-revolution_tessellation")) {
+      } else if (!::strcmp(argv[i], "-revolution_tessellation"))
+      {
         i++;
         assert(i < argc);
         revolution_tessellation = ::atoi(argv[i]);
-      } else if (!::strcmp(argv[i], "-curve_tessellation")) {
+      } else if (!::strcmp(argv[i], "-curve_tessellation"))
+      {
         i++;
         assert(i < argc);
         curve_tessellation = ::atoi(argv[i]);
-      } else if (!::strcmp(argv[i], "-patch_tessellation")) {
+      } else if (!::strcmp(argv[i], "-patch_tessellation"))
+      {
         i++;
         assert(i < argc);
         patch_tessellation = ::atoi(argv[i]);

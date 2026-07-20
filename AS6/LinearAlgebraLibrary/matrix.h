@@ -1,10 +1,10 @@
 #pragma once
 
+#include "vectors.h"
+
 #include <cmath>
 #include <cassert>
 #include <cstdio>
-
-#include "vectors.h"
 
 struct Matrix final {
   Matrix() { Clear(); }

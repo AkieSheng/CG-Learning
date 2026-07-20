@@ -1,26 +1,29 @@
-#include <cstdio>
-#include <cstring>
-#include <cstdlib>
-#include <cassert>
-#include <cmath>
-
 #include "scene_parser.h"
-#include "matrix.h"
+
 #include "camera.h"
+#include "group.h"
 #include "light.h"
 #include "material.h"
+#include "matrix.h"
 #include "object3d.h"
-#include "group.h"
-#include "sphere.h"
 #include "plane.h"
-#include "triangle.h"
+#include "sphere.h"
 #include "transform.h"
+#include "triangle.h"
 
-constexpr auto DegreesToRadians(float x) -> float {
+#include <cassert>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+
+constexpr auto DegreesToRadians(float x) -> float
+{
   return (static_cast<float>(M_PI) * x) / 180.0f;
 }
 
-SceneParser::SceneParser(char const* filename) {
+SceneParser::SceneParser(char const* filename)
+{
   group = nullptr;
   camera = nullptr;
   background_color = Vec3f(0.5, 0.5, 0.5);
@@ -46,13 +49,12 @@ SceneParser::SceneParser(char const* filename) {
   }
 }
 
-SceneParser::~SceneParser() {
-  if (group != nullptr) {
+SceneParser::~SceneParser()
+{
+  if (group != nullptr)
     delete group;
-  }
-  if (camera != nullptr) {
+  if (camera != nullptr)
     delete camera;
-  }
   for (auto i = 0; i < num_materials; i++) {
     delete materials[i];
   }
@@ -63,7 +65,8 @@ SceneParser::~SceneParser() {
   delete[] lights;
 }
 
-auto SceneParser::parseFile() -> void {
+auto SceneParser::parseFile() -> void
+{
   char token[MAX_PARSER_TOKEN_LENGTH];
   while (getToken(token)) {
     if (!::strcmp(token, "OrthographicCamera")) {
@@ -85,7 +88,8 @@ auto SceneParser::parseFile() -> void {
   }
 }
 
-auto SceneParser::parseOrthographicCamera() -> void {
+auto SceneParser::parseOrthographicCamera() -> void
+{
   char token[MAX_PARSER_TOKEN_LENGTH];
   getToken(token);
   assert(!::strcmp(token, "{"));
@@ -106,7 +110,8 @@ auto SceneParser::parseOrthographicCamera() -> void {
   camera = new OrthographicCamera(center, direction, up, size);
 }
 
-auto SceneParser::parsePerspectiveCamera() -> void {
+auto SceneParser::parsePerspectiveCamera() -> void
+{
   char token[MAX_PARSER_TOKEN_LENGTH];
   getToken(token);
   assert(!::strcmp(token, "{"));
@@ -128,7 +133,8 @@ auto SceneParser::parsePerspectiveCamera() -> void {
   camera = new PerspectiveCamera(center, direction, up, angle_radians);
 }
 
-auto SceneParser::parseBackground() -> void {
+auto SceneParser::parseBackground() -> void
+{
   char token[MAX_PARSER_TOKEN_LENGTH];
   getToken(token);
   assert(!::strcmp(token, "{"));
@@ -147,7 +153,8 @@ auto SceneParser::parseBackground() -> void {
   }
 }
 
-auto SceneParser::parseLights() -> void {
+auto SceneParser::parseLights() -> void
+{
   char token[MAX_PARSER_TOKEN_LENGTH];
   getToken(token);
   assert(!::strcmp(token, "{"));
@@ -170,7 +177,8 @@ auto SceneParser::parseLights() -> void {
   assert(!::strcmp(token, "}"));
 }
 
-auto SceneParser::parseDirectionalLight() -> Light* {
+auto SceneParser::parseDirectionalLight() -> Light*
+{
   char token[MAX_PARSER_TOKEN_LENGTH];
   getToken(token);
   assert(!::strcmp(token, "{"));
@@ -185,7 +193,8 @@ auto SceneParser::parseDirectionalLight() -> Light* {
   return new DirectionalLight(direction, color);
 }
 
-auto SceneParser::parseMaterials() -> void {
+auto SceneParser::parseMaterials() -> void
+{
   char token[MAX_PARSER_TOKEN_LENGTH];
   getToken(token);
   assert(!::strcmp(token, "{"));
@@ -208,7 +217,8 @@ auto SceneParser::parseMaterials() -> void {
   assert(!::strcmp(token, "}"));
 }
 
-auto SceneParser::parseMaterial() -> Material* {
+auto SceneParser::parseMaterial() -> Material*
+{
   char token[MAX_PARSER_TOKEN_LENGTH];
   auto diffuseColor = Vec3f(1, 1, 1);
   getToken(token);
@@ -226,7 +236,8 @@ auto SceneParser::parseMaterial() -> Material* {
   return answer;
 }
 
-auto SceneParser::parseObject(char token[MAX_PARSER_TOKEN_LENGTH]) -> Object3D* {
+auto SceneParser::parseObject(char token[MAX_PARSER_TOKEN_LENGTH]) -> Object3D*
+{
   Object3D* answer = nullptr;
   if (!::strcmp(token, "Group")) {
     answer = static_cast<Object3D*>(parseGroup());
@@ -247,7 +258,8 @@ auto SceneParser::parseObject(char token[MAX_PARSER_TOKEN_LENGTH]) -> Object3D* 
   return answer;
 }
 
-auto SceneParser::parseGroup() -> Group* {
+auto SceneParser::parseGroup() -> Group*
+{
   char token[MAX_PARSER_TOKEN_LENGTH];
   getToken(token);
   assert(!::strcmp(token, "{"));
@@ -278,7 +290,8 @@ auto SceneParser::parseGroup() -> Group* {
   return answer;
 }
 
-auto SceneParser::parseSphere() -> Sphere* {
+auto SceneParser::parseSphere() -> Sphere*
+{
   char token[MAX_PARSER_TOKEN_LENGTH];
   getToken(token);
   assert(!::strcmp(token, "{"));
@@ -294,7 +307,8 @@ auto SceneParser::parseSphere() -> Sphere* {
   return new Sphere(center, radius, current_material);
 }
 
-auto SceneParser::parsePlane() -> Plane* {
+auto SceneParser::parsePlane() -> Plane*
+{
   char token[MAX_PARSER_TOKEN_LENGTH];
   getToken(token);
   assert(!::strcmp(token, "{"));
@@ -310,7 +324,8 @@ auto SceneParser::parsePlane() -> Plane* {
   return new Plane(normal, offset, current_material);
 }
 
-auto SceneParser::parseTriangle() -> Triangle* {
+auto SceneParser::parseTriangle() -> Triangle*
+{
   char token[MAX_PARSER_TOKEN_LENGTH];
   getToken(token);
   assert(!::strcmp(token, "{"));
@@ -329,7 +344,8 @@ auto SceneParser::parseTriangle() -> Triangle* {
   return new Triangle(v0, v1, v2, current_material);
 }
 
-auto SceneParser::parseTriangleMesh() -> Group* {
+auto SceneParser::parseTriangleMesh() -> Group*
+{
   char token[MAX_PARSER_TOKEN_LENGTH];
   char filename[MAX_PARSER_TOKEN_LENGTH];
   getToken(token);
@@ -405,7 +421,8 @@ auto SceneParser::parseTriangleMesh() -> Group* {
   return answer;
 }
 
-auto SceneParser::parseTransform() -> Transform* {
+auto SceneParser::parseTransform() -> Transform*
+{
   char token[MAX_PARSER_TOKEN_LENGTH];
   Matrix matrix;
   matrix.SetToIdentity();
@@ -461,7 +478,8 @@ auto SceneParser::parseTransform() -> Transform* {
   return new Transform(matrix, object);
 }
 
-auto SceneParser::getToken(char token[MAX_PARSER_TOKEN_LENGTH]) -> int {
+auto SceneParser::getToken(char token[MAX_PARSER_TOKEN_LENGTH]) -> int
+{
   assert(file != nullptr);
   auto success = ::fscanf(file, "%s ", token);
   if (success == EOF) {
@@ -471,7 +489,8 @@ auto SceneParser::getToken(char token[MAX_PARSER_TOKEN_LENGTH]) -> int {
   return 1;
 }
 
-auto SceneParser::readVec3f() -> Vec3f {
+auto SceneParser::readVec3f() -> Vec3f
+{
   float x{};
   float y{};
   float z{};
@@ -483,7 +502,8 @@ auto SceneParser::readVec3f() -> Vec3f {
   return Vec3f(x, y, z);
 }
 
-auto SceneParser::readVec2f() -> Vec2f {
+auto SceneParser::readVec2f() -> Vec2f
+{
   float u{};
   float v{};
   auto count = ::fscanf(file, "%f %f", &u, &v);
@@ -494,7 +514,8 @@ auto SceneParser::readVec2f() -> Vec2f {
   return Vec2f(u, v);
 }
 
-auto SceneParser::readFloat() -> float {
+auto SceneParser::readFloat() -> float
+{
   float answer{};
   auto count = ::fscanf(file, "%f", &answer);
   if (count != 1) {
@@ -504,7 +525,8 @@ auto SceneParser::readFloat() -> float {
   return answer;
 }
 
-auto SceneParser::readInt() -> int {
+auto SceneParser::readInt() -> int
+{
   int answer{};
   auto count = ::fscanf(file, "%d", &answer);
   if (count != 1) {

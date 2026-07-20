@@ -1,9 +1,11 @@
 #include "triangle.h"
+
 #include "grid.h"
 #include "boundingbox.h"
 #include "matrix.h"
 #include "raytracing_stats.h"
 #include "gl_headers.h"
+
 #include <cmath>
 #include <cstdio>
 
@@ -96,9 +98,9 @@ auto Triangle::intersect(Ray const&r, Hit &h, float tmin) -> bool {
 
 auto Triangle::intersectShadow(Ray const&r, float tmin, float tmax, float &t,
                                Material **outMaterial) -> bool {
-  
 
-  Vec3f edge1 = b - a; 
+
+  Vec3f edge1 = b - a;
   Vec3f edge2 = c - a;
   Vec3f pvec;
   Vec3f::Cross3(pvec, r.getDirection(), edge2);
@@ -119,7 +121,7 @@ auto Triangle::intersectShadow(Ray const&r, float tmin, float tmax, float &t,
     return false;
 
   float hitT = edge2.Dot3(qvec) * invDet;
-  if (hitT >= tmin && hitT <= tmax) { 
+  if (hitT >= tmin && hitT <= tmax) {
     t = hitT;
     if (outMaterial != nullptr)
       *outMaterial = material;

@@ -8,7 +8,8 @@
 #include "glCanvas.h"
 #include "parser.h"
 
-auto main(int argc, char* argv[]) -> int {
+auto main(int argc, char* argv[]) -> int
+{
   char const* filename = nullptr;
   auto refresh = 0.1f;
   auto dt = 0.1f;
@@ -22,19 +23,24 @@ auto main(int argc, char* argv[]) -> int {
       i++;
       assert(i < argc);
       filename = argv[i];
-    } else if (!::strcmp(argv[i], "-refresh")) {
+    } else if (!::strcmp(argv[i], "-refresh"))
+    {
       i++;
       assert(i < argc);
       refresh = static_cast<float>(::atof(argv[i]));
-    } else if (!::strcmp(argv[i], "-dt")) {
+    } else if (!::strcmp(argv[i], "-dt"))
+    {
       i++;
       assert(i < argc);
       dt = static_cast<float>(::atof(argv[i]));
-    } else if (!::strcmp(argv[i], "-integrator_color")) {
+    } else if (!::strcmp(argv[i], "-integrator_color"))
+    {
       integrator_color = 1;
-    } else if (!::strcmp(argv[i], "-motion_blur")) {
+    } else if (!::strcmp(argv[i], "-motion_blur"))
+    {
       motion_blur = 1;
-    } else if (!::strcmp(argv[i], "-draw_vectors")) {
+    } else if (!::strcmp(argv[i], "-draw_vectors"))
+    {
       draw_vectors = 1;
       i++;
       assert(i < argc);

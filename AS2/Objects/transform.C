@@ -1,6 +1,7 @@
 #include "transform.h"
 
-auto Transform::intersect(Ray const& r, Hit& h, float tmin) -> bool {
+auto Transform::intersect(Ray const& r, Hit& h, float tmin) -> bool
+{
   Matrix objectMatrix;
   matrix.Inverse(objectMatrix);
 
@@ -11,9 +12,8 @@ auto Transform::intersect(Ray const& r, Hit& h, float tmin) -> bool {
 
   Ray localRay(origin, direction);
   Hit localHit(h);
-  if (!object->intersect(localRay, localHit, tmin)) {
+  if (!object->intersect(localRay, localHit, tmin))
     return false;
-  }
 
   auto normal = localHit.getNormal();
   inverseMatrix.TransformDirection(normal);

@@ -1,21 +1,24 @@
 #include "camera.h"
-#include <math.h>
+#include <cmath>
 
-static Vec3f getScreenUp(Vec3f const&direction, Vec3f const&up) {
+static Vec3f getScreenUp(Vec3f const&direction, Vec3f const&up)
+{
   Vec3f screenUp = up;
   screenUp -= direction * screenUp.Dot3(direction);
   screenUp.Normalize();
   return screenUp;
 }
 
-void OrthographicCamera::updateHorizontal() {
+void OrthographicCamera::updateHorizontal()
+{
   direction.Normalize();
   Vec3f screenUp = getScreenUp(direction, up);
   Vec3f::Cross3(horizontal, direction, screenUp);
   horizontal.Normalize();
 }
 
-OrthographicCamera::OrthographicCamera(Vec3f c, Vec3f dir, Vec3f up_vec, float s) {
+OrthographicCamera::OrthographicCamera(Vec3f c, Vec3f dir, Vec3f up_vec, float s)
+{
   center = c;
   size = s;
   direction = dir;
@@ -24,7 +27,8 @@ OrthographicCamera::OrthographicCamera(Vec3f c, Vec3f dir, Vec3f up_vec, float s
   updateHorizontal();
 }
 
-Ray OrthographicCamera::generateRay(Vec2f point) {
+Ray OrthographicCamera::generateRay(Vec2f point)
+{
   float u = point.x();
   float v = point.y();
   Vec3f screenUp = getScreenUp(direction, up);
@@ -34,11 +38,13 @@ Ray OrthographicCamera::generateRay(Vec2f point) {
   return Ray(origin, direction);
 }
 
-float OrthographicCamera::getTMin() const {
+float OrthographicCamera::getTMin() const
+{
   return -1.0e30f;
 }
 
-PerspectiveCamera::PerspectiveCamera(Vec3f c, Vec3f dir, Vec3f up_vec, float ang) {
+PerspectiveCamera::PerspectiveCamera(Vec3f c, Vec3f dir, Vec3f up_vec, float ang)
+{
   center = c;
   direction = dir;
   up = up_vec;
@@ -48,7 +54,8 @@ PerspectiveCamera::PerspectiveCamera(Vec3f c, Vec3f dir, Vec3f up_vec, float ang
   updateHorizontal();
 }
 
-Ray PerspectiveCamera::generateRay(Vec2f point) {
+Ray PerspectiveCamera::generateRay(Vec2f point)
+{
   float u = point.x();
   float v = point.y();
   Vec3f screenUp = getScreenUp(direction, up);
@@ -60,11 +67,13 @@ Ray PerspectiveCamera::generateRay(Vec2f point) {
   return Ray(center, rayDir);
 }
 
-float PerspectiveCamera::getTMin() const {
+float PerspectiveCamera::getTMin() const
+{
   return 1e-4f;
 }
 
-void PerspectiveCamera::updateHorizontal() {
+void PerspectiveCamera::updateHorizontal()
+{
   direction.Normalize();
   Vec3f screenUp = getScreenUp(direction, up);
   Vec3f::Cross3(horizontal, direction, screenUp);

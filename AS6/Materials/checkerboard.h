@@ -20,7 +20,6 @@ struct Checkerboard final : Material {
              Vec3f const& lightColor) const -> Vec3f override;
   auto glSetMaterial() const -> void override;
 
-private:
   auto selectMaterial(Vec3f const& worldPoint) const -> Material*;
   auto selectedWood(Vec3f const& worldPoint) const -> Wood const*;
   auto woodCellWeight(Vec3f const& worldPoint, Wood const* wood) const -> float;

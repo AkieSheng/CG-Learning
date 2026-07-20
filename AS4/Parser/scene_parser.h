@@ -4,6 +4,7 @@
 #include <cassert>
 #include <cstdio>
 
+
 struct Camera;
 struct Light;
 struct Material;
@@ -16,7 +17,8 @@ struct Transform;
 
 constexpr auto MAX_PARSER_TOKEN_LENGTH = 100;
 
-struct SceneParser final {
+struct SceneParser final
+{
   SceneParser(char const* filename);
   ~SceneParser();
 
@@ -24,12 +26,14 @@ struct SceneParser final {
   auto getBackgroundColor() const -> Vec3f { return background_color; }
   auto getAmbientLight() const -> Vec3f { return ambient_light; }
   auto getNumLights() const -> int { return num_lights; }
-  auto getLight(int i) const -> Light* {
+  auto getLight(int i) const -> Light*
+{
     assert(i >= 0 && i < num_lights);
     return lights[i];
   }
   auto getNumMaterials() const -> int { return num_materials; }
-  auto getMaterial(int i) const -> Material* {
+  auto getMaterial(int i) const -> Material*
+{
     assert(i >= 0 && i < num_materials);
     return materials[i];
   }

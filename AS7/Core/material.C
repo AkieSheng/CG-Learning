@@ -1,15 +1,17 @@
 #include "material.h"
-#include <math.h>
+#include <cmath>
 
 extern bool specular_fix;
 
-static Vec3f componentMultiply(Vec3f const&a, Vec3f const&b) {
+static Vec3f componentMultiply(Vec3f const&a, Vec3f const&b)
+{
   return Vec3f(a.x() * b.x(), a.y() * b.y(), a.z() * b.z());
 }
 
 PhongMaterial::PhongMaterial(Vec3f const&diffuse, Vec3f const&specular,
                              float exp, Vec3f const&reflective,
-                             Vec3f const&transparent, float ior) {
+                             Vec3f const&transparent, float ior)
+{
   diffuseColor = diffuse;
   specularColor = specular;
   exponent = exp;
@@ -18,47 +20,58 @@ PhongMaterial::PhongMaterial(Vec3f const&diffuse, Vec3f const&specular,
   indexOfRefraction = ior;
 }
 
-Vec3f PhongMaterial::getDiffuseColor(Vec3f const&point) const {
+Vec3f PhongMaterial::getDiffuseColor(Vec3f const&point) const
+{
   return diffuseColor;
 }
 
-Vec3f PhongMaterial::getSpecularColor(Vec3f const&point) const {
+Vec3f PhongMaterial::getSpecularColor(Vec3f const&point) const
+{
   return specularColor;
 }
 
-float PhongMaterial::getExponent(Vec3f const&point) const {
+float PhongMaterial::getExponent(Vec3f const&point) const
+{
   return exponent;
 }
 
-Vec3f PhongMaterial::getReflectiveColor(Vec3f const&point) const {
+Vec3f PhongMaterial::getReflectiveColor(Vec3f const&point) const
+{
   return reflectiveColor;
 }
 
-Vec3f PhongMaterial::getTransparentColor(Vec3f const&point) const {
+Vec3f PhongMaterial::getTransparentColor(Vec3f const&point) const
+{
   return transparentColor;
 }
 
-float PhongMaterial::getIndexOfRefraction(Vec3f const&point) const {
+float PhongMaterial::getIndexOfRefraction(Vec3f const&point) const
+{
   return indexOfRefraction;
 }
 
-Vec3f Material::getSpecularColor(Vec3f const&point) const {
+Vec3f Material::getSpecularColor(Vec3f const&point) const
+{
   return Vec3f(0, 0, 0);
 }
 
-float Material::getExponent(Vec3f const&point) const {
+float Material::getExponent(Vec3f const&point) const
+{
   return 1.0f;
 }
 
-Vec3f Material::getReflectiveColor(Vec3f const&point) const {
+Vec3f Material::getReflectiveColor(Vec3f const&point) const
+{
   return Vec3f(0, 0, 0);
 }
 
-Vec3f Material::getTransparentColor(Vec3f const&point) const {
+Vec3f Material::getTransparentColor(Vec3f const&point) const
+{
   return Vec3f(0, 0, 0);
 }
 
-float Material::getIndexOfRefraction(Vec3f const&point) const {
+float Material::getIndexOfRefraction(Vec3f const&point) const
+{
   return 1.0f;
 }
 

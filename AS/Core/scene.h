@@ -1,14 +1,15 @@
 #pragma once
 
-#include <string>
-#include <vector>
 #include "gltf_loader.h"
 #include "orbit_camera.h"
 #include "vectors.h"
+#include <string>
+#include <vector>
 
 static int const LIGHT_STRIP_COUNT = 3;
 
-struct LightStrip {
+struct LightStrip
+{
   Vec3f center{};
   Vec3f halfRight{};
   Vec3f halfUp{};
@@ -16,7 +17,8 @@ struct LightStrip {
   Vec3f color{};
 };
 
-struct Scene final {
+struct Scene final
+{
   Scene();
   ~Scene();
 

@@ -1,5 +1,5 @@
-#include "gl_headers.h"
 #include "glCanvas.h"
+#include "gl_headers.h"
 #include "arg_parser.h"
 #include "spline.h"
 #include "spline_parser.h"
@@ -14,7 +14,8 @@ int GLCanvas::selected_control_point;
 
 constexpr auto PIXEL_EPSILON = 10;
 
-auto GLCanvas::initialize(ArgParser* _args, SplineParser* _splines) -> void {
+auto GLCanvas::initialize(ArgParser* _args, SplineParser* _splines) -> void
+{
   args = _args;
   splines = _splines;
 
@@ -32,7 +33,8 @@ auto GLCanvas::initialize(ArgParser* _args, SplineParser* _splines) -> void {
   ::glutMainLoop();
 }
 
-auto GLCanvas::display() -> void {
+auto GLCanvas::display() -> void
+{
   ::glClearColor(0, 0, 0, 1.0);
   ::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -47,7 +49,8 @@ auto GLCanvas::display() -> void {
   ::glutSwapBuffers();
 }
 
-auto GLCanvas::reshape(int w, int h) -> void {
+auto GLCanvas::reshape(int w, int h) -> void
+{
   ::glViewport(0, 0, static_cast<GLsizei>(w), static_cast<GLsizei>(h));
 
   width = w;
@@ -60,14 +63,17 @@ auto GLCanvas::reshape(int w, int h) -> void {
   ::glOrtho(-horiz, horiz, -vert, vert, 0.1, 1000.0);
 }
 
-auto GLCanvas::mouseToScreen(int i, int j, float& x, float& y, float& epsilon) -> void {
+auto GLCanvas::mouseToScreen(int i, int j, float& x, float& y, float& epsilon) -> void
+{
   x = ((i / static_cast<float>(width)) - 0.5f) * size;
   y = -((j / static_cast<float>(height)) - 0.5f) * size * height / static_cast<float>(width);
   epsilon = PIXEL_EPSILON * size / static_cast<float>(width);
 }
 
-auto GLCanvas::mouse(int button, int state, int i, int j) -> void {
-  if (state == 1) {
+auto GLCanvas::mouse(int button, int state, int i, int j) -> void
+{
+  if (state == 1)
+  {
     selected_spline = nullptr;
     return;
   }
@@ -77,11 +83,13 @@ auto GLCanvas::mouse(int button, int state, int i, int j) -> void {
   float epsilon{};
   mouseToScreen(i, j, x, y, epsilon);
 
-  if (button == GLUT_LEFT_BUTTON) {
+  if (button == GLUT_LEFT_BUTTON)
+  {
     Spline* s{};
     int pt{};
     splines->Pick(x, y, epsilon, s, pt);
-    if (s == nullptr) {
+    if (s == nullptr)
+    {
       return;
     }
     s->moveControlPoint(pt, x, y);
@@ -89,11 +97,13 @@ auto GLCanvas::mouse(int button, int state, int i, int j) -> void {
     selected_control_point = pt;
   }
 
-  if (button == GLUT_MIDDLE_BUTTON) {
+  if (button == GLUT_MIDDLE_BUTTON)
+  {
     Spline* s{};
     int pt{};
     splines->PickEdge(x, y, epsilon, s, pt);
-    if (s == nullptr) {
+    if (s == nullptr)
+    {
       return;
     }
     s->addControlPoint(pt, x, y);
@@ -101,11 +111,13 @@ auto GLCanvas::mouse(int button, int state, int i, int j) -> void {
     selected_control_point = pt;
   }
 
-  if (button == GLUT_RIGHT_BUTTON) {
+  if (button == GLUT_RIGHT_BUTTON)
+  {
     Spline* s{};
     int pt{};
     splines->Pick(x, y, epsilon, s, pt);
-    if (s == nullptr) {
+    if (s == nullptr)
+    {
       return;
     }
     s->deleteControlPoint(pt);
@@ -114,8 +126,10 @@ auto GLCanvas::mouse(int button, int state, int i, int j) -> void {
   ::glutPostRedisplay();
 }
 
-auto GLCanvas::motion(int i, int j) -> void {
-  if (selected_spline == nullptr) {
+auto GLCanvas::motion(int i, int j) -> void
+{
+  if (selected_spline == nullptr)
+  {
     return;
   }
   float x{};
@@ -126,8 +140,10 @@ auto GLCanvas::motion(int i, int j) -> void {
   ::glutPostRedisplay();
 }
 
-auto GLCanvas::keyboard(unsigned char key, int x, int y) -> void {
-  switch (key) {
+auto GLCanvas::keyboard(unsigned char key, int x, int y) -> void
+{
+  switch (key)
+  {
     case 's':
     case 'S':
       ::printf("Saving... ");

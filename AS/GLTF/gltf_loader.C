@@ -1,21 +1,24 @@
 #include "gltf_loader.h"
 #include "texture.h"
 #include "vertex.h"
+
 #include "tiny_gltf.h"
 
-#include <stdio.h>
-#include <cmath>
 #include <algorithm>
-#include <vector>
+#include <cmath>
+#include <cstdio>
 #include <string>
+#include <vector>
 
-static std::string getDirectory(std::string const& path) {
+static std::string getDirectory(std::string const& path)
+{
   size_t pos = path.find_last_of("/\\");
   if (pos == std::string::npos) return "";
   return path.substr(0, pos + 1);
 }
 
-static Matrix matrixFromGltfColumnMajor(std::vector<double> const& m) {
+static Matrix matrixFromGltfColumnMajor(std::vector<double> const& m)
+{
   Matrix mat;
   if (m.size() < 16) {
     mat.SetToIdentity();
@@ -31,7 +34,8 @@ static Matrix matrixFromGltfColumnMajor(std::vector<double> const& m) {
 
 static Matrix matrixFromTRS(std::vector<double> const& t,
                             std::vector<double> const& r,
-                            std::vector<double> const& s) {
+                            std::vector<double> const& s)
+{
   float tx = t.size() > 0 ? (float)t[0] : 0.0f;
   float ty = t.size() > 1 ? (float)t[1] : 0.0f;
   float tz = t.size() > 2 ? (float)t[2] : 0.0f;
@@ -65,7 +69,8 @@ static Matrix matrixFromTRS(std::vector<double> const& t,
 }
 
 static unsigned char const* getAccessorPtr(const tinygltf::Model &model,
-                                           const tinygltf::Accessor &acc) {
+                                           const tinygltf::Accessor &acc)
+{
   if (acc.bufferView < 0 || acc.bufferView >= static_cast<int>(model.bufferViews.size()))
     return nullptr;
   const tinygltf::BufferView &bv = model.bufferViews[acc.bufferView];
@@ -76,7 +81,8 @@ static unsigned char const* getAccessorPtr(const tinygltf::Model &model,
 
 static bool readFloatAttribute(const tinygltf::Model &model, int accessorIndex,
                                int type, int components,
-                               std::vector<float>& out) {
+                               std::vector<float>& out)
+{
   out.clear();
   if (accessorIndex < 0 ||
       accessorIndex >= static_cast<int>(model.accessors.size())) {
@@ -103,7 +109,8 @@ static bool readFloatAttribute(const tinygltf::Model &model, int accessorIndex,
 }
 
 static bool readIndices(const tinygltf::Model &model, int accessorIndex,
-                        std::vector<unsigned int>& out) {
+                        std::vector<unsigned int>& out)
+{
   out.clear();
   if (accessorIndex < 0 ||
       accessorIndex >= static_cast<int>(model.accessors.size())) {
@@ -116,10 +123,15 @@ static bool readIndices(const tinygltf::Model &model, int accessorIndex,
 
   int stride = acc.ByteStride(model.bufferViews[acc.bufferView]);
   if (stride <= 0) {
-    if (acc.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT) stride = 4;
-    else if (acc.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) stride = 2;
-    else if (acc.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE) stride = 1;
-    else return false;
+    if (acc.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT) {
+      stride = 4;
+    } else if (acc.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
+      stride = 2;
+    } else if (acc.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE) {
+      stride = 1;
+    } else {
+      return false;
+    }
   }
 
   out.resize(acc.count);
@@ -140,7 +152,8 @@ static bool readIndices(const tinygltf::Model &model, int accessorIndex,
 
 static Texture *loadTextureFromModel(const tinygltf::Model &model,
                                      std::string const& basePath,
-                                     int textureIndex, bool srgb) {
+                                     int textureIndex, bool srgb)
+{
   if (textureIndex < 0 || textureIndex >= static_cast<int>(model.textures.size())) return nullptr;
   int imageIndex = model.textures[textureIndex].source;
   if (imageIndex < 0 || imageIndex >= static_cast<int>(model.images.size())) return nullptr;
@@ -160,7 +173,8 @@ static Texture *loadTextureFromModel(const tinygltf::Model &model,
 
 static bool resolveTexturePath(const tinygltf::Model &model,
                                std::string const& basePath,
-                               int textureIndex, std::string &outPath) {
+                               int textureIndex, std::string &outPath)
+{
   if (textureIndex < 0 || textureIndex >= static_cast<int>(model.textures.size())) return false;
   int imageIndex = model.textures[textureIndex].source;
   if (imageIndex < 0 || imageIndex >= static_cast<int>(model.images.size())) return false;
@@ -170,20 +184,24 @@ static bool resolveTexturePath(const tinygltf::Model &model,
   return true;
 }
 
-static float clamp01(float v) {
+static float clamp01(float v)
+{
   return std::max(0.0f, std::min(1.0f, v));
 }
 
-static float srgbToLinear(float c) {
+static float srgbToLinear(float c)
+{
   return (c <= 0.04045f) ? (c / 12.92f) : std::pow((c + 0.055f) / 1.055f, 2.4f);
 }
 
-static float linearToSrgb(float c) {
+static float linearToSrgb(float c)
+{
   c = std::max(0.0f, c);
   return (c <= 0.0031308f) ? (c * 12.92f) : (1.055f * std::pow(c, 1.0f / 2.4f) - 0.055f);
 }
 
-static float const* srgbToLinearLut() {
+static float const* srgbToLinearLut()
+{
   static float lut[256];
   static bool ready = false;
   if (!ready) {
@@ -194,7 +212,8 @@ static float const* srgbToLinearLut() {
   return lut;
 }
 
-static unsigned char linearToSrgbByte(float c) {
+static unsigned char linearToSrgbByte(float c)
+{
   static unsigned char lut[1025];
   static bool ready = false;
   if (!ready) {
@@ -208,7 +227,8 @@ static unsigned char linearToSrgbByte(float c) {
   return lut[idx];
 }
 
-static float perceivedBrightness(float r, float g, float b) {
+static float perceivedBrightness(float r, float g, float b)
+{
   return std::sqrt(0.299f * r * r + 0.587f * g * g + 0.114f * b * b);
 }
 
@@ -216,7 +236,8 @@ static void convertSpecGlossPixel(float diffuseR, float diffuseG, float diffuseB
                                   float specularR, float specularG, float specularB,
                                   float glossiness,
                                   float &outBaseR, float &outBaseG, float &outBaseB, float &outBaseA,
-                                  float &outMetallic, float &outRoughness) {
+                                  float &outMetallic, float &outRoughness)
+{
   const float dielectricSpecular = 0.04f;
   const float epsilon = 1e-6f;
 
@@ -257,7 +278,8 @@ static void convertSpecGlossPixel(float diffuseR, float diffuseG, float diffuseB
 }
 
 static void sampleRGBANearestBytes(std::vector<unsigned char> &rgba, int w, int h,
-                                   int x, int y, unsigned char out[4]) {
+                                   int x, int y, unsigned char out[4])
+{
   x = std::max(0, std::min(w - 1, x));
   y = std::max(0, std::min(h - 1, y));
   size_t i = ((size_t)y * (size_t)w + (size_t)x) * 4;
@@ -270,7 +292,8 @@ static void sampleRGBANearestBytes(std::vector<unsigned char> &rgba, int w, int 
 static bool applySpecularGlossinessConversion(const tinygltf::Material &gm,
                                               const tinygltf::Model &model,
                                               std::string const& basePath,
-                                              PBRMaterial *mat) {
+                                              PBRMaterial *mat)
+{
   tinygltf::ExtensionMap::const_iterator it =
       gm.extensions.find("KHR_materials_pbrSpecularGlossiness");
   if (it == gm.extensions.end()) return false;
@@ -309,18 +332,20 @@ static bool applySpecularGlossinessConversion(const tinygltf::Material &gm,
   if (diffuseTexIndex >= 0) {
     std::string path;
     if (resolveTexturePath(model, basePath, diffuseTexIndex, path) &&
-        Texture::loadPixelsRGBA(path, diffusePixels, diffW, diffH))
+        Texture::loadPixelsRGBA(path, diffusePixels, diffW, diffH)) {
       hasDiffTex = true;
-    else
+    } else {
       std::fprintf(stderr, "GltfLoader: SpecGloss diffuse texture failed\n");
+    }
   }
   if (specGlossTexIndex >= 0) {
     std::string path;
     if (resolveTexturePath(model, basePath, specGlossTexIndex, path) &&
-        Texture::loadPixelsRGBA(path, specGlossPixels, sgW, sgH))
+        Texture::loadPixelsRGBA(path, specGlossPixels, sgW, sgH)) {
       hasSgTex = true;
-    else
+    } else {
       std::fprintf(stderr, "GltfLoader: SpecGloss specularGlossiness texture failed\n");
+    }
   }
 
   delete mat->baseColorTexture;
@@ -414,7 +439,8 @@ static bool applySpecularGlossinessConversion(const tinygltf::Material &gm,
 static void parseMaterialExtensions(const tinygltf::Material &gm,
                                     const tinygltf::Model &model,
                                     std::string const& basePath,
-                                    PBRMaterial *mat) {
+                                    PBRMaterial *mat)
+{
   tinygltf::ExtensionMap::const_iterator it;
 
   it = gm.extensions.find("KHR_materials_transmission");
@@ -496,11 +522,10 @@ static void parseMaterialExtensions(const tinygltf::Material &gm,
 GltfLoader::GltfLoader()
   : model(nullptr), loader(nullptr), boundsValid(false) {}
 
-GltfLoader::~GltfLoader() {
-  destroy();
-}
+GltfLoader::~GltfLoader() { destroy(); }
 
-bool GltfLoader::load(std::string const& gltfPath) {
+bool GltfLoader::load(std::string const& gltfPath)
+{
   destroy();
 
   model = new tinygltf::Model();
@@ -553,7 +578,8 @@ bool GltfLoader::load(std::string const& gltfPath) {
   return true;
 }
 
-PBRMaterial *GltfLoader::buildMaterial(int materialIndex) {
+PBRMaterial *GltfLoader::buildMaterial(int materialIndex)
+{
   if (materialIndex < 0) return nullptr;
   if (materialIndex < static_cast<int>(materials.size()) && materials[materialIndex] != nullptr)
     return materials[materialIndex];
@@ -577,9 +603,13 @@ PBRMaterial *GltfLoader::buildMaterial(int materialIndex) {
   for (int i = 0; i < 3; i++)
     mat->emissiveFactor[i] = i < static_cast<int>(gm.emissiveFactor.size()) ? static_cast<float>(gm.emissiveFactor[i]) : 0.0f;
 
-  if (gm.alphaMode == "MASK") mat->alphaMode = ALPHA_MASK;
-  else if (gm.alphaMode == "BLEND") mat->alphaMode = ALPHA_BLEND;
-  else mat->alphaMode = ALPHA_OPAQUE;
+  if (gm.alphaMode == "MASK") {
+    mat->alphaMode = ALPHA_MASK;
+  } else if (gm.alphaMode == "BLEND") {
+    mat->alphaMode = ALPHA_BLEND;
+  } else {
+    mat->alphaMode = ALPHA_OPAQUE;
+  }
 
   mat->baseColorTexture = loadTextureFromModel(*model, basePath,
     gm.pbrMetallicRoughness.baseColorTexture.index, true);
@@ -600,7 +630,8 @@ PBRMaterial *GltfLoader::buildMaterial(int materialIndex) {
 }
 
 void GltfLoader::computeTangents(std::vector<Vertex> &vertices,
-                                 std::vector<unsigned int> const& indices) {
+                                 std::vector<unsigned int> const& indices)
+{
   std::vector<Vec3f> tan1(vertices.size());
   std::vector<Vec3f> tan2(vertices.size());
   for (size_t i = 0; i < tan1.size(); i++) {
@@ -647,7 +678,8 @@ void GltfLoader::computeTangents(std::vector<Vertex> &vertices,
   }
 }
 
-void GltfLoader::expandBounds(Vec3f const& p) {
+void GltfLoader::expandBounds(Vec3f const& p)
+{
   if (!boundsValid) {
     boundsMin = p;
     boundsMax = p;
@@ -663,7 +695,8 @@ void GltfLoader::expandBounds(Vec3f const& p) {
 }
 
 Mesh *GltfLoader::buildPrimitiveMesh(const tinygltf::Primitive &prim,
-                                     Matrix const& worldMatrix) {
+                                     Matrix const& worldMatrix)
+{
   std::map<std::string, int>::const_iterator itPos = prim.attributes.find("POSITION");
   if (itPos == prim.attributes.end()) return nullptr;
 
@@ -703,19 +736,22 @@ Mesh *GltfLoader::buildPrimitiveMesh(const tinygltf::Primitive &prim,
   for (size_t i = 0; i < vertexCount; i++) {
     Vertex &v = vertices[i];
     v.position.Set(positions[i * 3 + 0], positions[i * 3 + 1], positions[i * 3 + 2]);
-    if (hasNormal)
+    if (hasNormal) {
       v.normal.Set(normals[i * 3 + 0], normals[i * 3 + 1], normals[i * 3 + 2]);
-    else
+    } else {
       v.normal.Set(0, 1, 0);
-    if (hasTangent)
+    }
+    if (hasTangent) {
       v.tangent.Set(tangents[i * 4 + 0], tangents[i * 4 + 1],
                     tangents[i * 4 + 2], tangents[i * 4 + 3]);
-    else
+    } else {
       v.tangent.Set(1, 0, 0, 1);
-    if (hasUv)
+    }
+    if (hasUv) {
       v.texCoord0.Set(uvs[i * 2 + 0], uvs[i * 2 + 1]);
-    else
+    } else {
       v.texCoord0.Set(0, 0);
+    }
 
     Vec3f worldPos = v.position;
     worldMatrix.Transform(worldPos);
@@ -737,7 +773,8 @@ Mesh *GltfLoader::buildPrimitiveMesh(const tinygltf::Primitive &prim,
   return mesh;
 }
 
-void GltfLoader::traverseNode(int nodeIndex, Matrix const& parentWorld) {
+void GltfLoader::traverseNode(int nodeIndex, Matrix const& parentWorld)
+{
   if (!model || nodeIndex < 0 || nodeIndex >= (int)model->nodes.size()) return;
 
   const tinygltf::Node &node = model->nodes[nodeIndex];
@@ -764,7 +801,8 @@ void GltfLoader::traverseNode(int nodeIndex, Matrix const& parentWorld) {
     traverseNode(node.children[i], world);
 }
 
-void GltfLoader::getBounds(Vec3f &bmin, Vec3f &bmax) const {
+void GltfLoader::getBounds(Vec3f &bmin, Vec3f &bmax) const
+{
   if (boundsValid) {
     bmin = boundsMin;
     bmax = boundsMax;
@@ -774,7 +812,8 @@ void GltfLoader::getBounds(Vec3f &bmin, Vec3f &bmax) const {
   }
 }
 
-void GltfLoader::destroy() {
+void GltfLoader::destroy()
+{
   for (size_t i = 0; i < meshes.size(); i++) delete meshes[i];
   meshes.clear();
 

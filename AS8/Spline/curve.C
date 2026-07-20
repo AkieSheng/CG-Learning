@@ -1,15 +1,15 @@
+#include "curve.h"
+#include <cassert>
 #include <cstdio>
 #include <cstring>
-#include <cassert>
-
 #include "gl_headers.h"
-#include "curve.h"
 #include "arg_parser.h"
 #include "triangle_mesh.h"
 
 namespace {
 
-auto MakeBasisMatrix(float const m[4][4]) -> Matrix {
+auto MakeBasisMatrix(float const m[4][4]) -> Matrix
+{
   Matrix B;
   for (auto y = 0; y < 4; y++) {
     for (auto x = 0; x < 4; x++) {
@@ -30,7 +30,8 @@ auto ConvertControlPoints(Vec3f const src[4], Vec3f dst[4], Matrix const& srcBas
 
 }  // namespace
 
-auto GetBezierBasisMatrix() -> Matrix {
+auto GetBezierBasisMatrix() -> Matrix
+{
   static float const m[4][4] = {
       {-1, 3, -3, 1},
       {3, -6, 3, 0},
@@ -40,7 +41,8 @@ auto GetBezierBasisMatrix() -> Matrix {
   return MakeBasisMatrix(m);
 }
 
-auto GetBSplineBasisMatrix() -> Matrix {
+auto GetBSplineBasisMatrix() -> Matrix
+{
   static float const m[4][4] = {
       {-1.0f / 6.0f, 3.0f / 6.0f, -3.0f / 6.0f, 1.0f / 6.0f},
       {3.0f / 6.0f, -6.0f / 6.0f, 0.0f / 6.0f, 4.0f / 6.0f},
@@ -50,7 +52,8 @@ auto GetBSplineBasisMatrix() -> Matrix {
   return MakeBasisMatrix(m);
 }
 
-auto GeometryMatrixFromControlPoints(Vec3f const pts[4]) -> Matrix {
+auto GeometryMatrixFromControlPoints(Vec3f const pts[4]) -> Matrix
+{
   Matrix G;
   G.Clear();
   for (auto col = 0; col < 4; col++) {
@@ -62,13 +65,15 @@ auto GeometryMatrixFromControlPoints(Vec3f const pts[4]) -> Matrix {
   return G;
 }
 
-auto ControlPointsFromGeometryMatrix(Matrix const& G, Vec3f pts[4]) -> void {
+auto ControlPointsFromGeometryMatrix(Matrix const& G, Vec3f pts[4]) -> void
+{
   for (auto col = 0; col < 4; col++) {
     pts[col] = Vec3f(G.Get(col, 0), G.Get(col, 1), G.Get(col, 2));
   }
 }
 
-auto EvaluateCubicCurve(Vec3f const pts[4], Matrix const& basis, float t) -> Vec3f {
+auto EvaluateCubicCurve(Vec3f const pts[4], Matrix const& basis, float t) -> Vec3f
+{
   auto G = GeometryMatrixFromControlPoints(pts);
   auto GB = G * basis;
   Vec4f T(t * t * t, t * t, t, 1.0f);
@@ -76,7 +81,8 @@ auto EvaluateCubicCurve(Vec3f const pts[4], Matrix const& basis, float t) -> Vec
   return Vec3f(T.x(), T.y(), T.z());
 }
 
-auto ConvertBezierControlPointsToBSpline(Vec3f const bezier[4], Vec3f bspline[4]) -> void {
+auto ConvertBezierControlPointsToBSpline(Vec3f const bezier[4], Vec3f bspline[4]) -> void
+{
   ConvertControlPoints(bezier, bspline, GetBezierBasisMatrix(), GetBSplineBasisMatrix());
 #if DEBUG_CURVE
   DebugVerifyCurveConversion(bezier, bspline, GetBezierBasisMatrix(), GetBSplineBasisMatrix(),
@@ -84,7 +90,8 @@ auto ConvertBezierControlPointsToBSpline(Vec3f const bezier[4], Vec3f bspline[4]
 #endif
 }
 
-auto ConvertBSplineControlPointsToBezier(Vec3f const bspline[4], Vec3f bezier[4]) -> void {
+auto ConvertBSplineControlPointsToBezier(Vec3f const bspline[4], Vec3f bezier[4]) -> void
+{
   ConvertControlPoints(bspline, bezier, GetBSplineBasisMatrix(), GetBezierBasisMatrix());
 #if DEBUG_CURVE
   DebugVerifyCurveConversion(bspline, bezier, GetBSplineBasisMatrix(), GetBezierBasisMatrix(),
@@ -111,31 +118,37 @@ auto DebugVerifyCurveConversion(Vec3f const src[4], Vec3f const dst[4], Matrix c
 }
 #endif
 
-Curve::Curve(int _num_vertices) {
+Curve::Curve(int _num_vertices)
+{
   num_vertices = _num_vertices;
   vertices = new Vec3f[num_vertices];
 }
 
-Curve::~Curve() {
+Curve::~Curve()
+{
   delete[] vertices;
 }
 
-auto Curve::getVertex(int i) -> Vec3f {
+auto Curve::getVertex(int i) -> Vec3f
+{
   assert(i >= 0 && i < num_vertices);
   return vertices[i];
 }
 
-auto Curve::set(int i, Vec3f v) -> void {
+auto Curve::set(int i, Vec3f v) -> void
+{
   assert(i >= 0 && i < num_vertices);
   vertices[i] = v;
 }
 
-auto Curve::moveControlPoint(int selectedPoint, float x, float y) -> void {
+auto Curve::moveControlPoint(int selectedPoint, float x, float y) -> void
+{
   assert(selectedPoint >= 0 && selectedPoint < num_vertices);
   vertices[selectedPoint].Set(x, y, vertices[selectedPoint].z());
 }
 
-auto Curve::insertControlPoint(int index, Vec3f v) -> void {
+auto Curve::insertControlPoint(int index, Vec3f v) -> void
+{
   auto* new_vertices = new Vec3f[num_vertices + 1];
   for (auto i = 0; i < index; i++) {
     new_vertices[i] = vertices[i];
@@ -149,7 +162,8 @@ auto Curve::insertControlPoint(int index, Vec3f v) -> void {
   num_vertices++;
 }
 
-auto Curve::removeControlPoint(int index) -> void {
+auto Curve::removeControlPoint(int index) -> void
+{
   assert(index >= 0 && index < num_vertices);
   auto* new_vertices = new Vec3f[num_vertices - 1];
   for (auto i = 0; i < index; i++) {
@@ -163,52 +177,62 @@ auto Curve::removeControlPoint(int index) -> void {
   num_vertices--;
 }
 
-auto Curve::addControlPoint(int selectedPoint, float x, float y) -> void {
+auto Curve::addControlPoint(int selectedPoint, float x, float y) -> void
+{
   if (!allowAddControlPoints()) {
     return;
   }
   insertControlPoint(selectedPoint, Vec3f(x, y, 0));
 }
 
-auto Curve::deleteControlPoint(int selectedPoint) -> void {
+auto Curve::deleteControlPoint(int selectedPoint) -> void
+{
   if (!allowDeleteControlPoints()) {
     return;
   }
-  if (num_vertices <= 4) {
+  if (num_vertices <= 4)
+  {
     return;
   }
   removeControlPoint(selectedPoint);
 }
 
-auto Curve::evaluateSegment(int segment, float t) const -> Vec3f {
+auto Curve::evaluateSegment(int segment, float t) const -> Vec3f
+{
   Vec3f pts[4];
   getSegmentControlPoints(segment, pts);
   return EvaluateCubicCurve(pts, getSegmentBasis(), t);
 }
 
-auto Curve::numSegments() const -> int {
+auto Curve::numSegments() const -> int
+{
   return getNumSegments();
 }
 
-auto Curve::evaluateAlongCurve(float u) const -> Vec3f {
+auto Curve::evaluateAlongCurve(float u) const -> Vec3f
+{
   auto numSegs = getNumSegments();
-  if (u <= 0.0f) {
+  if (u <= 0.0f)
+  {
     return evaluateSegment(0, 0.0f);
   }
-  if (u >= 1.0f) {
+  if (u >= 1.0f)
+  {
     return evaluateSegment(numSegs - 1, 1.0f);
   }
 
   auto scaled = u * numSegs;
   auto segment = static_cast<int>(scaled);
-  if (segment >= numSegs) {
+  if (segment >= numSegs)
+  {
     segment = numSegs - 1;
   }
   auto t = scaled - segment;
   return evaluateSegment(segment, t);
 }
 
-auto Curve::writeControlPoints(FILE* file, char const* type) const -> void {
+auto Curve::writeControlPoints(FILE* file, char const* type) const -> void
+{
   ::fprintf(file, "%s\n", type);
   ::fprintf(file, "num_vertices %d\n", num_vertices);
   for (auto i = 0; i < num_vertices; i++) {
@@ -216,9 +240,11 @@ auto Curve::writeControlPoints(FILE* file, char const* type) const -> void {
   }
 }
 
-auto Curve::Paint(ArgParser* args) -> void {
+auto Curve::Paint(ArgParser* args) -> void
+{
   auto tess = args->curve_tessellation;
-  if (tess < 1) {
+  if (tess < 1)
+  {
     tess = 1;
   }
 
@@ -247,7 +273,8 @@ auto Curve::Paint(ArgParser* args) -> void {
   auto segments = getNumSegments();
   for (auto s = 0; s < segments; s++) {
     for (auto i = 0; i <= tess; i++) {
-      if (s > 0 && i == 0) {
+      if (s > 0 && i == 0)
+      {
         continue;
       }
       auto t = static_cast<float>(i) / static_cast<float>(tess);
@@ -258,6 +285,7 @@ auto Curve::Paint(ArgParser* args) -> void {
   ::glEnd();
 }
 
-auto Curve::OutputTriangles(ArgParser* args) -> TriangleMesh* {
+auto Curve::OutputTriangles(ArgParser* args) -> TriangleMesh*
+{
   return new TriangleMesh(0, 0);
 }

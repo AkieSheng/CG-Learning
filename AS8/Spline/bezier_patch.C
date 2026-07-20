@@ -1,8 +1,7 @@
-#include <cstdio>
-#include <cassert>
-
-#include "gl_headers.h"
 #include "bezier_patch.h"
+#include <cassert>
+#include <cstdio>
+#include "gl_headers.h"
 #include "curve.h"
 #include "arg_parser.h"
 #include "triangle_mesh.h"
@@ -11,7 +10,8 @@
 
 namespace {
 
-auto EvaluateBezierPatch(Vec3f const control[16], float s, float t) -> Vec3f {
+auto EvaluateBezierPatch(Vec3f const control[16], float s, float t) -> Vec3f
+{
   auto const& B = GetBezierBasisMatrix();
   Vec3f rowPoints[4];
   for (auto i = 0; i < 4; i++) {
@@ -25,7 +25,8 @@ auto EvaluateBezierPatch(Vec3f const control[16], float s, float t) -> Vec3f {
 }
 
 #if DEBUG_PATCH
-auto DebugPrintPatchMesh(int tess, Vec3f const control[16]) -> void {
+auto DebugPrintPatchMesh(int tess, Vec3f const control[16]) -> void
+{
   ::printf("[DEBUG_PATCH] BezierPatch mesh:\n");
   ::printf("  patch_tessellation=%d  vertices=%d  triangles=%d\n", tess, (tess + 1) * (tess + 1),
            tess * tess * 2);
@@ -42,25 +43,30 @@ auto DebugPrintPatchMesh(int tess, Vec3f const control[16]) -> void {
 
 }  // namespace
 
-BezierPatch::BezierPatch() {
+BezierPatch::BezierPatch()
+{
   for (auto i = 0; i < 16; i++) {
     control_points[i] = Vec3f(0, 0, 0);
   }
 }
 
-BezierPatch::~BezierPatch() {}
+BezierPatch::~BezierPatch()
+{ }
 
-auto BezierPatch::set(int i, Vec3f v) -> void {
+auto BezierPatch::set(int i, Vec3f v) -> void
+{
   assert(i >= 0 && i < 16);
   control_points[i] = v;
 }
 
-auto BezierPatch::getVertex(int i) -> Vec3f {
+auto BezierPatch::getVertex(int i) -> Vec3f
+{
   assert(i >= 0 && i < 16);
   return control_points[i];
 }
 
-auto BezierPatch::Paint(ArgParser* args) -> void {
+auto BezierPatch::Paint(ArgParser* args) -> void
+{
   ::glColor3f(0.5f, 0.5f, 0.5f);
   ::glLineWidth(1);
 
@@ -94,12 +100,14 @@ auto BezierPatch::Paint(ArgParser* args) -> void {
   ::glEnd();
 
   auto tess = args->patch_tessellation;
-  if (tess < 1) {
+  if (tess < 1)
+  {
     tess = 1;
   }
   auto previewTess = tess;
 
-  if (previewTess > 20) {
+  if (previewTess > 20)
+  {
     previewTess = 20;
   }
 
@@ -131,7 +139,8 @@ auto BezierPatch::Paint(ArgParser* args) -> void {
   }
 }
 
-auto BezierPatch::OutputBezier(FILE* file) -> void {
+auto BezierPatch::OutputBezier(FILE* file) -> void
+{
   ::fprintf(file, "bezier_patch\n");
   for (auto i = 0; i < 16; i++) {
     ::fprintf(file, "%g %g %g\n", control_points[i].x(), control_points[i].y(),
@@ -139,13 +148,16 @@ auto BezierPatch::OutputBezier(FILE* file) -> void {
   }
 }
 
-auto BezierPatch::OutputBSpline(FILE* file) -> void {
+auto BezierPatch::OutputBSpline(FILE* file) -> void
+{
   OutputBezier(file);
 }
 
-auto BezierPatch::OutputTriangles(ArgParser* args) -> TriangleMesh* {
+auto BezierPatch::OutputTriangles(ArgParser* args) -> TriangleMesh*
+{
   auto tess = args->patch_tessellation;
-  if (tess < 1) {
+  if (tess < 1)
+  {
     tess = 1;
   }
 

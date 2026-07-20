@@ -14,7 +14,8 @@ struct Object3D {
         bbox(nullptr),
         intersectionMark(0),
         hasMarkedIntersection(false),
-        markedHit(1.0e30f, nullptr, Vec3f(0, 0, 0)) {}
+        markedHit(1.0e30f, nullptr, Vec3f(0, 0, 0))
+        { }
   virtual ~Object3D();
 
   virtual auto intersect(Ray const& r, Hit& h, float tmin) -> bool = 0;
@@ -25,7 +26,8 @@ struct Object3D {
   auto setIntersectionMark(int mark) const -> void { intersectionMark = mark; }
 
   auto getHasMarkedIntersection() const -> bool { return hasMarkedIntersection; }
-  auto setMarkedIntersection(Hit const& h) const -> void {
+  auto setMarkedIntersection(Hit const& h) const -> void
+  {
     hasMarkedIntersection = true;
     markedHit = h;
   }
@@ -36,7 +38,6 @@ struct Object3D {
 
   virtual auto insertIntoGrid(Grid* g, Matrix* m) -> void;
 
-protected:
   Material* material{};
   BoundingBox* bbox{};
   mutable int intersectionMark{};

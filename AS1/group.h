@@ -2,7 +2,8 @@
 
 #include "object3d.h"
 
-struct Group final : Object3D {
+struct Group final : Object3D
+{
   Group(int numObjects);
   ~Group();
 

@@ -1,4 +1,8 @@
 #include "grid.h"
+#include <cassert>
+#include <cmath>
+#include <cstdio>
+#include <cstring>
 #include "boundingbox.h"
 #include "marchinginfo.h"
 #include "material.h"
@@ -6,23 +10,19 @@
 #include "hit.h"
 #include "matrix.h"
 
-#include <assert.h>
-#include <stdio.h>
-#include <string.h>
-#include <math.h>
-
 static const float GRID_EPSILON = 1.0e-6f;
 static const float GRID_INF = 1.0e30f;
 
 struct GridTransform : public Object3D {
 
-public:
-  GridTransform(Matrix const&m, Object3D *o) : matrix(m), object(o) {
+  GridTransform(Matrix const&m, Object3D *o) : matrix(m), object(o)
+  {
     matrix.Inverse(inverseMatrix);
     inverseMatrix.Transpose();
   }
 
-  virtual bool intersect(Ray const&r, Hit &h, float tmin) {
+  virtual bool intersect(Ray const&r, Hit &h, float tmin)
+  {
     Matrix objectMatrix;
     matrix.Inverse(objectMatrix);
 
@@ -44,7 +44,8 @@ public:
   }
 
   virtual bool intersectShadow(Ray const&r, float tmin, float tmax, float &t,
-                               Material **outMaterial) {
+                               Material **outMaterial)
+  {
     Matrix objectMatrix;
     matrix.Inverse(objectMatrix);
 
@@ -57,14 +58,14 @@ public:
     return object->intersectShadow(localRay, tmin, tmax, t, outMaterial);
   }
 
-private:
   Matrix matrix;
   Matrix inverseMatrix;
   Object3D *object;
 };
 
 static bool boxesOverlap(Vec3f const&amin, Vec3f const&amax,
-                         Vec3f const&bmin, Vec3f const&bmax) {
+                         Vec3f const&bmin, Vec3f const&bmax)
+{
   return amin.x() <= bmax.x() && amax.x() >= bmin.x() &&
          amin.y() <= bmax.y() && amax.y() >= bmin.y() &&
          amin.z() <= bmax.z() && amax.z() >= bmin.z();
@@ -73,7 +74,8 @@ static bool boxesOverlap(Vec3f const&amin, Vec3f const&amax,
 Grid::Grid(BoundingBox *bb, int nx, int ny, int nz)
     : sceneBounds(nullptr), nx(nx), ny(ny), nz(nz),
       dx(0), dy(0), dz(0), cells(nullptr),
-      infiniteObjects(nullptr), gridWrappers(nullptr) {
+      infiniteObjects(nullptr), gridWrappers(nullptr)
+{
 
   assert(bb != nullptr);
   assert(nx > 0 && ny > 0 && nz > 0);
@@ -94,8 +96,10 @@ Grid::Grid(BoundingBox *bb, int nx, int ny, int nz)
   material = nullptr;
 }
 
-Grid::~Grid() {
-  if (gridWrappers != nullptr) {
+Grid::~Grid()
+{
+  if (gridWrappers != nullptr)
+  {
     for (int i = 0; i < gridWrappers->getNumObjects(); i++)
       delete gridWrappers->getObject(i);
     delete gridWrappers;
@@ -113,18 +117,21 @@ Grid::~Grid() {
   sceneBounds = nullptr;
 }
 
-int Grid::index(int i, int j, int k) const {
+int Grid::index(int i, int j, int k) const
+{
   assert(i >= 0 && i < nx);
   assert(j >= 0 && j < ny);
   assert(k >= 0 && k < nz);
   return i * ny * nz + j * nz + k;
 }
 
-bool Grid::inBounds(int i, int j, int k) const {
+bool Grid::inBounds(int i, int j, int k) const
+{
   return i >= 0 && i < nx && j >= 0 && j < ny && k >= 0 && k < nz;
 }
 
-void Grid::getVoxelBounds(int i, int j, int k, Vec3f &vmin, Vec3f &vmax) const {
+void Grid::getVoxelBounds(int i, int j, int k, Vec3f &vmin, Vec3f &vmax) const
+{
   Vec3f bbMin = sceneBounds->getMin();
   vmin = Vec3f(bbMin.x() + i * dx,
                bbMin.y() + j * dy,
@@ -132,17 +139,20 @@ void Grid::getVoxelBounds(int i, int j, int k, Vec3f &vmin, Vec3f &vmax) const {
   vmax = Vec3f(vmin.x() + dx, vmin.y() + dy, vmin.z() + dz);
 }
 
-Vec3f Grid::getVoxelCenter(int i, int j, int k) const {
+Vec3f Grid::getVoxelCenter(int i, int j, int k) const
+{
   Vec3f vmin, vmax;
   getVoxelBounds(i, j, k, vmin, vmax);
   return (vmin + vmax) * 0.5f;
 }
 
-float Grid::getVoxelHalfDiagonal() const {
+float Grid::getVoxelHalfDiagonal() const
+{
   return 0.5f * ::sqrtf(dx * dx + dy * dy + dz * dz);
 }
 
-Object3D *Grid::wrapForGrid(Object3D *obj, Matrix *m) {
+Object3D *Grid::wrapForGrid(Object3D *obj, Matrix *m)
+{
   if (m == nullptr)
     return obj;
   GridTransform *wrapper = new GridTransform(*m, obj);
@@ -150,25 +160,30 @@ Object3D *Grid::wrapForGrid(Object3D *obj, Matrix *m) {
   return wrapper;
 }
 
-void Grid::addInfiniteObject(Object3D *obj) {
+void Grid::addInfiniteObject(Object3D *obj)
+{
   assert(obj != nullptr);
   infiniteObjects->addObject(obj);
 }
 
-Object3DVector *Grid::getCell(int i, int j, int k) {
+Object3DVector *Grid::getCell(int i, int j, int k)
+{
   return &cells[index(i, j, k)];
 }
 
-void Grid::insertObject(int i, int j, int k, Object3D *obj) {
+void Grid::insertObject(int i, int j, int k, Object3D *obj)
+{
   assert(obj != nullptr);
   cells[index(i, j, k)].addObject(obj);
 }
 
-int Grid::getObjectCount(int i, int j, int k) const {
+int Grid::getObjectCount(int i, int j, int k) const
+{
   return cells[index(i, j, k)].getNumObjects();
 }
 
-bool Grid::isOccupied(int i, int j, int k) const {
+bool Grid::isOccupied(int i, int j, int k) const
+{
   return getObjectCount(i, j, k) > 0;
 }
 
@@ -176,7 +191,8 @@ void Grid::getWorldBBox(BoundingBox *bb, Matrix *m,
                         Vec3f &wmin, Vec3f &wmax) const {
   Vec3f cmin = bb->getMin();
   Vec3f cmax = bb->getMax();
-  if (m == nullptr) {
+  if (m == nullptr)
+  {
     wmin = cmin;
     wmax = cmax;
     return;
@@ -227,7 +243,8 @@ void Grid::voxelIndexRange(Vec3f const&wmin, Vec3f const&wmax,
   if (k1 >= nz) k1 = nz - 1;
 }
 
-void Grid::insertObjectInBBox(BoundingBox *bb, Object3D *obj, Matrix *m) {
+void Grid::insertObjectInBBox(BoundingBox *bb, Object3D *obj, Matrix *m)
+{
   if (bb == nullptr || obj == nullptr)
     return;
 
@@ -237,7 +254,8 @@ void Grid::insertObjectInBBox(BoundingBox *bb, Object3D *obj, Matrix *m) {
 }
 
 void Grid::insertObjectInWorldAABB(Vec3f const&wminIn, Vec3f const&wmaxIn,
-                                   Object3D *obj, Matrix *m) {
+                                   Object3D *obj, Matrix *m)
+{
   if (obj == nullptr)
     return;
 
@@ -280,11 +298,13 @@ bool Grid::intersectRayBox(Ray const&r, float tmin, float &tEnter, float &tExit,
     float tx1 = (bmin.x() - o.x()) / d.x();
     float tx2 = (bmax.x() - o.x()) / d.x();
     Vec3f nx1(-1, 0, 0), nx2(1, 0, 0);
-    if (tx1 > tx2) {
+    if (tx1 > tx2)
+    {
       float tmp = tx1; tx1 = tx2; tx2 = tmp;
       Vec3f tn = nx1; nx1 = nx2; nx2 = tn;
     }
-    if (tx1 > t0) { t0 = tx1; entryNormal = nx1; }
+    if (tx1 > t0)
+    { t0 = tx1; entryNormal = nx1; }
     if (tx2 < t1) t1 = tx2;
     if (t0 > t1) return false;
   }
@@ -296,11 +316,13 @@ bool Grid::intersectRayBox(Ray const&r, float tmin, float &tEnter, float &tExit,
     float ty1 = (bmin.y() - o.y()) / d.y();
     float ty2 = (bmax.y() - o.y()) / d.y();
     Vec3f ny1(0, -1, 0), ny2(0, 1, 0);
-    if (ty1 > ty2) {
+    if (ty1 > ty2)
+    {
       float tmp = ty1; ty1 = ty2; ty2 = tmp;
       Vec3f tn = ny1; ny1 = ny2; ny2 = tn;
     }
-    if (ty1 > t0) { t0 = ty1; entryNormal = ny1; }
+    if (ty1 > t0)
+    { t0 = ty1; entryNormal = ny1; }
     if (ty2 < t1) t1 = ty2;
     if (t0 > t1) return false;
   }
@@ -312,11 +334,13 @@ bool Grid::intersectRayBox(Ray const&r, float tmin, float &tEnter, float &tExit,
     float tz1 = (bmin.z() - o.z()) / d.z();
     float tz2 = (bmax.z() - o.z()) / d.z();
     Vec3f nz1(0, 0, -1), nz2(0, 0, 1);
-    if (tz1 > tz2) {
+    if (tz1 > tz2)
+    {
       float tmp = tz1; tz1 = tz2; tz2 = tmp;
       Vec3f tn = nz1; nz1 = nz2; nz2 = tn;
     }
-    if (tz1 > t0) { t0 = tz1; entryNormal = nz1; }
+    if (tz1 > t0)
+    { t0 = tz1; entryNormal = nz1; }
     if (tz2 < t1) t1 = tz2;
     if (t0 > t1) return false;
   }
@@ -326,7 +350,8 @@ bool Grid::intersectRayBox(Ray const&r, float tmin, float &tEnter, float &tExit,
   return tEnter <= tExit;
 }
 
-static bool pointInsideBox(Vec3f const&p, BoundingBox const*bb) {
+static bool pointInsideBox(Vec3f const&p, BoundingBox const*bb)
+{
   Vec3f bmin = bb->getMin();
   Vec3f bmax = bb->getMax();
   return p.x() >= bmin.x() && p.x() <= bmax.x() &&
@@ -337,7 +362,8 @@ static bool pointInsideBox(Vec3f const&p, BoundingBox const*bb) {
 static void computeVoxelIndex(Vec3f const&p, BoundingBox const*bb,
                               float dx, float dy, float dz,
                               int nx, int ny, int nz,
-                              int &i, int &j, int &k) {
+                              int &i, int &j, int &k)
+{
   Vec3f bmin = bb->getMin();
   i = static_cast<int>((p.x() - bmin.x()) / dx);
   j = static_cast<int>((p.y() - bmin.y()) / dy);
@@ -352,7 +378,8 @@ static void computeVoxelIndex(Vec3f const&p, BoundingBox const*bb,
 
 static void initAxis(float dirComp, float originComp, float bbMinComp,
                      float cellSize, int cellIndex, float tStart,
-                     int &sign, float &dT, float &tNext) {
+                     int &sign, float &dT, float &tNext)
+{
 
   if (::fabs(dirComp) < GRID_EPSILON) {
     sign = 0;
@@ -361,7 +388,8 @@ static void initAxis(float dirComp, float originComp, float bbMinComp,
     return;
   }
 
-  if (dirComp > 0.0f) {
+  if (dirComp > 0.0f)
+  {
     sign = 1;
     dT = cellSize / dirComp;
     float nextBoundary = bbMinComp + (cellIndex + 1) * cellSize;
@@ -377,7 +405,8 @@ static void initAxis(float dirComp, float originComp, float bbMinComp,
     tNext += dT;
 }
 
-void Grid::initializeRayMarch(MarchingInfo &mi, Ray const&r, float tmin) const {
+void Grid::initializeRayMarch(MarchingInfo &mi, Ray const&r, float tmin) const
+{
   mi.setValid(false);
 
   Vec3f origin = r.getOrigin();
@@ -390,7 +419,8 @@ void Grid::initializeRayMarch(MarchingInfo &mi, Ray const&r, float tmin) const {
   bool inside = pointInsideBox(origin, sceneBounds);
   float tEnter, tExit;
 
-  if (inside) {
+  if (inside)
+  {
 
     tEnter = tmin;
     if (!hitsBox)
@@ -433,11 +463,13 @@ void Grid::initializeRayMarch(MarchingInfo &mi, Ray const&r, float tmin) const {
   mi.setValid(true);
 }
 
-bool Grid::intersect(Ray const&r, Hit &h, float tmin) {
+bool Grid::intersect(Ray const&r, Hit &h, float tmin)
+{
   return false;
 }
 
 bool Grid::intersectShadow(Ray const&r, float tmin, float tmax, float &t,
-                           Material **outMaterial) {
+                           Material **outMaterial)
+{
   return false;
 }

@@ -20,7 +20,6 @@ struct RayTracer final {
   auto traceRay(Ray& ray, float tmin, int bounces, float weight,
                 float indexOfRefraction, Hit& hit) const -> Vec3f;
 
-private:
   SceneParser* parser{};
   Grid* grid{};
   int maxBounces{};

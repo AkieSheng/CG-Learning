@@ -1,8 +1,3 @@
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <cassert>
-
 #include "image.h"
 #include "scene_parser.h"
 #include "hit.h"
@@ -10,7 +5,13 @@
 #include "group.h"
 #include "material.h"
 
-auto main(int argc, char* argv[]) -> int {
+#include <cassert>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+
+auto main(int argc, char* argv[]) -> int
+{
   char* input_file = nullptr;
   auto width = 100;
   auto height = 100;
@@ -86,21 +87,18 @@ auto main(int argc, char* argv[]) -> int {
         image.SetPixel(x, y, hit.getMaterial()->getDiffuseColor());
 
         auto gray = (depth_max - hit.getT()) / (depth_max - depth_min);
-        if (gray < 0.0f) {
+        if (gray < 0.0f)
           gray = 0.0f;
-        }
-        if (gray > 1.0f) {
+        if (gray > 1.0f)
           gray = 1.0f;
-        }
         depthImage.SetPixel(x, y, Vec3f(gray, gray, gray));
       }
     }
   }
 
   image.SaveTGA(output_file);
-  if (depth_file != nullptr) {
+  if (depth_file != nullptr)
     depthImage.SaveTGA(depth_file);
-  }
 
   return 0;
 }

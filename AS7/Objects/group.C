@@ -1,21 +1,24 @@
 #include "group.h"
+#include <cassert>
 #include "grid.h"
 #include "boundingbox.h"
-#include <assert.h>
 
-Group::Group(int numObjects) : numObjects(numObjects) {
+Group::Group(int numObjects) : numObjects(numObjects)
+{
   objects = new Object3D*[numObjects];
   for (int i = 0; i < numObjects; i++)
     objects[i] = nullptr;
 }
 
-Group::~Group() {
+Group::~Group()
+{
   for (int i = 0; i < numObjects; i++)
     delete objects[i];
   delete [] objects;
 }
 
-void Group::addObject(int index, Object3D *obj) {
+void Group::addObject(int index, Object3D *obj)
+{
   assert(index >= 0 && index < numObjects);
   objects[index] = obj;
   if (obj == nullptr)
@@ -31,7 +34,8 @@ void Group::addObject(int index, Object3D *obj) {
     bbox->Extend(childBox);
 }
 
-bool Group::intersect(Ray const&r, Hit &h, float tmin) {
+bool Group::intersect(Ray const&r, Hit &h, float tmin)
+{
   bool hit = false;
   for (int i = 0; i < numObjects; i++) {
     if (objects[i] != nullptr && objects[i]->intersect(r, h, tmin))
@@ -41,9 +45,11 @@ bool Group::intersect(Ray const&r, Hit &h, float tmin) {
 }
 
 bool Group::intersectShadow(Ray const&r, float tmin, float tmax, float &t,
-                            Material **outMaterial) {
+                            Material **outMaterial)
+{
 
-  if (outMaterial == nullptr) {
+  if (outMaterial == nullptr)
+  {
     for (int i = 0; i < numObjects; i++) {
       if (objects[i] == nullptr)
         continue;
@@ -70,14 +76,16 @@ bool Group::intersectShadow(Ray const&r, float tmin, float tmax, float &t,
       hit = true;
     }
   }
-  if (hit) {
+  if (hit)
+  {
     t = bestT;
     *outMaterial = bestMat;
   }
   return hit;
 }
 
-void Group::insertIntoGrid(Grid *g, Matrix *m) {
+void Group::insertIntoGrid(Grid *g, Matrix *m)
+{
   for (int i = 0; i < numObjects; i++) {
     if (objects[i] != nullptr)
       objects[i]->insertIntoGrid(g, m);

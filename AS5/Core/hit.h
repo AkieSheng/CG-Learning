@@ -1,8 +1,9 @@
 #pragma once
 
-#include <iostream>
 #include "vectors.h"
 #include "ray.h"
+
+#include <iostream>
 
 struct Material;
 

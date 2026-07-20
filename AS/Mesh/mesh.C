@@ -10,7 +10,8 @@ Mesh::Mesh() { modelMatrix.SetToIdentity(); }
 Mesh::~Mesh() { destroy(); }
 
 auto Mesh::upload(std::vector<Vertex> const& vertices,
-                  std::vector<unsigned int> const& indices) -> void {
+                  std::vector<unsigned int> const& indices) -> void
+{
   destroy();
   numIndices = static_cast<int>(indices.size());
 
@@ -51,16 +52,17 @@ auto Mesh::upload(std::vector<Vertex> const& vertices,
   ::glBindVertexArray(0);
 }
 
-auto Mesh::draw() const -> void {
-  if (vao == 0 || numIndices == 0) {
+auto Mesh::draw() const -> void
+{
+  if (vao == 0 || numIndices == 0)
     return;
-  }
   ::glBindVertexArray(vao);
   ::glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, 0);
   ::glBindVertexArray(0);
 }
 
-auto Mesh::destroy() -> void {
+auto Mesh::destroy() -> void
+{
   if (ebo) {
     ::glDeleteBuffers(1, &ebo);
     ebo = 0;

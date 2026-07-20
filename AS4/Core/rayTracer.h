@@ -4,10 +4,12 @@
 #include "ray.h"
 #include "hit.h"
 
+
 struct SceneParser;
 struct Material;
 
-struct RayTracer {
+struct RayTracer
+{
   RayTracer(SceneParser* s, int max_bounces, float cutoff_weight, bool shadows,
             bool shade_back, bool transparent_shadows);
 

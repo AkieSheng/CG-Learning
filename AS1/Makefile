@@ -40,7 +40,6 @@ clean:
 
 # 渲染全部测试场景
 render: $(EXE)
-	mkdir -p $(OUTPUT_DIR)
 	$(EXE) -input $(INPUT_DIR)/scene1_01.txt -size 200 200 -output $(OUTPUT_DIR)/output1_01.tga -depth 9 10 $(OUTPUT_DIR)/depth1_01.tga
 	$(EXE) -input $(INPUT_DIR)/scene1_02.txt -size 200 200 -output $(OUTPUT_DIR)/output1_02.tga -depth 8 12 $(OUTPUT_DIR)/depth1_02.tga
 	$(EXE) -input $(INPUT_DIR)/scene1_03.txt -size 200 200 -output $(OUTPUT_DIR)/output1_03.tga -depth 8 12 $(OUTPUT_DIR)/depth1_03.tga

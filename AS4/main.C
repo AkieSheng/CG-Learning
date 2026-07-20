@@ -1,9 +1,3 @@
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <cassert>
-#include <cmath>
-
 #include "image.h"
 #include "scene_parser.h"
 #include "hit.h"
@@ -16,7 +10,14 @@
 #include "gl_options.h"
 #include "gl_headers.h"
 
-struct RayTracerArgs {
+#include <cassert>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+
+struct RayTracerArgs
+{
   char* input_file{};
   int width{100};
   int height{100};
@@ -42,7 +43,8 @@ static SceneParser* globalParser = nullptr;
 static RayTracer* globalRayTracer = nullptr;
 static RayTracerArgs globalArgs;
 
-static auto parseArgs(int argc, char* argv[], RayTracerArgs& args) -> void {
+static auto parseArgs(int argc, char* argv[], RayTracerArgs& args) -> void
+{
   args.input_file = nullptr;
   args.width = 100;
   args.height = 100;
@@ -124,26 +126,26 @@ static auto parseArgs(int argc, char* argv[], RayTracerArgs& args) -> void {
   assert(args.input_file != nullptr);
   assert(args.output_file != nullptr);
 
-  if (args.transparent_shadows) {
+  if (args.transparent_shadows)
     args.shadows = true;
-  }
 }
 
-static auto shadeNormal(Vec3f const& normal) -> Vec3f {
+static auto shadeNormal(Vec3f const& normal) -> Vec3f
+{
   return Vec3f(::fabs(normal.x()), ::fabs(normal.y()), ::fabs(normal.z()));
 }
 
-static auto clamp01(float x) -> float {
-  if (x < 0.0f) {
+static auto clamp01(float x) -> float
+{
+  if (x < 0.0f)
     return 0.0f;
-  }
-  if (x > 1.0f) {
+  if (x > 1.0f)
     return 1.0f;
-  }
   return x;
 }
 
-static auto generateCameraRay(float u, float v) -> Ray {
+static auto generateCameraRay(float u, float v) -> Ray
+{
   auto aspect = static_cast<float>(globalArgs.width) /
                 static_cast<float>(globalArgs.height);
   if (aspect > 1.0f) {
@@ -154,7 +156,8 @@ static auto generateCameraRay(float u, float v) -> Ray {
   return globalParser->getCamera()->generateRay(Vec2f(u, v));
 }
 
-static auto traceRayAtScreen(float u, float v) -> void {
+static auto traceRayAtScreen(float u, float v) -> void
+{
   assert(globalParser != nullptr && globalRayTracer != nullptr);
 
   auto ray = generateCameraRay(u, v);
@@ -163,7 +166,8 @@ static auto traceRayAtScreen(float u, float v) -> void {
                             1.0f, hit);
 }
 
-static auto renderScene() -> void {
+static auto renderScene() -> void
+{
   assert(globalParser != nullptr && globalRayTracer != nullptr);
 
   auto* camera = globalParser->getCamera();
@@ -194,24 +198,22 @@ static auto renderScene() -> void {
         normalImage.SetPixel(x, y, shadeNormal(hit.getNormal()));
         auto depthRange = globalArgs.depth_max - globalArgs.depth_min;
         auto gray = 0.0f;
-        if (depthRange > 0.0f) {
+        if (depthRange > 0.0f)
           gray = clamp01((hit.getT() - globalArgs.depth_min) / depthRange);
-        }
         depthImage.SetPixel(x, y, Vec3f(gray, gray, gray));
       }
     }
   }
 
   image.SaveTGA(globalArgs.output_file);
-  if (globalArgs.depth_file != nullptr) {
+  if (globalArgs.depth_file != nullptr)
     depthImage.SaveTGA(globalArgs.depth_file);
-  }
-  if (globalArgs.normals_file != nullptr) {
+  if (globalArgs.normals_file != nullptr)
     normalImage.SaveTGA(globalArgs.normals_file);
-  }
 }
 
-auto main(int argc, char* argv[]) -> int {
+auto main(int argc, char* argv[]) -> int
+{
   parseArgs(argc, argv, globalArgs);
 
   globalParser = new SceneParser(globalArgs.input_file);

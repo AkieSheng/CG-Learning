@@ -3,7 +3,8 @@
 
 PBRMaterial::PBRMaterial() {}
 
-PBRMaterial::~PBRMaterial() {
+PBRMaterial::~PBRMaterial()
+{
   delete baseColorTexture;
   delete metallicRoughnessTexture;
   delete normalTexture;
@@ -15,7 +16,8 @@ PBRMaterial::~PBRMaterial() {
   delete clearcoatNormalTexture;
 }
 
-auto PBRMaterial::bindTextures(ShaderProgram& shader) const -> void {
+auto PBRMaterial::bindTextures(ShaderProgram& shader) const -> void
+{
   int unit = 0;
 
   if (baseColorTexture && baseColorTexture->valid()) {
@@ -98,7 +100,8 @@ auto PBRMaterial::bindTextures(ShaderProgram& shader) const -> void {
   }
 }
 
-auto PBRMaterial::setUniforms(ShaderProgram& shader) const -> void {
+auto PBRMaterial::setUniforms(ShaderProgram& shader) const -> void
+{
   shader.setVec4("uBaseColorFactor", baseColorFactor[0], baseColorFactor[1],
                  baseColorFactor[2], baseColorFactor[3]);
   shader.setFloat("uMetallicFactor", metallicFactor);

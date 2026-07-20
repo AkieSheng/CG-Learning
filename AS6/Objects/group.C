@@ -1,6 +1,8 @@
 #include "group.h"
+
 #include "grid.h"
 #include "boundingbox.h"
+
 #include <cassert>
 #include <cstdio>
 

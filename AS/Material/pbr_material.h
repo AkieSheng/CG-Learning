@@ -1,16 +1,18 @@
 #pragma once
 
-#include <string>
 #include "texture.h"
 #include "shader_program.h"
+#include <string>
 
-enum AlphaMode {
+enum AlphaMode
+{
   ALPHA_OPAQUE = 0,
   ALPHA_MASK,
   ALPHA_BLEND
 };
 
-struct PBRMaterial final {
+struct PBRMaterial final
+{
   std::string name{};
 
   float baseColorFactor[4]{1.0f, 1.0f, 1.0f, 1.0f};

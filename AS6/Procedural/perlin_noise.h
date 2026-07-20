@@ -29,7 +29,6 @@ struct PerlinNoise final {
                                      grad(p[BB + 1], x - 1, y - 1, z - 1))));
   }
 
-private:
   static auto fade(double t) -> double {
     return t * t * t * (t * (t * 6 - 15) + 10);
   }

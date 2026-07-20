@@ -1,8 +1,8 @@
 #include "ibl.h"
 #include "gl_headers.h"
 
-#include <math.h>
-#include <stdio.h>
+#include <cmath>
+#include <cstdio>
 #include <vector>
 
 static const int ENV_SIZE = 128;
@@ -13,9 +13,11 @@ static const int BRDF_LUT_SIZE = 512;
 static const float PI = 3.14159265359f;
 
 static void proceduralSkyDiffuse(float dx, float dy, float dz,
-                                 float *r, float *g, float *b) {
+                                 float *r, float *g, float *b)
+{
   float len = std::sqrt(dx * dx + dy * dy + dz * dz);
-  if (len < 1e-6f) len = 1.0f;
+  if (len < 1e-6f)
+    len = 1.0f;
   dx /= len; dy /= len; dz /= len;
 
   float t = 0.5f * (dy + 1.0f);
@@ -39,9 +41,11 @@ static void proceduralSkyDiffuse(float dx, float dy, float dz,
 }
 
 static void proceduralSkyDisplay(float dx, float dy, float dz,
-                                 float *r, float *g, float *b) {
+                                 float *r, float *g, float *b)
+{
   float len = std::sqrt(dx * dx + dy * dy + dz * dz);
-  if (len < 1e-6f) len = 1.0f;
+  if (len < 1e-6f)
+    len = 1.0f;
   dy /= len;
 
   float t = 0.5f * (dy + 1.0f);
@@ -54,11 +58,13 @@ static void proceduralSkyDisplay(float dx, float dy, float dz,
 }
 
 static void proceduralSkyLighting(float dx, float dy, float dz,
-                                  float *r, float *g, float *b) {
+                                  float *r, float *g, float *b)
+{
   proceduralSkyDiffuse(dx, dy, dz, r, g, b);
 
   float len = std::sqrt(dx * dx + dy * dy + dz * dz);
-  if (len < 1e-6f) len = 1.0f;
+  if (len < 1e-6f)
+    len = 1.0f;
   dx /= len; dy /= len; dz /= len;
 
   float kx = -0.54f, ky = 0.50f, kz = 0.68f;
@@ -84,7 +90,8 @@ static void proceduralSkyLighting(float dx, float dy, float dz,
   }
 }
 
-static void cubemapUVToDir(int face, float u, float v, float *dx, float *dy, float *dz) {
+static void cubemapUVToDir(int face, float u, float v, float *dx, float *dy, float *dz)
+{
   float s = 2.0f * u - 1.0f;
   float t = 2.0f * v - 1.0f;
   switch (face) {
@@ -99,18 +106,23 @@ static void cubemapUVToDir(int face, float u, float v, float *dx, float *dy, flo
 
 static void cross3(float ax, float ay, float az,
                    float bx, float by, float bz,
-                   float *cx, float *cy, float *cz) {
+                   float *cx, float *cy, float *cz)
+{
   *cx = ay * bz - az * by;
   *cy = az * bx - ax * bz;
   *cz = ax * by - ay * bx;
 }
 
-static void normalize3(float *x, float *y, float *z) {
+static void normalize3(float *x, float *y, float *z)
+{
   float len = std::sqrt((*x) * (*x) + (*y) * (*y) + (*z) * (*z));
-  if (len > 1e-6f) { *x /= len; *y /= len; *z /= len; }
+  if (len > 1e-6f) {
+    *x /= len; *y /= len; *z /= len;
+  }
 }
 
-static float radicalInverseVdC(unsigned int bits) {
+static float radicalInverseVdC(unsigned int bits)
+{
   bits = (bits << 16u) | (bits >> 16u);
   bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);
   bits = ((bits & 0x33333333u) << 2u) | ((bits & 0xCCCCCCCCu) >> 2u);
@@ -119,7 +131,8 @@ static float radicalInverseVdC(unsigned int bits) {
   return (float)bits * 2.3283064365386963e-10f;
 }
 
-static void hammersley(unsigned int i, unsigned int n, float *u, float *v) {
+static void hammersley(unsigned int i, unsigned int n, float *u, float *v)
+{
   *u = (float)i / (float)n;
   *v = radicalInverseVdC(i);
 }
@@ -127,7 +140,8 @@ static void hammersley(unsigned int i, unsigned int n, float *u, float *v) {
 static void importanceSampleGGX(float xi0, float xi1,
                                 float nx, float ny, float nz,
                                 float roughness,
-                                float *hx, float *hy, float *hz) {
+                                float *hx, float *hy, float *hz)
+{
   float a = roughness * roughness;
   float phi = 2.0f * PI * xi0;
   float cosTheta = std::sqrt((1.0f - xi1) / (1.0f + (a * a - 1.0f) * xi1));
@@ -154,7 +168,8 @@ static void importanceSampleGGX(float xi0, float xi1,
 }
 
 static void convolvePrefilter(float rx, float ry, float rz, float roughness,
-                              float *outR, float *outG, float *outB) {
+                              float *outR, float *outG, float *outB)
+{
   normalize3(&rx, &ry, &rz);
 
   if (roughness < 1e-4f) {
@@ -199,7 +214,8 @@ static void convolvePrefilter(float rx, float ry, float rz, float roughness,
 }
 
 static void convolveIrradiance(float nx, float ny, float nz,
-                               float *r, float *g, float *b) {
+                               float *r, float *g, float *b)
+{
   float upx = 0.0f, upy = 1.0f, upz = 0.0f;
   float rx, ry, rz;
   cross3(upy, upz, 0.0f, nx, ny, nz, &rx, &ry, &rz);
@@ -250,26 +266,50 @@ IBL::IBL()
     captureFBO(0),
     maxReflectionLod_(0.0f) {}
 
-IBL::~IBL() {
+IBL::~IBL()
+{
   destroy();
 }
 
-void IBL::destroy() {
+void IBL::destroy()
+{
   brdfLUTShader.destroy();
-  if (skyboxVBO) { ::glDeleteBuffers(1, &skyboxVBO); skyboxVBO = 0; }
-  if (skyboxVAO) { ::glDeleteVertexArrays(1, &skyboxVAO); skyboxVAO = 0; }
-  if (captureFBO) { ::glDeleteFramebuffers(1, &captureFBO); captureFBO = 0; }
-  if (brdfLUT) { ::glDeleteTextures(1, &brdfLUT); brdfLUT = 0; }
+  if (skyboxVBO) {
+    ::glDeleteBuffers(1, &skyboxVBO);
+    skyboxVBO = 0;
+  }
+  if (skyboxVAO) {
+    ::glDeleteVertexArrays(1, &skyboxVAO);
+    skyboxVAO = 0;
+  }
+  if (captureFBO) {
+    ::glDeleteFramebuffers(1, &captureFBO);
+    captureFBO = 0;
+  }
+  if (brdfLUT) {
+    ::glDeleteTextures(1, &brdfLUT);
+    brdfLUT = 0;
+  }
   if (prefilterMap && prefilterMap != envCubemap) {
     ::glDeleteTextures(1, &prefilterMap);
   }
   prefilterMap = 0;
-  if (irradianceMap) { ::glDeleteTextures(1, &irradianceMap); irradianceMap = 0; }
-  if (envCubemap) { ::glDeleteTextures(1, &envCubemap); envCubemap = 0; }
-  if (skyboxCubemap) { ::glDeleteTextures(1, &skyboxCubemap); skyboxCubemap = 0; }
+  if (irradianceMap) {
+    ::glDeleteTextures(1, &irradianceMap);
+    irradianceMap = 0;
+  }
+  if (envCubemap) {
+    ::glDeleteTextures(1, &envCubemap);
+    envCubemap = 0;
+  }
+  if (skyboxCubemap) {
+    ::glDeleteTextures(1, &skyboxCubemap);
+    skyboxCubemap = 0;
+  }
 }
 
-bool IBL::createEnvironmentCubemap() {
+bool IBL::createEnvironmentCubemap()
+{
   ::glGenTextures(1, &envCubemap);
   ::glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
 
@@ -300,7 +340,8 @@ bool IBL::createEnvironmentCubemap() {
   return true;
 }
 
-bool IBL::createSkyboxCubemap() {
+bool IBL::createSkyboxCubemap()
+{
   ::glGenTextures(1, &skyboxCubemap);
   ::glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxCubemap);
 
@@ -331,7 +372,8 @@ bool IBL::createSkyboxCubemap() {
   return true;
 }
 
-bool IBL::createIrradianceMap() {
+bool IBL::createIrradianceMap()
+{
   ::glGenTextures(1, &irradianceMap);
   ::glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
 
@@ -362,7 +404,8 @@ bool IBL::createIrradianceMap() {
   return true;
 }
 
-bool IBL::createPrefilterMap() {
+bool IBL::createPrefilterMap()
+{
   int mipLevels = 1;
   int size = PREFILTER_SIZE;
   while (size > 1) {
@@ -421,7 +464,8 @@ bool IBL::createPrefilterMap() {
   return true;
 }
 
-bool IBL::createBrdfLUT() {
+bool IBL::createBrdfLUT()
+{
   if (!brdfLUTShader.loadFromFiles("Shader/brdf_lut.vert", "Shader/brdf_lut.frag")) {
     std::fprintf(stderr, "IBL: failed to load BRDF LUT shader\n");
     return false;
@@ -460,7 +504,8 @@ bool IBL::createBrdfLUT() {
   return true;
 }
 
-bool IBL::createSkyboxVAO() {
+bool IBL::createSkyboxVAO()
+{
   float skyboxVertices[] = {
     -1.0f,  1.0f, -1.0f,  -1.0f, -1.0f, -1.0f,   1.0f, -1.0f, -1.0f,
      1.0f, -1.0f, -1.0f,   1.0f,  1.0f, -1.0f,  -1.0f,  1.0f, -1.0f,
@@ -487,14 +532,21 @@ bool IBL::createSkyboxVAO() {
   return true;
 }
 
-bool IBL::initialize() {
+bool IBL::initialize()
+{
   destroy();
-  if (!createEnvironmentCubemap()) return false;
-  if (!createSkyboxCubemap()) return false;
-  if (!createIrradianceMap()) return false;
-  if (!createPrefilterMap()) return false;
-  if (!createBrdfLUT()) return false;
-  if (!createSkyboxVAO()) return false;
+  if (!createEnvironmentCubemap())
+    return false;
+  if (!createSkyboxCubemap())
+    return false;
+  if (!createIrradianceMap())
+    return false;
+  if (!createPrefilterMap())
+    return false;
+  if (!createBrdfLUT())
+    return false;
+  if (!createSkyboxVAO())
+    return false;
   std::fprintf(stderr,
           "IBL: initialized (env %dx%d, irradiance %d, prefilter %dx%d lod=%.0f, BRDF LUT %d)\n",
           ENV_SIZE, ENV_SIZE, IRRADIANCE_SIZE,
@@ -502,9 +554,11 @@ bool IBL::initialize() {
   return true;
 }
 
-void IBL::renderSkybox(ShaderProgram const&skyboxShader,
-                       float const*view, float const*projection) const {
-  if (!valid()) return;
+void IBL::renderSkybox(ShaderProgram const& skyboxShader,
+                       float const* view, float const* projection) const
+{
+  if (!valid())
+    return;
 
   ::glDepthFunc(GL_LEQUAL);
   ::glDepthMask(GL_FALSE);
@@ -526,8 +580,10 @@ void IBL::renderSkybox(ShaderProgram const&skyboxShader,
   ::glEnable(GL_CULL_FACE);
 }
 
-void IBL::bindForPBR(ShaderProgram &pbrShader) const {
-  if (!valid()) return;
+void IBL::bindForPBR(ShaderProgram &pbrShader) const
+{
+  if (!valid())
+    return;
 
   ::glActiveTexture(GL_TEXTURE0 + IRRADIANCE_UNIT);
   ::glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
@@ -544,3 +600,4 @@ void IBL::bindForPBR(ShaderProgram &pbrShader) const {
   pbrShader.setBool("uUseIBL", true);
   pbrShader.setFloat("uMaxReflectionLOD", maxReflectionLod_);
 }
+

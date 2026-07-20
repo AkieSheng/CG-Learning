@@ -1,9 +1,8 @@
-#include <cstdio>
-#include <cmath>
-#include <cassert>
-
-#include "gl_headers.h"
 #include "surface_of_revolution.h"
+#include <cassert>
+#include <cmath>
+#include <cstdio>
+#include "gl_headers.h"
 #include "curve.h"
 #include "arg_parser.h"
 #include "triangle_mesh.h"
@@ -12,7 +11,8 @@
 
 namespace {
 
-auto RevolveProfilePoint(Vec3f const& profile, float theta) -> Vec3f {
+auto RevolveProfilePoint(Vec3f const& profile, float theta) -> Vec3f
+{
   auto x = profile.x();
   auto y = profile.y();
   return Vec3f(x * ::cosf(theta), y, x * ::sinf(theta));
@@ -32,50 +32,61 @@ auto DebugPrintRevolutionMesh(int u_tess, int v_tess, Vec3f const& profileStart,
 
 }  // namespace
 
-SurfaceOfRevolution::SurfaceOfRevolution(Curve* profile) {
+SurfaceOfRevolution::SurfaceOfRevolution(Curve* profile)
+{
   profile_curve = profile;
 }
 
-SurfaceOfRevolution::~SurfaceOfRevolution() {
+SurfaceOfRevolution::~SurfaceOfRevolution()
+{
   delete profile_curve;
 }
 
-auto SurfaceOfRevolution::getVertex(int i) -> Vec3f {
+auto SurfaceOfRevolution::getVertex(int i) -> Vec3f
+{
   assert(profile_curve != nullptr);
   return profile_curve->getVertex(i);
 }
 
-auto SurfaceOfRevolution::getNumVertices() -> int {
+auto SurfaceOfRevolution::getNumVertices() -> int
+{
   assert(profile_curve != nullptr);
   return profile_curve->getNumVertices();
 }
 
-auto SurfaceOfRevolution::moveControlPoint(int selectedPoint, float x, float y) -> void {
+auto SurfaceOfRevolution::moveControlPoint(int selectedPoint, float x, float y) -> void
+{
   assert(profile_curve != nullptr);
   profile_curve->moveControlPoint(selectedPoint, x, y);
 }
 
-auto SurfaceOfRevolution::addControlPoint(int selectedPoint, float x, float y) -> void {
+auto SurfaceOfRevolution::addControlPoint(int selectedPoint, float x, float y) -> void
+{
   assert(profile_curve != nullptr);
   profile_curve->addControlPoint(selectedPoint, x, y);
 }
 
-auto SurfaceOfRevolution::deleteControlPoint(int selectedPoint) -> void {
+auto SurfaceOfRevolution::deleteControlPoint(int selectedPoint) -> void
+{
   assert(profile_curve != nullptr);
   profile_curve->deleteControlPoint(selectedPoint);
 }
 
-auto SurfaceOfRevolution::Paint(ArgParser* args) -> void {
-  if (profile_curve != nullptr) {
+auto SurfaceOfRevolution::Paint(ArgParser* args) -> void
+{
+  if (profile_curve != nullptr)
+  {
     profile_curve->Paint(args);
   }
 
-  if (profile_curve == nullptr) {
+  if (profile_curve == nullptr)
+  {
     return;
   }
 
   auto curveTess = args->curve_tessellation;
-  if (curveTess < 1) {
+  if (curveTess < 1)
+  {
     curveTess = 1;
   }
   auto numSamples = 8;
@@ -97,25 +108,30 @@ auto SurfaceOfRevolution::Paint(ArgParser* args) -> void {
   }
 }
 
-auto SurfaceOfRevolution::OutputBezier(FILE* file) -> void {
+auto SurfaceOfRevolution::OutputBezier(FILE* file) -> void
+{
   ::fprintf(file, "surface_of_revolution\n");
   profile_curve->OutputBezier(file);
 }
 
-auto SurfaceOfRevolution::OutputBSpline(FILE* file) -> void {
+auto SurfaceOfRevolution::OutputBSpline(FILE* file) -> void
+{
   ::fprintf(file, "surface_of_revolution\n");
   profile_curve->OutputBSpline(file);
 }
 
-auto SurfaceOfRevolution::OutputTriangles(ArgParser* args) -> TriangleMesh* {
+auto SurfaceOfRevolution::OutputTriangles(ArgParser* args) -> TriangleMesh*
+{
   assert(profile_curve != nullptr);
 
   auto curveTess = args->curve_tessellation;
   auto revTess = args->revolution_tessellation;
-  if (curveTess < 1) {
+  if (curveTess < 1)
+  {
     curveTess = 1;
   }
-  if (revTess < 1) {
+  if (revTess < 1)
+  {
     revTess = 1;
   }
 

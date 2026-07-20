@@ -17,7 +17,8 @@ struct SplineParser final {
   ~SplineParser();
 
   auto getNumSplines() const -> int { return num_splines; }
-  auto getSpline(int i) const -> Spline* {
+  auto getSpline(int i) const -> Spline*
+  {
     assert(i >= 0 && i < num_splines);
     return splines[i];
   }
@@ -31,7 +32,8 @@ struct SplineParser final {
   auto PickEdge(float x, float y, float epsilon, Spline*& selected_spline,
                 int& selected_control_point) -> void;
 
-  SplineParser() { assert(0); }
+  SplineParser()
+  { assert(0); }
 
   auto ParseSpline() -> Spline*;
   auto ParseBezierCurve() -> Curve*;

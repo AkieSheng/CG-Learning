@@ -1,9 +1,7 @@
 #include "euler_integrator.h"
-
+#include <cassert>
 #include "particle.h"
 #include "forcefield.h"
-
-#include <cassert>
 
 auto EulerIntegrator::Update(Particle* particle, ForceField* forcefield, float t, float dt)
     -> void {

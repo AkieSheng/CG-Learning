@@ -1,21 +1,25 @@
 #include "triangle_mesh.h"
 
-TriangleMesh::TriangleMesh(int num_verts, int num_tris) {
+TriangleMesh::TriangleMesh(int num_verts, int num_tris)
+{
   num_vertices = num_verts;
   num_triangles = num_tris;
-  if (num_vertices == 0) {
+  if (num_vertices == 0)
+  {
     vertices = nullptr;
   } else {
     vertices = new Vec3f[num_vertices];
   }
-  if (num_triangles == 0) {
+  if (num_triangles == 0)
+  {
     triangles = nullptr;
   } else {
     triangles = new int[num_triangles * 3];
   }
 }
 
-auto TriangleMesh::Merge(TriangleMesh const& m) -> void {
+auto TriangleMesh::Merge(TriangleMesh const& m) -> void
+{
   auto new_num_vertices = num_vertices + m.num_vertices;
   auto new_num_triangles = num_triangles + m.num_triangles;
   auto* new_vertices = new Vec3f[new_num_vertices];
@@ -42,7 +46,8 @@ auto TriangleMesh::Merge(TriangleMesh const& m) -> void {
   triangles = new_triangles;
 }
 
-auto TriangleMesh::Output(FILE* file) -> void {
+auto TriangleMesh::Output(FILE* file) -> void
+{
   for (auto i = 0; i < num_vertices; i++) {
     ::fprintf(file, "v %f %f %f\n", vertices[i].x(), vertices[i].y(), vertices[i].z());
   }
@@ -53,7 +58,8 @@ auto TriangleMesh::Output(FILE* file) -> void {
 }
 
 TriangleNet::TriangleNet(int _u_tess, int _v_tess)
-    : TriangleMesh((_u_tess + 1) * (_v_tess + 1), _u_tess * _v_tess * 2) {
+    : TriangleMesh((_u_tess + 1) * (_v_tess + 1), _u_tess * _v_tess * 2)
+{
   u_tess = _u_tess;
   v_tess = _v_tess;
   for (auto i = 0; i < u_tess; i++) {

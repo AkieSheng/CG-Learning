@@ -1,10 +1,10 @@
 #pragma once
 
-#include <ctime>
-#include <climits>
-
 #include "vectors.h"
 #include "boundingbox.h"
+
+#include <ctime>
+#include <climits>
 
 struct RayTracingStats final {
   static auto Initialize(int _width, int _height, BoundingBox* _bbox,
@@ -19,7 +19,6 @@ struct RayTracingStats final {
 
   static auto PrintStatistics() -> void;
 
-private:
   static int width;
   static int height;
   static BoundingBox* bbox;

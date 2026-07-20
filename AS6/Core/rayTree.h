@@ -1,10 +1,11 @@
 #pragma once
 
-#include <cassert>
-#include <cstdio>
 #include "gl_headers.h"
 #include "ray.h"
 #include "material.h"
+
+#include <cassert>
+#include <cstdio>
 
 struct Segment final {
   Segment() { Clear(); }
@@ -192,7 +193,6 @@ struct RayTree final {
   static auto paintEnteredFaces() -> void;
   static auto Print() -> void;
 
-private:
   static auto paintHelper(Vec4f const& m, Vec4f const& s, Vec4f const& r,
                           Vec4f const& t) -> void;
   static auto Clear() -> void {

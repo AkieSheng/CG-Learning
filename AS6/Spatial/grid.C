@@ -1,13 +1,12 @@
-#include "gl_headers.h"
 #include "grid.h"
+
+#include "gl_headers.h"
 #include "boundingbox.h"
 #include "marchinginfo.h"
 #include "material.h"
 #include "ray.h"
 #include "hit.h"
 #include "rayTree.h"
-#include "matrix.h"
-
 #include "matrix.h"
 
 #include <cassert>
@@ -22,7 +21,6 @@ static const int GRADIENT_LEVELS = 7;
 
 struct GridTransform : public Object3D {
 
-public:
   GridTransform(Matrix const&m, Object3D *o) : matrix(m), object(o) {
     matrix.Inverse(inverseMatrix);
     inverseMatrix.Transpose();
@@ -71,7 +69,6 @@ public:
 
   virtual void paint(void) const { assert(0); }
 
-private:
   Matrix matrix;
   Matrix inverseMatrix;
   Object3D *object;

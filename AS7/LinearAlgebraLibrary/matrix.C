@@ -1,15 +1,15 @@
-#include <cstdlib>
-#include <cstdio>
-#include <cmath>
-#include <cstring>
-#include <cassert>
-
 #include "matrix.h"
+#include <cassert>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include "vectors.h"
 
 namespace {
 
-auto det2x2(float a, float b, float c, float d) -> float {
+auto det2x2(float a, float b, float c, float d) -> float
+{
   return a * d - b * c;
 }
 
@@ -34,7 +34,8 @@ auto det4x4(
 
 }  // namespace
 
-Matrix::Matrix(Matrix const& m) {
+Matrix::Matrix(Matrix const& m)
+{
   for (auto y = 0; y < 4; y++) {
     for (auto x = 0; x < 4; x++) {
       data[y][x] = m.data[y][x];
@@ -42,7 +43,8 @@ Matrix::Matrix(Matrix const& m) {
   }
 }
 
-Matrix::Matrix(float const* m) {
+Matrix::Matrix(float const* m)
+{
   for (auto y = 0; y < 4; y++) {
     for (auto x = 0; x < 4; x++) {
       data[y][x] = m[4 * y + x];
@@ -50,7 +52,8 @@ Matrix::Matrix(float const* m) {
   }
 }
 
-auto Matrix::SetToIdentity() -> void {
+auto Matrix::SetToIdentity() -> void
+{
   for (auto y = 0; y < 4; y++) {
     for (auto x = 0; x < 4; x++) {
       data[y][x] = (x == y);
@@ -58,7 +61,8 @@ auto Matrix::SetToIdentity() -> void {
   }
 }
 
-auto Matrix::Clear() -> void {
+auto Matrix::Clear() -> void
+{
   for (auto y = 0; y < 4; y++) {
     for (auto x = 0; x < 4; x++) {
       data[y][x] = 0;
@@ -66,7 +70,8 @@ auto Matrix::Clear() -> void {
   }
 }
 
-auto Matrix::Transpose(Matrix& m) const -> void {
+auto Matrix::Transpose(Matrix& m) const -> void
+{
   auto tmp = Matrix(*this);
   for (auto y = 0; y < 4; y++) {
     for (auto x = 0; x < 4; x++) {
@@ -75,7 +80,8 @@ auto Matrix::Transpose(Matrix& m) const -> void {
   }
 }
 
-auto Matrix::Inverse(Matrix& m, float epsilon) const -> int {
+auto Matrix::Inverse(Matrix& m, float epsilon) const -> int
+{
   m = *this;
 
   auto a1 = m.data[0][0];
@@ -189,7 +195,8 @@ auto operator*(Matrix const& m, float f) -> Matrix {
   return answer;
 }
 
-auto Matrix::MakeTranslation(Vec3f const& v) -> Matrix {
+auto Matrix::MakeTranslation(Vec3f const& v) -> Matrix
+{
   auto t = Matrix{};
   t.SetToIdentity();
   t.data[0][3] = v.x();
@@ -198,7 +205,8 @@ auto Matrix::MakeTranslation(Vec3f const& v) -> Matrix {
   return t;
 }
 
-auto Matrix::MakeScale(Vec3f const& v) -> Matrix {
+auto Matrix::MakeScale(Vec3f const& v) -> Matrix
+{
   auto s = Matrix{};
   s.SetToIdentity();
   s.data[0][0] = v.x();
@@ -208,7 +216,8 @@ auto Matrix::MakeScale(Vec3f const& v) -> Matrix {
   return s;
 }
 
-auto Matrix::MakeXRotation(float theta) -> Matrix {
+auto Matrix::MakeXRotation(float theta) -> Matrix
+{
   auto rx = Matrix{};
   rx.SetToIdentity();
   rx.data[1][1] = float(::cos(float(theta)));
@@ -218,7 +227,8 @@ auto Matrix::MakeXRotation(float theta) -> Matrix {
   return rx;
 }
 
-auto Matrix::MakeYRotation(float theta) -> Matrix {
+auto Matrix::MakeYRotation(float theta) -> Matrix
+{
   auto ry = Matrix{};
   ry.SetToIdentity();
   ry.data[0][0] = float(::cos(float(theta)));
@@ -228,7 +238,8 @@ auto Matrix::MakeYRotation(float theta) -> Matrix {
   return ry;
 }
 
-auto Matrix::MakeZRotation(float theta) -> Matrix {
+auto Matrix::MakeZRotation(float theta) -> Matrix
+{
   auto rz = Matrix{};
   rz.SetToIdentity();
   rz.data[0][0] = float(::cos(float(theta)));
@@ -238,7 +249,8 @@ auto Matrix::MakeZRotation(float theta) -> Matrix {
   return rz;
 }
 
-auto Matrix::MakeAxisRotation(Vec3f const& v, float theta) -> Matrix {
+auto Matrix::MakeAxisRotation(Vec3f const& v, float theta) -> Matrix
+{
   auto r = Matrix{};
   r.SetToIdentity();
 
@@ -278,7 +290,8 @@ auto Matrix::MakeAxisRotation(Vec3f const& v, float theta) -> Matrix {
   return r;
 }
 
-auto Matrix::Transform(Vec4f& v) const -> void {
+auto Matrix::Transform(Vec4f& v) const -> void
+{
   auto answer = Vec4f{};
   for (auto y = 0; y < 4; y++) {
     answer.data[y] = 0;
@@ -289,7 +302,8 @@ auto Matrix::Transform(Vec4f& v) const -> void {
   v = answer;
 }
 
-auto Matrix::Write(FILE* F) const -> void {
+auto Matrix::Write(FILE* F) const -> void
+{
   assert(F != nullptr);
   for (auto y = 0; y < 4; y++) {
     for (auto x = 0; x < 4; x++) {
@@ -303,14 +317,17 @@ auto Matrix::Write(FILE* F) const -> void {
   }
 }
 
-auto Matrix::Write3x3(FILE* F) const -> void {
+auto Matrix::Write3x3(FILE* F) const -> void
+{
   assert(F != nullptr);
   for (auto y = 0; y < 4; y++) {
-    if (y == 2) {
+    if (y == 2)
+    {
       continue;
     }
     for (auto x = 0; x < 4; x++) {
-      if (x == 2) {
+      if (x == 2)
+      {
         continue;
       }
       auto tmp = data[y][x];
@@ -323,7 +340,8 @@ auto Matrix::Write3x3(FILE* F) const -> void {
   }
 }
 
-auto Matrix::Read(FILE* F) -> void {
+auto Matrix::Read(FILE* F) -> void
+{
   assert(F != nullptr);
   for (auto y = 0; y < 4; y++) {
     for (auto x = 0; x < 4; x++) {
@@ -333,15 +351,18 @@ auto Matrix::Read(FILE* F) -> void {
   }
 }
 
-auto Matrix::Read3x3(FILE* F) -> void {
+auto Matrix::Read3x3(FILE* F) -> void
+{
   assert(F != nullptr);
   Clear();
   for (auto y = 0; y < 4; y++) {
-    if (y == 2) {
+    if (y == 2)
+    {
       continue;
     }
     for (auto x = 0; x < 4; x++) {
-      if (x == 2) {
+      if (x == 2)
+      {
         continue;
       }
       auto scanned = ::fscanf(F, "%f", &data[y][x]);

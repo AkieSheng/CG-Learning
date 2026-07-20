@@ -1,9 +1,3 @@
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <cassert>
-#include <cmath>
-
 #include "image.h"
 #include "scene_parser.h"
 #include "hit.h"
@@ -15,7 +9,14 @@
 #include "gl_options.h"
 #include "gl_headers.h"
 
-struct RayTracerArgs {
+#include <cassert>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+
+struct RayTracerArgs
+{
   char* input_file{};
   int width{100};
   int height{100};
@@ -36,11 +37,13 @@ bool specular_fix = false;
 static SceneParser* globalParser = nullptr;
 static RayTracerArgs globalArgs;
 
-static auto componentMultiply(Vec3f const& a, Vec3f const& b) -> Vec3f {
+static auto componentMultiply(Vec3f const& a, Vec3f const& b) -> Vec3f
+{
   return Vec3f(a.x() * b.x(), a.y() * b.y(), a.z() * b.z());
 }
 
-static auto parseArgs(int argc, char* argv[], RayTracerArgs& args) -> void {
+static auto parseArgs(int argc, char* argv[], RayTracerArgs& args) -> void
+{
   args.input_file = nullptr;
   args.width = 100;
   args.height = 100;
@@ -107,27 +110,28 @@ static auto parseArgs(int argc, char* argv[], RayTracerArgs& args) -> void {
   assert(args.output_file != nullptr);
 }
 
-static auto shadeNormal(Vec3f const& normal) -> Vec3f {
+static auto shadeNormal(Vec3f const& normal) -> Vec3f
+{
   return Vec3f(::fabsf(normal.x()), ::fabsf(normal.y()), ::fabsf(normal.z()));
 }
 
 static auto prepareNormal(Ray const& ray, Hit const& hit, bool shade_back,
-                          bool& backFacing) -> Vec3f {
+                          bool& backFacing) -> Vec3f
+{
   auto normal = hit.getNormal();
   backFacing = ray.getDirection().Dot3(normal) > 0.0f;
-  if (shade_back && backFacing) {
+  if (shade_back && backFacing)
     normal = normal * -1.0f;
-  }
   return normal;
 }
 
 static auto shadePixel(Ray const& ray, Hit const& hit, bool shade_back,
-                       SceneParser& parser) -> Vec3f {
+                       SceneParser& parser) -> Vec3f
+{
   bool backFacing = false;
   auto normal = prepareNormal(ray, hit, shade_back, backFacing);
-  if (!shade_back && backFacing) {
+  if (!shade_back && backFacing)
     return Vec3f(0, 0, 0);
-  }
 
   auto objectColor = hit.getMaterial()->getDiffuseColor();
   auto color = componentMultiply(parser.getAmbientLight(), objectColor);
@@ -145,7 +149,8 @@ static auto shadePixel(Ray const& ray, Hit const& hit, bool shade_back,
   return color;
 }
 
-static auto renderScene() -> void {
+static auto renderScene() -> void
+{
   assert(globalParser != nullptr);
 
   auto* camera = globalParser->getCamera();
@@ -193,15 +198,14 @@ static auto renderScene() -> void {
     }
   }
   image.SaveTGA(globalArgs.output_file);
-  if (globalArgs.depth_file != nullptr) {
+  if (globalArgs.depth_file != nullptr)
     depthImage.SaveTGA(globalArgs.depth_file);
-  }
-  if (globalArgs.normals_file != nullptr) {
+  if (globalArgs.normals_file != nullptr)
     normalImage.SaveTGA(globalArgs.normals_file);
-  }
 }
 
-auto main(int argc, char* argv[]) -> int {
+auto main(int argc, char* argv[]) -> int
+{
   parseArgs(argc, argv, globalArgs);
 
   globalParser = new SceneParser(globalArgs.input_file);

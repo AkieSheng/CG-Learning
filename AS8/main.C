@@ -6,11 +6,13 @@
 #include "glCanvas.h"
 #include "spline_parser.h"
 
-auto main(int argc, char* argv[]) -> int {
+auto main(int argc, char* argv[]) -> int
+{
   auto* args = new ArgParser(argc, argv);
   auto* splines = new SplineParser(args->input_file);
 
-  if (args->gui) {
+  if (args->gui)
+  {
     ::glutInit(&argc, argv);
     GLCanvas glcanvas;
     glcanvas.initialize(args, splines);

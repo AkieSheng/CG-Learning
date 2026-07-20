@@ -25,7 +25,6 @@ struct Curve : Spline {
   auto numSegments() const -> int;
   auto evaluateAlongCurve(float u) const -> Vec3f;
 
- protected:
   virtual auto getNumSegments() const -> int = 0;
   virtual auto getSegmentControlPoints(int segment, Vec3f pts[4]) const -> void = 0;
   virtual auto allowAddControlPoints() const -> bool = 0;

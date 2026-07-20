@@ -1,5 +1,6 @@
-#include "gl_headers.h"
 #include "boundingbox.h"
+
+#include "gl_headers.h"
 
 auto BoundingBox::paint() const -> void {
   glColor3f(1, 1, 1);

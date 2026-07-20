@@ -4,7 +4,8 @@
 #include "vectors.h"
 
 struct Camera {
-  virtual ~Camera() {}
+  virtual ~Camera()
+  { }
   virtual auto generateRay(Vec2f point) -> Ray = 0;
   virtual auto getTMin() const -> float = 0;
 };

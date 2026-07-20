@@ -1,8 +1,12 @@
 #include "triangle.h"
+
 #include "gl_headers.h"
+
 #include <cmath>
 
-auto Triangle::intersect(Ray const& r, Hit& h, float tmin) -> bool {
+
+auto Triangle::intersect(Ray const& r, Hit& h, float tmin) -> bool
+{
   auto edge1 = b - a;
   auto edge2 = c - a;
   Vec3f pvec;
@@ -15,16 +19,14 @@ auto Triangle::intersect(Ray const& r, Hit& h, float tmin) -> bool {
   auto invDet = 1.0f / det;
   auto tvec = r.getOrigin() - a;
   auto u = tvec.Dot3(pvec) * invDet;
-  if (u < 0.0f || u > 1.0f) {
+  if (u < 0.0f || u > 1.0f)
     return false;
-  }
 
   Vec3f qvec;
   Vec3f::Cross3(qvec, tvec, edge1);
   auto v = r.getDirection().Dot3(qvec) * invDet;
-  if (v < 0.0f || u + v > 1.0f) {
+  if (v < 0.0f || u + v > 1.0f)
     return false;
-  }
 
   auto t = edge2.Dot3(qvec) * invDet;
   if (t >= tmin && t < h.getT()) {
@@ -48,32 +50,29 @@ auto Triangle::intersectShadow(Ray const& r, float tmin, float tmax, float& t,
   auto invDet = 1.0f / det;
   auto tvec = r.getOrigin() - a;
   auto u = tvec.Dot3(pvec) * invDet;
-  if (u < 0.0f || u > 1.0f) {
+  if (u < 0.0f || u > 1.0f)
     return false;
-  }
 
   Vec3f qvec;
   Vec3f::Cross3(qvec, tvec, edge1);
   auto v = r.getDirection().Dot3(qvec) * invDet;
-  if (v < 0.0f || u + v > 1.0f) {
+  if (v < 0.0f || u + v > 1.0f)
     return false;
-  }
 
   auto hitT = edge2.Dot3(qvec) * invDet;
   if (hitT >= tmin && hitT <= tmax) {
     t = hitT;
-    if (outMaterial != nullptr) {
+    if (outMaterial != nullptr)
       *outMaterial = material;
-    }
     return true;
   }
   return false;
 }
 
-auto Triangle::paint() const -> void {
-  if (material != nullptr) {
+auto Triangle::paint() const -> void
+{
+  if (material != nullptr)
     material->glSetMaterial();
-  }
 
   ::glBegin(GL_TRIANGLES);
   ::glNormal3f(normal.x(), normal.y(), normal.z());

@@ -2,7 +2,8 @@
 
 #include "shader_program.h"
 
-struct IBL final {
+struct IBL final
+{
   static int const IRRADIANCE_UNIT = 8;
   static int const PREFILTER_UNIT = 9;
   static int const BRDF_LUT_UNIT = 10;

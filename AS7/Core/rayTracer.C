@@ -1,4 +1,7 @@
 #include "rayTracer.h"
+#include <cassert>
+#include <cmath>
+#include <cstdio>
 #include "scene_parser.h"
 #include "group.h"
 #include "material.h"
@@ -8,9 +11,6 @@
 #include "marchinginfo.h"
 #include "object3dvector.h"
 #include "raytracing_stats.h"
-#include <math.h>
-#include <assert.h>
-#include <stdio.h>
 
 const float RayTracer::RAY_EPSILON = 1e-4f;
 const int RayTracer::MAX_IOR_DEPTH = 16;
@@ -18,7 +18,8 @@ const float RayTracer::SHADOW_ATTENUATION_SCALE = 2.5f;
 
 RayTracer::RayTracer(SceneParser *s, int max_bounces, float cutoff_weight,
                      bool shadows, bool shade_back, bool transparent_shadows,
-                     int grid_nx, int grid_ny, int grid_nz) {
+                     int grid_nx, int grid_ny, int grid_nz)
+{
   parser = s;
   maxBounces = max_bounces;
   cutoffWeight = cutoff_weight;
@@ -40,25 +41,30 @@ RayTracer::RayTracer(SceneParser *s, int max_bounces, float cutoff_weight,
   sceneGroup->insertIntoGrid(grid, nullptr);
 }
 
-RayTracer::~RayTracer() {
+RayTracer::~RayTracer()
+{
   delete grid;
 }
 
-Vec3f RayTracer::componentMultiply(Vec3f const&a, Vec3f const&b) {
+Vec3f RayTracer::componentMultiply(Vec3f const&a, Vec3f const&b)
+{
   return Vec3f(a.x() * b.x(), a.y() * b.y(), a.z() * b.z());
 }
 
-bool RayTracer::hasPositive(Vec3f const&c) {
+bool RayTracer::hasPositive(Vec3f const&c)
+{
   return c.x() > 0.0f || c.y() > 0.0f || c.z() > 0.0f;
 }
 
-bool RayTracer::isFullyBlocked(Vec3f const&attenuation) {
+bool RayTracer::isFullyBlocked(Vec3f const&attenuation)
+{
   return attenuation.x() <= 0.0f && attenuation.y() <= 0.0f &&
          attenuation.z() <= 0.0f;
 }
 
 Vec3f RayTracer::transmittanceThrough(Vec3f const&transparentColor,
-                                      float distance) {
+                                      float distance)
+{
   float d = distance * SHADOW_ATTENUATION_SCALE;
   return Vec3f(
       ::expf(-(1.0f - transparentColor.x()) * d),
@@ -78,7 +84,8 @@ bool RayTracer::transmittedDirection(Vec3f const&normal,
                                      Vec3f &transmitted) const {
   Vec3f n = normal;
   float cosi = n.Dot3(incoming);
-  if (cosi > 0.0f) {
+  if (cosi > 0.0f)
+  {
     n = n * (-1.0f);
     cosi = -cosi;
   }
@@ -92,19 +99,22 @@ bool RayTracer::transmittedDirection(Vec3f const&normal,
 }
 
 static Vec3f offsetRayOrigin(Vec3f const&point, Vec3f const&geomNormal,
-                             Vec3f const&dir, float eps) {
+                             Vec3f const&dir, float eps)
+{
   Vec3f nudge = (dir.Dot3(geomNormal) > 0.0f) ? geomNormal * eps
                                               : geomNormal * (-eps);
   return point + nudge;
 }
 
-static float cellExitT(MarchingInfo const&mi) {
+static float cellExitT(MarchingInfo const&mi)
+{
   return ::fminf(::fminf(mi.getTNextX(), mi.getTNextY()), mi.getTNextZ());
 }
 
 static const float CELL_T_EPSILON = 1e-3f;
 
-static bool hitInCell(float t, float cellTMin, float cellTMax) {
+static bool hitInCell(float t, float cellTMin, float cellTMax)
+{
   return t >= cellTMin - CELL_T_EPSILON && t <= cellTMax + CELL_T_EPSILON;
 }
 
@@ -117,29 +127,35 @@ Vec3f RayTracer::prepareNormal(Ray const&ray, Hit const&hit,
   return normal;
 }
 
-bool RayTracer::rayCast(Ray const&ray, Hit &hit, float tmin) const {
+bool RayTracer::rayCast(Ray const&ray, Hit &hit, float tmin) const
+{
   return parser->getGroup()->intersect(ray, hit, tmin);
 }
 
-void RayTracer::beginIntersectionMarking() const {
+void RayTracer::beginIntersectionMarking() const
+{
   intersectionMarkCounter++;
 }
 
-bool RayTracer::isMarked(const Object3D *obj) const {
+bool RayTracer::isMarked(const Object3D *obj) const
+{
   return obj->getIntersectionMark() == intersectionMarkCounter;
 }
 
-void RayTracer::markObject(Object3D *obj) const {
+void RayTracer::markObject(Object3D *obj) const
+{
   obj->setIntersectionMark(intersectionMarkCounter);
 }
 
-bool RayTracer::castSceneIntersect(Ray const&ray, Hit &hit, float tmin) const {
+bool RayTracer::castSceneIntersect(Ray const&ray, Hit &hit, float tmin) const
+{
   if (grid != nullptr)
     return rayCastFast(ray, hit, tmin);
   return rayCast(ray, hit, tmin);
 }
 
-bool RayTracer::rayCastFast(Ray const&ray, Hit &hit, float tmin) const {
+bool RayTracer::rayCastFast(Ray const&ray, Hit &hit, float tmin) const
+{
   const float max_t = 1.0e30f;
   Hit bestHit(max_t, nullptr, Vec3f(0, 0, 0));
   bool found = false;
@@ -194,7 +210,8 @@ bool RayTracer::rayCastFast(Ray const&ray, Hit &hit, float tmin) const {
         }
       }
     }
-    if (found && bestHit.getT() <= cellTMax + CELL_T_EPSILON) {
+    if (found && bestHit.getT() <= cellTMax + CELL_T_EPSILON)
+    {
       hit = bestHit;
       return true;
     }
@@ -220,7 +237,8 @@ bool RayTracer::rayCastShadow(Ray const&ray, float tmin, float tmax, float &t,
 
   beginIntersectionMarking();
 
-  if (outMaterial == nullptr) {
+  if (outMaterial == nullptr)
+  {
     for (int i = 0; i < infinite.getNumObjects(); i++) {
       float hitT;
       if (infinite.getObject(i)->intersectShadow(ray, tmin, tmax, hitT, nullptr))
@@ -229,7 +247,8 @@ bool RayTracer::rayCastShadow(Ray const&ray, float tmin, float tmax, float &t,
 
     MarchingInfo mi;
     grid->initializeRayMarch(mi, ray, tmin);
-    while (mi.isValid() && mi.getTMin() <= mi.getTExit() && mi.getTMin() <= tmax) {
+    while (mi.isValid() && mi.getTMin() <= mi.getTExit() && mi.getTMin() <= tmax)
+    {
       int ci = mi.getI();
       int cj = mi.getJ();
       int ck = mi.getK();
@@ -281,7 +300,8 @@ bool RayTracer::rayCastShadow(Ray const&ray, float tmin, float tmax, float &t,
   MarchingInfo mi;
   grid->initializeRayMarch(mi, ray, tmin);
 
-  while (mi.isValid() && mi.getTMin() <= mi.getTExit() && mi.getTMin() <= tmax) {
+  while (mi.isValid() && mi.getTMin() <= mi.getTExit() && mi.getTMin() <= tmax)
+  {
     int ci = mi.getI();
     int cj = mi.getJ();
     int ck = mi.getK();
@@ -307,7 +327,8 @@ bool RayTracer::rayCastShadow(Ray const&ray, float tmin, float tmax, float &t,
       if (obj->getHasMarkedIntersection()) {
         Hit const&marked = obj->getMarkedHit();
         float hitT = marked.getT();
-        if (hitInCell(hitT, cellTMin, cellTMax) && hitT < bestT) {
+        if (hitInCell(hitT, cellTMin, cellTMax) && hitT < bestT)
+        {
           bestT = hitT;
           bestMat = marked.getMaterial();
           found = true;
@@ -317,7 +338,8 @@ bool RayTracer::rayCastShadow(Ray const&ray, float tmin, float tmax, float &t,
     mi.nextCell();
   }
 
-  if (found) {
+  if (found)
+  {
     t = bestT;
     *outMaterial = bestMat;
   }
@@ -336,7 +358,8 @@ Vec3f RayTracer::getShadowAttenuation(Vec3f const&point,
       ? distanceToLight - RAY_EPSILON
       : 1.0e20f;
 
-  if (!transparentShadows) {
+  if (!transparentShadows)
+  {
     float t;
     if (castSceneShadow(shadowRay, RAY_EPSILON, maxDist, t, nullptr))
       return Vec3f(0, 0, 0);
@@ -346,7 +369,8 @@ Vec3f RayTracer::getShadowAttenuation(Vec3f const&point,
   Vec3f attenuation(1, 1, 1);
   float traveled = 0.0f;
 
-  while (traveled < maxDist) {
+  while (traveled < maxDist)
+  {
     float t;
     Material *blocker = nullptr;
     if (!castSceneShadow(shadowRay, RAY_EPSILON, maxDist - traveled, t, &blocker))
@@ -392,7 +416,8 @@ Vec3f RayTracer::computeLocalShading(Ray const&ray, Hit const&hit,
     float distanceToLight;
     parser->getLight(i)->getIllumination(hit.getIntersectionPoint(), lightDir, lightColor, distanceToLight);
 
-    if (castShadows) {
+    if (castShadows)
+    {
       Vec3f shadowAtten = getShadowAttenuation(hit.getIntersectionPoint(),
                                                hit.getNormal(), lightDir,
                                                distanceToLight);
@@ -447,7 +472,8 @@ Vec3f RayTracer::traceRayRecursive(Ray &ray, float tmin, int bounces,
 
   Vec3f color = computeLocalShading(ray, hit, normal);
 
-  if (bounces < maxBounces && weight >= cutoffWeight) {
+  if (bounces < maxBounces && weight >= cutoffWeight)
+  {
     Vec3f reflectiveColor = material->getReflectiveColor(worldPoint);
     if (hasPositive(reflectiveColor)) {
       Vec3f geomNormal = hit.getNormal();
@@ -478,7 +504,8 @@ Vec3f RayTracer::traceRayRecursive(Ray &ray, float tmin, int bounces,
         iorStack[i] = outsideIOR[i];
       int nextDepth = iorDepth;
 
-      if (nDotD < 0.0f) {
+      if (nDotD < 0.0f)
+      {
 
         index_i = indexOfRefraction;
         index_t = material->getIndexOfRefraction(worldPoint);

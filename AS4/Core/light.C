@@ -1,23 +1,39 @@
-#include <GL/gl.h>
-#include <cstdio>
-
 #include "light.h"
 
-auto DirectionalLight::glInit(int id) -> void {
+#include "gl_headers.h"
+
+#include <cstdio>
+
+auto DirectionalLight::glInit(int id) -> void
+{
   GLenum glLightID;
   switch (id) {
-    case 0: glLightID = GL_LIGHT0; break;
-    case 1: glLightID = GL_LIGHT1; break;
-    case 2: glLightID = GL_LIGHT2; break;
-    case 3: glLightID = GL_LIGHT3; break;
-    case 4: glLightID = GL_LIGHT4; break;
-    case 5: glLightID = GL_LIGHT5; break;
-    case 6: glLightID = GL_LIGHT6; break;
-    case 7: glLightID = GL_LIGHT7; break;
-    default: {
-      ::printf("WARNING!  Too many lights for GL to imitate\n");
-      return;
-    }
+    case 0:
+      glLightID = GL_LIGHT0;
+      break;
+    case 1:
+      glLightID = GL_LIGHT1;
+      break;
+    case 2:
+      glLightID = GL_LIGHT2;
+      break;
+    case 3:
+      glLightID = GL_LIGHT3;
+      break;
+    case 4:
+      glLightID = GL_LIGHT4;
+      break;
+    case 5:
+      glLightID = GL_LIGHT5;
+      break;
+    case 6:
+      glLightID = GL_LIGHT6;
+      break;
+    case 7:
+      glLightID = GL_LIGHT7;
+      break;
+    default:
+      glLightID = GL_LIGHT7;
   }
 
   GLfloat glPosition[4];
@@ -32,30 +48,42 @@ auto DirectionalLight::glInit(int id) -> void {
   glColor[2] = color.b();
   glColor[3] = 1.0;
 
-  GLfloat zero[4] = {0, 0, 0, 1};
-
   ::glLightfv(glLightID, GL_POSITION, glPosition);
   ::glLightfv(glLightID, GL_DIFFUSE, glColor);
   ::glLightfv(glLightID, GL_SPECULAR, glColor);
-  ::glLightfv(glLightID, GL_AMBIENT, zero);
   ::glEnable(glLightID);
 }
 
-auto PointLight::glInit(int id) -> void {
+auto PointLight::glInit(int id) -> void
+{
   GLenum glLightID;
   switch (id) {
-    case 0: glLightID = GL_LIGHT0; break;
-    case 1: glLightID = GL_LIGHT1; break;
-    case 2: glLightID = GL_LIGHT2; break;
-    case 3: glLightID = GL_LIGHT3; break;
-    case 4: glLightID = GL_LIGHT4; break;
-    case 5: glLightID = GL_LIGHT5; break;
-    case 6: glLightID = GL_LIGHT6; break;
-    case 7: glLightID = GL_LIGHT7; break;
-    default: {
-      ::printf("WARNING!  Too many lights for GL to imitate\n");
-      return;
-    }
+    case 0:
+      glLightID = GL_LIGHT0;
+      break;
+    case 1:
+      glLightID = GL_LIGHT1;
+      break;
+    case 2:
+      glLightID = GL_LIGHT2;
+      break;
+    case 3:
+      glLightID = GL_LIGHT3;
+      break;
+    case 4:
+      glLightID = GL_LIGHT4;
+      break;
+    case 5:
+      glLightID = GL_LIGHT5;
+      break;
+    case 6:
+      glLightID = GL_LIGHT6;
+      break;
+    case 7:
+      glLightID = GL_LIGHT7;
+      break;
+    default:
+      glLightID = GL_LIGHT7;
   }
 
   GLfloat glPosition[4];
@@ -70,11 +98,8 @@ auto PointLight::glInit(int id) -> void {
   glColor[2] = color.b();
   glColor[3] = 1.0;
 
-  GLfloat zero[4] = {0, 0, 0, 1};
-
   ::glLightfv(glLightID, GL_POSITION, glPosition);
   ::glLightfv(glLightID, GL_DIFFUSE, glColor);
   ::glLightfv(glLightID, GL_SPECULAR, glColor);
-  ::glLightfv(glLightID, GL_AMBIENT, zero);
   ::glEnable(glLightID);
 }

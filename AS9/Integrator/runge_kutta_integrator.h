@@ -3,7 +3,8 @@
 #include "integrator.h"
 
 struct RungeKuttaIntegrator final : Integrator {
-  RungeKuttaIntegrator() {}
+  RungeKuttaIntegrator()
+  { }
   ~RungeKuttaIntegrator() override {}
 
   auto Update(Particle* particle, ForceField* forcefield, float t, float dt) -> void override;

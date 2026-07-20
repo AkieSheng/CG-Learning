@@ -1,10 +1,8 @@
-#include "gl_headers.h"
 #include "ring_generator.h"
-
-#include "particle.h"
-
 #include <cassert>
 #include <cmath>
+#include "gl_headers.h"
+#include "particle.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -13,18 +11,21 @@
 static float const RING_GROUND_Y = -4.0f;
 
 RingGenerator::RingGenerator(float position_randomness, Vec3f velocity,
-                             float velocity_randomness) {
+                             float velocity_randomness)
+{
   this->position_randomness = position_randomness;
   this->velocity = velocity;
   this->velocity_randomness = velocity_randomness;
 }
 
-auto RingGenerator::numNewParticles(float current_time, float dt) const -> int {
+auto RingGenerator::numNewParticles(float current_time, float dt) const -> int
+{
   assert(lifespan > 0);
   return static_cast<int>(dt * desired_num_particles / lifespan * current_time);
 }
 
-auto RingGenerator::Generate(float current_time, int /*i*/) -> Particle* {
+auto RingGenerator::Generate(float current_time, int) -> Particle*
+{
   assert(rng != nullptr);
 
   auto radius = current_time;
@@ -42,7 +43,8 @@ auto RingGenerator::Generate(float current_time, int /*i*/) -> Particle* {
   return new Particle(p, v, c, dead_color, m, life);
 }
 
-auto RingGenerator::Paint() const -> void {
+auto RingGenerator::Paint() const -> void
+{
   GLfloat diffuse[] = {0.4f, 0.4f, 0.4f, 1.0f};
   GLfloat specular[] = {0, 0, 0, 1};
   ::glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, diffuse);

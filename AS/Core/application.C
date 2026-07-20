@@ -6,26 +6,28 @@
 #include <cstring>
 
 #ifndef GLUT_WHEEL_UP
-#define GLUT_WHEEL_UP 3
+  #define GLUT_WHEEL_UP 3
 #endif
 #ifndef GLUT_WHEEL_DOWN
-#define GLUT_WHEEL_DOWN 4
+  #define GLUT_WHEEL_DOWN 4
 #endif
 
 Application* Application::instance = nullptr;
 
-Application::Application() {
+Application::Application()
+{
   instance = this;
 }
 
-Application::~Application() {
-  if (instance == this) {
+Application::~Application()
+{
+  if (instance == this)
     instance = nullptr;
-  }
 }
 
 auto Application::initialize(int argc, char** argv, std::string const& path)
-    -> bool {
+    -> bool
+{
   modelPath = path;
 
   glutInit(&argc, argv);
@@ -38,16 +40,14 @@ auto Application::initialize(int argc, char** argv, std::string const& path)
     return false;
   }
 
-  if (!renderer.initialize(windowWidth, windowHeight)) {
+  if (!renderer.initialize(windowWidth, windowHeight))
     return false;
-  }
 
   if (!modelPath.empty()) {
     if (!scene.loadModel(modelPath,
                          static_cast<float>(windowWidth) /
-                             static_cast<float>(windowHeight))) {
+                             static_cast<float>(windowHeight)))
       std::fprintf(stderr, "Warning: model not loaded, showing empty scene.\n");
-    }
   }
 
   glutDisplayFunc(displayCallback);
@@ -64,29 +64,29 @@ auto Application::initialize(int argc, char** argv, std::string const& path)
 
 auto Application::run() -> void { glutMainLoop(); }
 
-auto Application::displayCallback() -> void {
-  if (!instance) {
+auto Application::displayCallback() -> void
+{
+  if (!instance)
     return;
-  }
   instance->renderer.render(instance->scene);
   glutSwapBuffers();
 }
 
-auto Application::reshapeCallback(int w, int h) -> void {
-  if (!instance) {
+auto Application::reshapeCallback(int w, int h) -> void
+{
+  if (!instance)
     return;
-  }
   instance->windowWidth = w;
   instance->windowHeight = h;
   instance->renderer.resize(w, h);
 }
 
-auto Application::keyboardCallback(unsigned char key, int x, int y) -> void {
+auto Application::keyboardCallback(unsigned char key, int x, int y) -> void
+{
   (void)x;
   (void)y;
-  if (!instance) {
+  if (!instance)
     return;
-  }
 
   OrbitCamera& cam = instance->scene.getCamera();
   switch (key) {
@@ -101,6 +101,7 @@ auto Application::keyboardCallback(unsigned char key, int x, int y) -> void {
       std::fprintf(stderr, "FXAA: %s\n", enabled ? "on" : "off");
       break;
     }
+
     case 's':
     case 'S':
       instance->renderer.cycleSupersampling();
@@ -120,10 +121,10 @@ auto Application::keyboardCallback(unsigned char key, int x, int y) -> void {
 }
 
 auto Application::mouseButtonCallback(int button, int state, int x, int y)
-    -> void {
-  if (!instance) {
+    -> void
+{
+  if (!instance)
     return;
-  }
 
   if (state == GLUT_DOWN &&
       (button == GLUT_WHEEL_UP || button == GLUT_WHEEL_DOWN)) {
@@ -146,10 +147,10 @@ auto Application::mouseButtonCallback(int button, int state, int x, int y)
   }
 }
 
-auto Application::mouseMotionCallback(int x, int y) -> void {
-  if (!instance || instance->mouseButton < 0) {
+auto Application::mouseMotionCallback(int x, int y) -> void
+{
+  if (!instance || instance->mouseButton < 0)
     return;
-  }
 
   int dx = x - instance->mouseX;
   int dy = y - instance->mouseY;

@@ -1,26 +1,32 @@
 #include "group.h"
+
 #include <cassert>
 
-Group::Group(int numObjects) : numObjects(numObjects) {
+
+Group::Group(int numObjects) : numObjects(numObjects)
+{
   objects = new Object3D*[numObjects];
   for (auto i = 0; i < numObjects; i++) {
     objects[i] = nullptr;
   }
 }
 
-Group::~Group() {
+Group::~Group()
+{
   for (auto i = 0; i < numObjects; i++) {
     delete objects[i];
   }
   delete[] objects;
 }
 
-auto Group::addObject(int index, Object3D* obj) -> void {
+auto Group::addObject(int index, Object3D* obj) -> void
+{
   assert(index >= 0 && index < numObjects);
   objects[index] = obj;
 }
 
-auto Group::intersect(Ray const& r, Hit& h, float tmin) -> bool {
+auto Group::intersect(Ray const& r, Hit& h, float tmin) -> bool
+{
   auto hit = false;
   for (auto i = 0; i < numObjects; i++) {
     if (objects[i] != nullptr && objects[i]->intersect(r, h, tmin)) {
@@ -34,9 +40,8 @@ auto Group::intersectShadow(Ray const& r, float tmin, float tmax, float& t,
                             Material** outMaterial) -> bool {
   if (outMaterial == nullptr) {
     for (auto i = 0; i < numObjects; i++) {
-      if (objects[i] == nullptr) {
+      if (objects[i] == nullptr)
         continue;
-      }
       float hitT;
       if (objects[i]->intersectShadow(r, tmin, tmax, hitT, nullptr)) {
         t = hitT;
@@ -50,9 +55,8 @@ auto Group::intersectShadow(Ray const& r, float tmin, float tmax, float& t,
   auto bestT = tmax;
   Material* bestMat = nullptr;
   for (auto i = 0; i < numObjects; i++) {
-    if (objects[i] == nullptr) {
+    if (objects[i] == nullptr)
       continue;
-    }
     float hitT;
     Material* hitMat = nullptr;
     if (objects[i]->intersectShadow(r, tmin, bestT, hitT, &hitMat)) {
@@ -68,10 +72,10 @@ auto Group::intersectShadow(Ray const& r, float tmin, float tmax, float& t,
   return hit;
 }
 
-auto Group::paint() const -> void {
+auto Group::paint() const -> void
+{
   for (auto i = 0; i < numObjects; i++) {
-    if (objects[i] != nullptr) {
+    if (objects[i] != nullptr)
       objects[i]->paint();
-    }
   }
 }

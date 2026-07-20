@@ -9,22 +9,28 @@
 struct Matrix;
 
 struct Vec2f final {
-  Vec2f() { data[0] = data[1] = 0; }
-  Vec2f(Vec2f const& V) {
+  Vec2f()
+  { data[0] = data[1] = 0; }
+  Vec2f(Vec2f const& V)
+  {
     data[0] = V.data[0];
     data[1] = V.data[1];
   }
-  Vec2f(float d0, float d1) {
+  Vec2f(float d0, float d1)
+  {
     data[0] = d0;
     data[1] = d1;
   }
-  Vec2f(Vec2f const& V1, Vec2f const& V2) {
+  Vec2f(Vec2f const& V1, Vec2f const& V2)
+  {
     data[0] = V1.data[0] - V2.data[0];
     data[1] = V1.data[1] - V2.data[1];
   }
-  ~Vec2f() {}
+  ~Vec2f()
+  { }
 
-  auto Get(float& d0, float& d1) const -> void {
+  auto Get(float& d0, float& d1) const -> void
+  {
     d0 = data[0];
     d1 = data[1];
   }
@@ -34,23 +40,28 @@ struct Vec2f final {
   }
   auto x() const -> float { return data[0]; }
   auto y() const -> float { return data[1]; }
-  auto Length() const -> float {
+  auto Length() const -> float
+  {
     return float(::sqrt(data[0] * data[0] + data[1] * data[1]));
   }
 
-  auto Set(float d0, float d1) -> void {
+  auto Set(float d0, float d1) -> void
+  {
     data[0] = d0;
     data[1] = d1;
   }
-  auto Scale(float d0, float d1) -> void {
+  auto Scale(float d0, float d1) -> void
+  {
     data[0] *= d0;
     data[1] *= d1;
   }
-  auto Divide(float d0, float d1) -> void {
+  auto Divide(float d0, float d1) -> void
+  {
     data[0] /= d0;
     data[1] /= d1;
   }
-  auto Negate() -> void {
+  auto Negate() -> void
+  {
     data[0] = -data[0];
     data[1] = -data[1];
   }
@@ -87,31 +98,38 @@ struct Vec2f final {
     return *this;
   }
 
-  auto Dot2(Vec2f const& V) const -> float {
+  auto Dot2(Vec2f const& V) const -> float
+  {
     return data[0] * V.data[0] + data[1] * V.data[1];
   }
 
-  static auto Add(Vec2f& a, Vec2f const& b, Vec2f const& c) -> void {
+  static auto Add(Vec2f& a, Vec2f const& b, Vec2f const& c) -> void
+  {
     a.data[0] = b.data[0] + c.data[0];
     a.data[1] = b.data[1] + c.data[1];
   }
-  static auto Sub(Vec2f& a, Vec2f const& b, Vec2f const& c) -> void {
+  static auto Sub(Vec2f& a, Vec2f const& b, Vec2f const& c) -> void
+  {
     a.data[0] = b.data[0] - c.data[0];
     a.data[1] = b.data[1] - c.data[1];
   }
-  static auto CopyScale(Vec2f& a, Vec2f const& b, float c) -> void {
+  static auto CopyScale(Vec2f& a, Vec2f const& b, float c) -> void
+  {
     a.data[0] = b.data[0] * c;
     a.data[1] = b.data[1] * c;
   }
-  static auto AddScale(Vec2f& a, Vec2f const& b, Vec2f const& c, float d) -> void {
+  static auto AddScale(Vec2f& a, Vec2f const& b, Vec2f const& c, float d) -> void
+  {
     a.data[0] = b.data[0] + c.data[0] * d;
     a.data[1] = b.data[1] + c.data[1] * d;
   }
-  static auto Average(Vec2f& a, Vec2f const& b, Vec2f const& c) -> void {
+  static auto Average(Vec2f& a, Vec2f const& b, Vec2f const& c) -> void
+  {
     a.data[0] = (b.data[0] + c.data[0]) * 0.5f;
     a.data[1] = (b.data[1] + c.data[1]) * 0.5f;
   }
-  static auto WeightedSum(Vec2f& a, Vec2f const& b, float c, Vec2f const& d, float e) -> void {
+  static auto WeightedSum(Vec2f& a, Vec2f const& b, float c, Vec2f const& d, float e) -> void
+  {
     a.data[0] = b.data[0] * c + d.data[0] * e;
     a.data[1] = b.data[1] * c + d.data[1] * e;
   }
@@ -123,25 +141,31 @@ struct Vec2f final {
   float data[2]{};
 };
 struct Vec3f final {
-  Vec3f() { data[0] = data[1] = data[2] = 0; }
-  Vec3f(Vec3f const& V) {
+  Vec3f()
+  { data[0] = data[1] = data[2] = 0; }
+  Vec3f(Vec3f const& V)
+  {
     data[0] = V.data[0];
     data[1] = V.data[1];
     data[2] = V.data[2];
   }
-  Vec3f(float d0, float d1, float d2) {
+  Vec3f(float d0, float d1, float d2)
+  {
     data[0] = d0;
     data[1] = d1;
     data[2] = d2;
   }
-  Vec3f(Vec3f const& V1, Vec3f const& V2) {
+  Vec3f(Vec3f const& V1, Vec3f const& V2)
+  {
     data[0] = V1.data[0] - V2.data[0];
     data[1] = V1.data[1] - V2.data[1];
     data[2] = V1.data[2] - V2.data[2];
   }
-  ~Vec3f() {}
+  ~Vec3f()
+  { }
 
-  auto Get(float& d0, float& d1, float& d2) const -> void {
+  auto Get(float& d0, float& d1, float& d2) const -> void
+  {
     d0 = data[0];
     d1 = data[1];
     d2 = data[2];
@@ -156,55 +180,68 @@ struct Vec3f final {
   auto r() const -> float { return data[0]; }
   auto g() const -> float { return data[1]; }
   auto b() const -> float { return data[2]; }
-  auto Length() const -> float {
+  auto Length() const -> float
+  {
     return float(::sqrt(data[0] * data[0] + data[1] * data[1] + data[2] * data[2]));
   }
 
-  auto Set(float d0, float d1, float d2) -> void {
+  auto Set(float d0, float d1, float d2) -> void
+  {
     data[0] = d0;
     data[1] = d1;
     data[2] = d2;
   }
-  auto Scale(float d0, float d1, float d2) -> void {
+  auto Scale(float d0, float d1, float d2) -> void
+  {
     data[0] *= d0;
     data[1] *= d1;
     data[2] *= d2;
   }
-  auto Divide(float d0, float d1, float d2) -> void {
+  auto Divide(float d0, float d1, float d2) -> void
+  {
     data[0] /= d0;
     data[1] /= d1;
     data[2] /= d2;
   }
-  auto Normalize() -> void {
+  auto Normalize() -> void
+  {
     auto l = Length();
-    if (l > 0) {
+    if (l > 0)
+    {
       data[0] /= l;
       data[1] /= l;
       data[2] /= l;
     }
   }
-  auto Negate() -> void {
+  auto Negate() -> void
+  {
     data[0] = -data[0];
     data[1] = -data[1];
     data[2] = -data[2];
   }
   auto Clamp(float low = 0, float high = 1) -> void {
-    if (data[0] < low) {
+    if (data[0] < low)
+    {
       data[0] = low;
     }
-    if (data[0] > high) {
+    if (data[0] > high)
+    {
       data[0] = high;
     }
-    if (data[1] < low) {
+    if (data[1] < low)
+    {
       data[1] = low;
     }
-    if (data[1] > high) {
+    if (data[1] > high)
+    {
       data[1] = high;
     }
-    if (data[2] < low) {
+    if (data[2] < low)
+    {
       data[2] = low;
     }
-    if (data[2] > high) {
+    if (data[2] > high)
+    {
       data[2] = high;
     }
   }
@@ -284,46 +321,55 @@ struct Vec3f final {
     return v3;
   }
 
-  auto Dot3(Vec3f const& V) const -> float {
+  auto Dot3(Vec3f const& V) const -> float
+  {
     return data[0] * V.data[0] + data[1] * V.data[1] + data[2] * V.data[2];
   }
 
-  static auto Add(Vec3f& a, Vec3f const& b, Vec3f const& c) -> void {
+  static auto Add(Vec3f& a, Vec3f const& b, Vec3f const& c) -> void
+  {
     a.data[0] = b.data[0] + c.data[0];
     a.data[1] = b.data[1] + c.data[1];
     a.data[2] = b.data[2] + c.data[2];
   }
-  static auto Sub(Vec3f& a, Vec3f const& b, Vec3f const& c) -> void {
+  static auto Sub(Vec3f& a, Vec3f const& b, Vec3f const& c) -> void
+  {
     a.data[0] = b.data[0] - c.data[0];
     a.data[1] = b.data[1] - c.data[1];
     a.data[2] = b.data[2] - c.data[2];
   }
-  static auto Mult(Vec3f& a, Vec3f const& b, Vec3f const& c) -> void {
+  static auto Mult(Vec3f& a, Vec3f const& b, Vec3f const& c) -> void
+  {
     a.data[0] = b.data[0] * c.data[0];
     a.data[1] = b.data[1] * c.data[1];
     a.data[2] = b.data[2] * c.data[2];
   }
-  static auto CopyScale(Vec3f& a, Vec3f const& b, float c) -> void {
+  static auto CopyScale(Vec3f& a, Vec3f const& b, float c) -> void
+  {
     a.data[0] = b.data[0] * c;
     a.data[1] = b.data[1] * c;
     a.data[2] = b.data[2] * c;
   }
-  static auto AddScale(Vec3f& a, Vec3f const& b, Vec3f const& c, float d) -> void {
+  static auto AddScale(Vec3f& a, Vec3f const& b, Vec3f const& c, float d) -> void
+  {
     a.data[0] = b.data[0] + c.data[0] * d;
     a.data[1] = b.data[1] + c.data[1] * d;
     a.data[2] = b.data[2] + c.data[2] * d;
   }
-  static auto Average(Vec3f& a, Vec3f const& b, Vec3f const& c) -> void {
+  static auto Average(Vec3f& a, Vec3f const& b, Vec3f const& c) -> void
+  {
     a.data[0] = (b.data[0] + c.data[0]) * 0.5f;
     a.data[1] = (b.data[1] + c.data[1]) * 0.5f;
     a.data[2] = (b.data[2] + c.data[2]) * 0.5f;
   }
-  static auto WeightedSum(Vec3f& a, Vec3f const& b, float c, Vec3f const& d, float e) -> void {
+  static auto WeightedSum(Vec3f& a, Vec3f const& b, float c, Vec3f const& d, float e) -> void
+  {
     a.data[0] = b.data[0] * c + d.data[0] * e;
     a.data[1] = b.data[1] * c + d.data[1] * e;
     a.data[2] = b.data[2] * c + d.data[2] * e;
   }
-  static auto Cross3(Vec3f& c, Vec3f const& v1, Vec3f const& v2) -> void {
+  static auto Cross3(Vec3f& c, Vec3f const& v1, Vec3f const& v2) -> void
+  {
     auto x = v1.data[1] * v2.data[2] - v1.data[2] * v2.data[1];
     auto y = v1.data[2] * v2.data[0] - v1.data[0] * v2.data[2];
     auto z = v1.data[0] * v2.data[1] - v1.data[1] * v2.data[0];
@@ -332,12 +378,14 @@ struct Vec3f final {
     c.data[2] = z;
   }
 
-  static auto Min(Vec3f& a, Vec3f const& b, Vec3f const& c) -> void {
+  static auto Min(Vec3f& a, Vec3f const& b, Vec3f const& c) -> void
+  {
     a.data[0] = (b.data[0] < c.data[0]) ? b.data[0] : c.data[0];
     a.data[1] = (b.data[1] < c.data[1]) ? b.data[1] : c.data[1];
     a.data[2] = (b.data[2] < c.data[2]) ? b.data[2] : c.data[2];
   }
-  static auto Max(Vec3f& a, Vec3f const& b, Vec3f const& c) -> void {
+  static auto Max(Vec3f& a, Vec3f const& b, Vec3f const& c) -> void
+  {
     a.data[0] = (b.data[0] > c.data[0]) ? b.data[0] : c.data[0];
     a.data[1] = (b.data[1] > c.data[1]) ? b.data[1] : c.data[1];
     a.data[2] = (b.data[2] > c.data[2]) ? b.data[2] : c.data[2];
@@ -352,34 +400,41 @@ struct Vec3f final {
   float data[3]{};
 };
 struct Vec4f final {
-  Vec4f() { data[0] = data[1] = data[2] = data[3] = 0; }
-  Vec4f(Vec4f const& V) {
+  Vec4f()
+  { data[0] = data[1] = data[2] = data[3] = 0; }
+  Vec4f(Vec4f const& V)
+  {
     data[0] = V.data[0];
     data[1] = V.data[1];
     data[2] = V.data[2];
     data[3] = V.data[3];
   }
-  Vec4f(float d0, float d1, float d2, float d3) {
+  Vec4f(float d0, float d1, float d2, float d3)
+  {
     data[0] = d0;
     data[1] = d1;
     data[2] = d2;
     data[3] = d3;
   }
-  Vec4f(Vec3f const& V, float w) {
+  Vec4f(Vec3f const& V, float w)
+  {
     data[0] = V.x();
     data[1] = V.y();
     data[2] = V.z();
     data[3] = w;
   }
-  Vec4f(Vec4f const& V1, Vec4f const& V2) {
+  Vec4f(Vec4f const& V1, Vec4f const& V2)
+  {
     data[0] = V1.data[0] - V2.data[0];
     data[1] = V1.data[1] - V2.data[1];
     data[2] = V1.data[2] - V2.data[2];
     data[3] = V1.data[3] - V2.data[3];
   }
-  ~Vec4f() {}
+  ~Vec4f()
+  { }
 
-  auto Get(float& d0, float& d1, float& d2, float& d3) const -> void {
+  auto Get(float& d0, float& d1, float& d2, float& d3) const -> void
+  {
     d0 = data[0];
     d1 = data[1];
     d2 = data[2];
@@ -397,45 +452,54 @@ struct Vec4f final {
   auto g() const -> float { return data[1]; }
   auto b() const -> float { return data[2]; }
   auto a() const -> float { return data[3]; }
-  auto Length() const -> float {
+  auto Length() const -> float
+  {
     return float(::sqrt(
         data[0] * data[0] + data[1] * data[1] + data[2] * data[2] + data[3] * data[3]));
   }
 
-  auto Set(float d0, float d1, float d2, float d3) -> void {
+  auto Set(float d0, float d1, float d2, float d3) -> void
+  {
     data[0] = d0;
     data[1] = d1;
     data[2] = d2;
     data[3] = d3;
   }
-  auto Scale(float d0, float d1, float d2, float d3) -> void {
+  auto Scale(float d0, float d1, float d2, float d3) -> void
+  {
     data[0] *= d0;
     data[1] *= d1;
     data[2] *= d2;
     data[3] *= d3;
   }
-  auto Divide(float d0, float d1, float d2, float d3) -> void {
+  auto Divide(float d0, float d1, float d2, float d3) -> void
+  {
     data[0] /= d0;
     data[1] /= d1;
     data[2] /= d2;
     data[3] /= d3;
   }
-  auto Negate() -> void {
+  auto Negate() -> void
+  {
     data[0] = -data[0];
     data[1] = -data[1];
     data[2] = -data[2];
     data[3] = -data[3];
   }
-  auto Normalize() -> void {
+  auto Normalize() -> void
+  {
     auto l = Length();
-    if (l > 0) {
+    if (l > 0)
+    {
       data[0] /= l;
       data[1] /= l;
       data[2] /= l;
     }
   }
-  auto DivideByW() -> void {
-    if (data[3] != 0) {
+  auto DivideByW() -> void
+  {
+    if (data[3] != 0)
+    {
       data[0] /= data[3];
       data[1] /= data[3];
       data[2] /= data[3];
@@ -489,53 +553,63 @@ struct Vec4f final {
     return *this;
   }
 
-  auto Dot2(Vec4f const& V) const -> float {
+  auto Dot2(Vec4f const& V) const -> float
+  {
     return data[0] * V.data[0] + data[1] * V.data[1];
   }
-  auto Dot3(Vec4f const& V) const -> float {
+  auto Dot3(Vec4f const& V) const -> float
+  {
     return data[0] * V.data[0] + data[1] * V.data[1] + data[2] * V.data[2];
   }
-  auto Dot4(Vec4f const& V) const -> float {
+  auto Dot4(Vec4f const& V) const -> float
+  {
     return data[0] * V.data[0] + data[1] * V.data[1] + data[2] * V.data[2] + data[3] * V.data[3];
   }
 
-  static auto Add(Vec4f& a, Vec4f const& b, Vec4f const& c) -> void {
+  static auto Add(Vec4f& a, Vec4f const& b, Vec4f const& c) -> void
+  {
     a.data[0] = b.data[0] + c.data[0];
     a.data[1] = b.data[1] + c.data[1];
     a.data[2] = b.data[2] + c.data[2];
     a.data[3] = b.data[3] + c.data[3];
   }
-  static auto Sub(Vec4f& a, Vec4f const& b, Vec4f const& c) -> void {
+  static auto Sub(Vec4f& a, Vec4f const& b, Vec4f const& c) -> void
+  {
     a.data[0] = b.data[0] - c.data[0];
     a.data[1] = b.data[1] - c.data[1];
     a.data[2] = b.data[2] - c.data[2];
     a.data[3] = b.data[3] - c.data[3];
   }
-  static auto CopyScale(Vec4f& a, Vec4f const& b, float c) -> void {
+  static auto CopyScale(Vec4f& a, Vec4f const& b, float c) -> void
+  {
     a.data[0] = b.data[0] * c;
     a.data[1] = b.data[1] * c;
     a.data[2] = b.data[2] * c;
     a.data[3] = b.data[3] * c;
   }
-  static auto AddScale(Vec4f& a, Vec4f const& b, Vec4f const& c, float d) -> void {
+  static auto AddScale(Vec4f& a, Vec4f const& b, Vec4f const& c, float d) -> void
+  {
     a.data[0] = b.data[0] + c.data[0] * d;
     a.data[1] = b.data[1] + c.data[1] * d;
     a.data[2] = b.data[2] + c.data[2] * d;
     a.data[3] = b.data[3] + c.data[3] * d;
   }
-  static auto Average(Vec4f& a, Vec4f const& b, Vec4f const& c) -> void {
+  static auto Average(Vec4f& a, Vec4f const& b, Vec4f const& c) -> void
+  {
     a.data[0] = (b.data[0] + c.data[0]) * 0.5f;
     a.data[1] = (b.data[1] + c.data[1]) * 0.5f;
     a.data[2] = (b.data[2] + c.data[2]) * 0.5f;
     a.data[3] = (b.data[3] + c.data[3]) * 0.5f;
   }
-  static auto WeightedSum(Vec4f& a, Vec4f const& b, float c, Vec4f const& d, float e) -> void {
+  static auto WeightedSum(Vec4f& a, Vec4f const& b, float c, Vec4f const& d, float e) -> void
+  {
     a.data[0] = b.data[0] * c + d.data[0] * e;
     a.data[1] = b.data[1] * c + d.data[1] * e;
     a.data[2] = b.data[2] * c + d.data[2] * e;
     a.data[3] = b.data[3] * c + d.data[3] * e;
   }
-  static auto Cross3(Vec4f& c, Vec4f const& v1, Vec4f const& v2) -> void {
+  static auto Cross3(Vec4f& c, Vec4f const& v1, Vec4f const& v2) -> void
+  {
     auto x = v1.data[1] * v2.data[2] - v1.data[2] * v2.data[1];
     auto y = v1.data[2] * v2.data[0] - v1.data[0] * v2.data[2];
     auto z = v1.data[0] * v2.data[1] - v1.data[1] * v2.data[0];

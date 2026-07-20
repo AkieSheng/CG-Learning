@@ -1,12 +1,13 @@
 #include "triangle.h"
+#include <cmath>
 #include "grid.h"
 #include "boundingbox.h"
 #include "matrix.h"
 #include "raytracing_stats.h"
-#include <math.h>
 
 Triangle::Triangle(Vec3f a, Vec3f b, Vec3f c, Material *m)
-    : a(a), b(b), c(c) {
+    : a(a), b(b), c(c)
+{
   material = m;
   Vec3f::Cross3(normal, b - a, c - a);
   normal.Normalize();
@@ -20,11 +21,13 @@ Triangle::Triangle(Vec3f a, Vec3f b, Vec3f c, Material *m)
   bbox = new BoundingBox(bbMin, bbMax);
 }
 
-void Triangle::insertIntoGrid(Grid *g, Matrix *m) {
+void Triangle::insertIntoGrid(Grid *g, Matrix *m)
+{
   if (g == nullptr)
     return;
 
-  if (m == nullptr) {
+  if (m == nullptr)
+  {
     Object3D::insertIntoGrid(g, nullptr);
     return;
   }
@@ -44,7 +47,8 @@ void Triangle::insertIntoGrid(Grid *g, Matrix *m) {
   g->insertObjectInWorldAABB(wmin, wmax, this, m);
 }
 
-bool Triangle::intersect(Ray const& r, Hit& h, float tmin) {
+bool Triangle::intersect(Ray const& r, Hit& h, float tmin)
+{
   RayTracingStats::IncrementNumIntersections();
 
   Vec3f edge1 = b - a;
@@ -76,7 +80,8 @@ bool Triangle::intersect(Ray const& r, Hit& h, float tmin) {
 }
 
 bool Triangle::intersectShadow(Ray const&r, float tmin, float tmax, float &t,
-                               Material **outMaterial) {
+                               Material **outMaterial)
+{
 
   Vec3f edge1 = b - a;
   Vec3f edge2 = c - a;
@@ -99,7 +104,8 @@ bool Triangle::intersectShadow(Ray const&r, float tmin, float tmax, float &t,
     return false;
 
   float hitT = edge2.Dot3(qvec) * invDet;
-  if (hitT >= tmin && hitT <= tmax) {
+  if (hitT >= tmin && hitT <= tmax)
+  {
     t = hitT;
     if (outMaterial != nullptr)
       *outMaterial = material;

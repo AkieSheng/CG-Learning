@@ -3,7 +3,8 @@
 #include "integrator.h"
 
 struct EulerIntegrator final : Integrator {
-  EulerIntegrator() {}
+  EulerIntegrator()
+  { }
   ~EulerIntegrator() override {}
 
   auto Update(Particle* particle, ForceField* forcefield, float t, float dt) -> void override;

@@ -1,6 +1,6 @@
-#include <GL/gl.h>
-
 #include "light.h"
+
+#include <GL/gl.h>
 
 auto DirectionalLight::glInit(int id) -> void {
   GLenum glLightID;

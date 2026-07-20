@@ -1,8 +1,12 @@
 #include "plane.h"
+
 #include "gl_headers.h"
+
 #include <cmath>
 
-auto Plane::intersect(Ray const& r, Hit& h, float tmin) -> bool {
+
+auto Plane::intersect(Ray const& r, Hit& h, float tmin) -> bool
+{
   auto denom = normal.Dot3(r.getDirection());
   if (::fabs(denom) < 1e-6f) {
     return false;
@@ -28,16 +32,15 @@ auto Plane::intersectShadow(Ray const& r, float tmin, float tmax, float& t,
     t = hitT;
     return true;
   }
-  if (outMaterial != nullptr) {
+  if (outMaterial != nullptr)
     *outMaterial = material;
-  }
   return false;
 }
 
-auto Plane::paint() const -> void {
-  if (material != nullptr) {
+auto Plane::paint() const -> void
+{
+  if (material != nullptr)
     material->glSetMaterial();
-  }
 
   auto v = (::fabs(normal.x()) < 0.9f) ? Vec3f(1, 0, 0) : Vec3f(0, 1, 0);
   Vec3f b1, b2;

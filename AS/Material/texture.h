@@ -3,7 +3,8 @@
 #include <string>
 #include <vector>
 
-struct Texture final {
+struct Texture final
+{
   Texture();
   ~Texture();
 

@@ -1,9 +1,7 @@
 #include "midpoint_integrator.h"
-
+#include <cassert>
 #include "particle.h"
 #include "forcefield.h"
-
-#include <cassert>
 
 auto MidpointIntegrator::Update(Particle* particle, ForceField* forcefield, float t, float dt)
     -> void {

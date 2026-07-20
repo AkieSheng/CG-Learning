@@ -5,13 +5,16 @@
 Marble::Marble(Matrix *m, Material *m1, Material *m2, int _octaves,
                float _frequency, float _amplitude)
     : mapping(m), mat1(m1), mat2(m2), octaves(_octaves),
-      frequency(_frequency), amplitude(_amplitude) {}
+      frequency(_frequency), amplitude(_amplitude)
+      { }
 
-Marble::~Marble() {
+Marble::~Marble()
+{
   delete mapping;
 }
 
-float Marble::blendWeight(Vec3f const&worldPoint) const {
+float Marble::blendWeight(Vec3f const&worldPoint) const
+{
   Vec3f p = mapToTextureSpace(mapping, worldPoint);
   double n = fractalNoise(p, octaves);
   float freq = frequency * marbleFrequencyScale();
@@ -19,32 +22,38 @@ float Marble::blendWeight(Vec3f const&worldPoint) const {
   return clamp01(v * 0.5f + 0.5f);
 }
 
-Vec3f Marble::getDiffuseColor(Vec3f const&point) const {
+Vec3f Marble::getDiffuseColor(Vec3f const&point) const
+{
   float t = blendWeight(point);
   return lerpVec3(mat1->getDiffuseColor(point), mat2->getDiffuseColor(point), t);
 }
 
-Vec3f Marble::getSpecularColor(Vec3f const&point) const {
+Vec3f Marble::getSpecularColor(Vec3f const&point) const
+{
   float t = blendWeight(point);
   return lerpVec3(mat1->getSpecularColor(point), mat2->getSpecularColor(point), t);
 }
 
-float Marble::getExponent(Vec3f const&point) const {
+float Marble::getExponent(Vec3f const&point) const
+{
   float t = blendWeight(point);
   return lerpFloat(mat1->getExponent(point), mat2->getExponent(point), t);
 }
 
-Vec3f Marble::getReflectiveColor(Vec3f const&point) const {
+Vec3f Marble::getReflectiveColor(Vec3f const&point) const
+{
   float t = blendWeight(point);
   return lerpVec3(mat1->getReflectiveColor(point), mat2->getReflectiveColor(point), t);
 }
 
-Vec3f Marble::getTransparentColor(Vec3f const&point) const {
+Vec3f Marble::getTransparentColor(Vec3f const&point) const
+{
   float t = blendWeight(point);
   return lerpVec3(mat1->getTransparentColor(point), mat2->getTransparentColor(point), t);
 }
 
-float Marble::getIndexOfRefraction(Vec3f const&point) const {
+float Marble::getIndexOfRefraction(Vec3f const&point) const
+{
   float t = blendWeight(point);
   return lerpFloat(mat1->getIndexOfRefraction(point), mat2->getIndexOfRefraction(point), t);
 }

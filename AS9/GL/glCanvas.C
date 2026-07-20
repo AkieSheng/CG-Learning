@@ -1,6 +1,5 @@
-#include "gl_headers.h"
-
 #include "glCanvas.h"
+#include "gl_headers.h"
 #include "parser.h"
 #include "system.h"
 #include "particle.h"
@@ -58,7 +57,8 @@ auto GLCanvas::initialize(Parser* _parser, float _refresh, float _dt, int _integ
   ::glutMainLoop();
 }
 
-auto GLCanvas::display() -> void {
+auto GLCanvas::display() -> void
+{
   ::glClearColor(0, 0, 0, 1.0);
   ::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   ::glEnable(GL_DEPTH_TEST);
@@ -90,7 +90,8 @@ auto GLCanvas::display() -> void {
   ::glutSwapBuffers();
 }
 
-auto GLCanvas::reshape(int w, int h) -> void {
+auto GLCanvas::reshape(int w, int h) -> void
+{
   ::glViewport(0, 0, static_cast<GLsizei>(w), static_cast<GLsizei>(h));
 
   width = w;
@@ -100,34 +101,42 @@ auto GLCanvas::reshape(int w, int h) -> void {
   ::glLoadIdentity();
   auto aspect = static_cast<float>(w) / static_cast<float>(h);
   auto asp_angle = 30.0f;
-  if (aspect > 1) {
+  if (aspect > 1)
+  {
     asp_angle /= aspect;
   }
   ::gluPerspective(asp_angle, aspect, 0.1, 1000.0);
 }
 
-auto GLCanvas::mouse(int button, int state, int x, int y) -> void {
-  if (button != GLUT_LEFT_BUTTON && button != GLUT_RIGHT_BUTTON) {
+auto GLCanvas::mouse(int button, int state, int x, int y) -> void
+{
+  if (button != GLUT_LEFT_BUTTON && button != GLUT_RIGHT_BUTTON)
+  {
     return;
   }
 
-  if (state == GLUT_DOWN) {
+  if (state == GLUT_DOWN)
+  {
     mouse_x = x;
     mouse_y = y;
     mouse_button = button;
-  } else if (state == GLUT_UP) {
+  } else if (state == GLUT_UP)
+  {
     mouse_button = -1;
   }
 
   ::glutPostRedisplay();
 }
 
-auto GLCanvas::motion(int x, int y) -> void {
-  if (mouse_button == -1) {
+auto GLCanvas::motion(int x, int y) -> void
+{
+  if (mouse_button == -1)
+  {
     return;
   }
 
-  if (mouse_button == GLUT_LEFT_BUTTON) {
+  if (mouse_button == GLUT_LEFT_BUTTON)
+  {
     auto rx = 0.01f * static_cast<float>(mouse_x - x);
     auto ry = -0.01f * static_cast<float>(mouse_y - y);
     auto dir = camera_pos;
@@ -137,9 +146,11 @@ auto GLCanvas::motion(int x, int y) -> void {
     Vec3f::Cross3(horiz, dir, up);
     horiz.Normalize();
     auto tiltAngle = ::acosf(up.Dot3(dir));
-    if (tiltAngle - ry > 3.13f) {
+    if (tiltAngle - ry > 3.13f)
+    {
       ry = tiltAngle - 3.13f;
-    } else if (tiltAngle - ry < 0.01f) {
+    } else if (tiltAngle - ry < 0.01f)
+    {
       ry = tiltAngle - 0.01f;
     }
     auto rotMat = Matrix::MakeAxisRotation(up, rx);
@@ -147,14 +158,17 @@ auto GLCanvas::motion(int x, int y) -> void {
     rotMat.TransformDirection(dir);
     auto length = camera_pos.Length();
     camera_pos = dir * length;
-  } else if (mouse_button == GLUT_RIGHT_BUTTON) {
+  } else if (mouse_button == GLUT_RIGHT_BUTTON)
+  {
     auto dolly = 0.05f * static_cast<float>((mouse_y - y) + 0.25f * (mouse_x - x));
     auto dist = camera_pos.Length();
     dist -= dolly;
-    if (dist < 2.0f) {
+    if (dist < 2.0f)
+    {
       dist = 2.0f;
     }
-    if (dist > 500.0f) {
+    if (dist > 500.0f)
+    {
       dist = 500.0f;
     }
     auto dir = camera_pos;
@@ -167,11 +181,14 @@ auto GLCanvas::motion(int x, int y) -> void {
   ::glutPostRedisplay();
 }
 
-auto GLCanvas::keyboard(unsigned char key, int x, int y) -> void {
-  switch (key) {
+auto GLCanvas::keyboard(unsigned char key, int x, int y) -> void
+{
+  switch (key)
+  {
     case 'p':
     case 'P':
-      if (paused == 0) {
+      if (paused == 0)
+      {
         ::printf("pause (press 'p' again to un-pause)\n");
         paused = 1;
       } else {
@@ -198,23 +215,27 @@ auto GLCanvas::keyboard(unsigned char key, int x, int y) -> void {
   }
 }
 
-auto GLCanvas::idle(int value) -> void {
+auto GLCanvas::idle(int value) -> void
+{
   auto refresh_milliseconds = static_cast<int>(1000 * refresh);
   ::glutTimerFunc(refresh_milliseconds, idle, 0);
-  if (paused) {
+  if (paused)
+  {
     return;
   }
   step();
 }
 
-auto GLCanvas::step() -> void {
+auto GLCanvas::step() -> void
+{
   for (auto i = 0; i < parser->getNumSystems(); i++) {
     parser->getSystem(i)->Update(dt);
   }
   ::glutPostRedisplay();
 }
 
-auto GLCanvas::restart() -> void {
+auto GLCanvas::restart() -> void
+{
   for (auto i = 0; i < parser->getNumSystems(); i++) {
     parser->getSystem(i)->Restart();
   }

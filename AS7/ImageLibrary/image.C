@@ -1,31 +1,35 @@
-#include <cstdlib>
-#include <cstdio>
-#include <cstring>
+#include "image.h"
 #include <cassert>
 #include <cmath>
-
-#include "image.h"
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 namespace {
 
-auto ReadByte(FILE* file) -> unsigned char {
+auto ReadByte(FILE* file) -> unsigned char
+{
   unsigned char b{};
   auto success = int(::fread(static_cast<void*>(&b), sizeof(unsigned char), 1, file));
   assert(success == 1);
   return b;
 }
 
-auto WriteByte(FILE* file, unsigned char b) -> void {
+auto WriteByte(FILE* file, unsigned char b) -> void
+{
   auto success = int(::fwrite(static_cast<void*>(&b), sizeof(unsigned char), 1, file));
   assert(success == 1);
 }
 
-auto ClampColorComponent(float c) -> unsigned char {
+auto ClampColorComponent(float c) -> unsigned char
+{
   auto tmp = int(c * 255);
-  if (tmp < 0) {
+  if (tmp < 0)
+  {
     tmp = 0;
   }
-  if (tmp > 255) {
+  if (tmp > 255)
+  {
     tmp = 255;
   }
   return static_cast<unsigned char>(tmp);
@@ -33,25 +37,33 @@ auto ClampColorComponent(float c) -> unsigned char {
 
 }  // namespace
 
-auto Image::SaveTGA(char const* filename) const -> void {
+auto Image::SaveTGA(char const* filename) const -> void
+{
   assert(filename != nullptr);
   auto const* ext = &filename[::strlen(filename) - 4];
   assert(!::strcmp(ext, ".tga"));
   auto* file = ::fopen(filename, "wb");
   for (auto i = 0; i < 18; i++) {
-    if (i == 2) {
+    if (i == 2)
+    {
       WriteByte(file, 2);
-    } else if (i == 12) {
+    } else if (i == 12)
+    {
       WriteByte(file, width % 256);
-    } else if (i == 13) {
+    } else if (i == 13)
+    {
       WriteByte(file, width / 256);
-    } else if (i == 14) {
+    } else if (i == 14)
+    {
       WriteByte(file, height % 256);
-    } else if (i == 15) {
+    } else if (i == 15)
+    {
       WriteByte(file, height / 256);
-    } else if (i == 16) {
+    } else if (i == 16)
+    {
       WriteByte(file, 24);
-    } else if (i == 17) {
+    } else if (i == 17)
+    {
       WriteByte(file, 32);
     } else {
       WriteByte(file, 0);
@@ -68,7 +80,8 @@ auto Image::SaveTGA(char const* filename) const -> void {
   ::fclose(file);
 }
 
-auto Image::LoadTGA(char const* filename) -> Image* {
+auto Image::LoadTGA(char const* filename) -> Image*
+{
   assert(filename != nullptr);
   auto const* ext = &filename[::strlen(filename) - 4];
   assert(!::strcmp(ext, ".tga"));
@@ -77,19 +90,26 @@ auto Image::LoadTGA(char const* filename) -> Image* {
   auto height = 0;
   for (auto i = 0; i < 18; i++) {
     auto tmp = ReadByte(file);
-    if (i == 2) {
+    if (i == 2)
+    {
       assert(tmp == 2);
-    } else if (i == 12) {
+    } else if (i == 12)
+    {
       width += tmp;
-    } else if (i == 13) {
+    } else if (i == 13)
+    {
       width += 256 * tmp;
-    } else if (i == 14) {
+    } else if (i == 14)
+    {
       height += tmp;
-    } else if (i == 15) {
+    } else if (i == 15)
+    {
       height += 256 * tmp;
-    } else if (i == 16) {
+    } else if (i == 16)
+    {
       assert(tmp == 24);
-    } else if (i == 17) {
+    } else if (i == 17)
+    {
       assert(tmp == 32);
     } else {
       assert(tmp == 0);
@@ -109,7 +129,8 @@ auto Image::LoadTGA(char const* filename) -> Image* {
   return answer;
 }
 
-auto Image::SavePPM(char const* filename) const -> void {
+auto Image::SavePPM(char const* filename) const -> void
+{
   assert(filename != nullptr);
   auto const* ext = &filename[::strlen(filename) - 4];
   assert(!::strcmp(ext, ".ppm"));
@@ -130,7 +151,8 @@ auto Image::SavePPM(char const* filename) const -> void {
   ::fclose(file);
 }
 
-auto Image::LoadPPM(char const* filename) -> Image* {
+auto Image::LoadPPM(char const* filename) -> Image*
+{
   assert(filename != nullptr);
   auto const* ext = &filename[::strlen(filename) - 4];
   assert(!::strcmp(ext, ".ppm"));
@@ -160,7 +182,8 @@ auto Image::LoadPPM(char const* filename) -> Image* {
   return answer;
 }
 
-auto Image::Compare(Image* img1, Image* img2) -> Image* {
+auto Image::Compare(Image* img1, Image* img2) -> Image*
+{
   assert(img1->Width() == img2->Width());
   assert(img1->Height() == img2->Height());
 

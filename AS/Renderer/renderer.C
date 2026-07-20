@@ -1,12 +1,16 @@
 #include "renderer.h"
+
 #include "ibl.h"
 #include "gl_headers.h"
-#include <stdio.h>
-#include <math.h>
-#include <vector>
-#include <algorithm>
 
-static float modelDeterminant3x3(Matrix const&m) {
+#include <algorithm>
+#include <vector>
+
+#include <cmath>
+#include <cstdio>
+
+static float modelDeterminant3x3(Matrix const& m)
+{
   return
     m.Get(0, 0) * (m.Get(1, 1) * m.Get(2, 2) - m.Get(2, 1) * m.Get(1, 2)) -
     m.Get(1, 0) * (m.Get(0, 1) * m.Get(2, 2) - m.Get(2, 1) * m.Get(0, 2)) +
@@ -36,22 +40,21 @@ Renderer::Renderer()
     fxaaEnabled(false),
     lightDirection(0.54f, -0.50f, -0.68f),
     lightColor(1.0f, 1.0f, 1.0f),
-    ambientColor(0.03f, 0.03f, 0.035f) {
+    ambientColor(0.03f, 0.03f, 0.035f)
+{
   lightViewProjection.SetToIdentity();
 }
 
-Renderer::~Renderer() {
-  destroy();
-}
+Renderer::~Renderer() { destroy(); }
 
-bool Renderer::initialize(int width, int height) {
+bool Renderer::initialize(int width, int height)
+{
   viewportWidth = width;
   viewportHeight = height;
   updateRenderSize();
   setupGLState();
-  if (!loadShaders()) {
+  if (!loadShaders())
     return false;
-  }
   if (!createSceneTargets(renderWidth, renderHeight)) {
     std::fprintf(stderr, "Renderer: failed to create scene targets\n");
     return false;
@@ -63,12 +66,14 @@ bool Renderer::initialize(int width, int height) {
   ::glGenVertexArrays(1, &fullscreenVAO);
   ::glViewport(0, 0, width, height);
   std::fprintf(stderr, "Renderer: supersampling %.1fx (%dx%d -> %dx%d), FXAA off\n",
-          currentRenderScale(), viewportWidth, viewportHeight, renderWidth, renderHeight);
+               currentRenderScale(), viewportWidth, viewportHeight, renderWidth, renderHeight);
   return true;
 }
 
-void Renderer::resize(int width, int height) {
-  if (width <= 0 || height <= 0) return;
+void Renderer::resize(int width, int height)
+{
+  if (width <= 0 || height <= 0)
+    return;
   viewportWidth = width;
   viewportHeight = height;
   updateRenderSize();
@@ -76,44 +81,51 @@ void Renderer::resize(int width, int height) {
   ::glViewport(0, 0, width, height);
 }
 
-float Renderer::currentRenderScale() const {
-  if (renderScaleMode == 0) return 1.0f;
-  if (renderScaleMode == 2) return 2.0f;
+float Renderer::currentRenderScale() const
+{
+  if (renderScaleMode == 0)
+    return 1.0f;
+  if (renderScaleMode == 2)
+    return 2.0f;
   return 1.5f;
 }
 
-void Renderer::updateRenderSize() {
+void Renderer::updateRenderSize()
+{
   float scale = currentRenderScale();
   renderWidth = (int)((float)viewportWidth * scale + 0.5f);
   renderHeight = (int)((float)viewportHeight * scale + 0.5f);
 }
 
-float Renderer::cycleSupersampling() {
+float Renderer::cycleSupersampling()
+{
   renderScaleMode = (renderScaleMode + 1) % 3;
   updateRenderSize();
-  if (!createSceneTargets(renderWidth, renderHeight)) {
+  if (!createSceneTargets(renderWidth, renderHeight))
     std::fprintf(stderr, "Renderer: failed to resize supersampling targets\n");
-  }
   ::glViewport(0, 0, viewportWidth, viewportHeight);
   float scale = currentRenderScale();
   std::fprintf(stderr, "Supersampling: %.1fx (%dx%d -> %dx%d)\n",
-          scale, viewportWidth, viewportHeight, renderWidth, renderHeight);
+               scale, viewportWidth, viewportHeight, renderWidth, renderHeight);
   return scale;
 }
 
-bool Renderer::toggleFXAA() {
+bool Renderer::toggleFXAA()
+{
   fxaaEnabled = !fxaaEnabled;
   return fxaaEnabled;
 }
 
-void Renderer::setupGLState() {
+void Renderer::setupGLState()
+{
   ::glEnable(GL_DEPTH_TEST);
   ::glEnable(GL_CULL_FACE);
   ::glCullFace(GL_BACK);
   ::glFrontFace(GL_CCW);
 }
 
-bool Renderer::loadShaders() {
+bool Renderer::loadShaders()
+{
   if (!pbrShader.loadFromFiles("Shader/pbr.vert", "Shader/pbr.frag")) {
     std::fprintf(stderr, "Renderer: failed to load PBR shader\n");
     return false;
@@ -137,7 +149,8 @@ bool Renderer::loadShaders() {
   return true;
 }
 
-void Renderer::destroySceneTargets() {
+void Renderer::destroySceneTargets()
+{
   if (msaaFBO) { ::glDeleteFramebuffers(1, &msaaFBO); msaaFBO = 0; }
   if (msaaColorRbo) { ::glDeleteRenderbuffers(1, &msaaColorRbo); msaaColorRbo = 0; }
   if (msaaDepthRbo) { ::glDeleteRenderbuffers(1, &msaaDepthRbo); msaaDepthRbo = 0; }
@@ -148,9 +161,11 @@ void Renderer::destroySceneTargets() {
   msaaSamples = 0;
 }
 
-bool Renderer::createSceneTargets(int width, int height) {
+bool Renderer::createSceneTargets(int width, int height)
+{
   destroySceneTargets();
-  if (width <= 0 || height <= 0) return false;
+  if (width <= 0 || height <= 0)
+    return false;
 
   ::glGenTextures(1, &sceneColorTex);
   ::glBindTexture(GL_TEXTURE_2D, sceneColorTex);
@@ -183,8 +198,10 @@ bool Renderer::createSceneTargets(int width, int height) {
   int candidates[3] = {8, 4, 2};
   msaaSamples = 0;
   for (int i = 0; i < 3; i++) {
-    if (candidates[i] > TARGET_MSAA_SAMPLES) continue;
-    if (candidates[i] > maxSamples) continue;
+    if (candidates[i] > TARGET_MSAA_SAMPLES)
+      continue;
+    if (candidates[i] > maxSamples)
+      continue;
 
     int trySamples = candidates[i];
     ::glGenRenderbuffers(1, &msaaColorRbo);
@@ -212,8 +229,8 @@ bool Renderer::createSceneTargets(int width, int height) {
     }
 
     std::fprintf(stderr,
-            "Renderer: MSAA %dx incomplete (0x%X), trying lower samples\n",
-            trySamples, (unsigned int)status);
+                 "Renderer: MSAA %dx incomplete (0x%X), trying lower samples\n",
+                 trySamples, (unsigned int)status);
     if (msaaFBO) { ::glDeleteFramebuffers(1, &msaaFBO); msaaFBO = 0; }
     if (msaaColorRbo) { ::glDeleteRenderbuffers(1, &msaaColorRbo); msaaColorRbo = 0; }
     if (msaaDepthRbo) { ::glDeleteRenderbuffers(1, &msaaDepthRbo); msaaDepthRbo = 0; }
@@ -242,22 +259,25 @@ bool Renderer::createSceneTargets(int width, int height) {
   return true;
 }
 
-void Renderer::destroyShadowMap() {
+void Renderer::destroyShadowMap()
+{
   if (shadowFBO) { ::glDeleteFramebuffers(1, &shadowFBO); shadowFBO = 0; }
   if (shadowDepthTex) { ::glDeleteTextures(1, &shadowDepthTex); shadowDepthTex = 0; }
   if (shadowDepthRbo) { ::glDeleteRenderbuffers(1, &shadowDepthRbo); shadowDepthRbo = 0; }
   shadowsEnabled = false;
 }
 
-bool Renderer::createShadowMap() {
+bool Renderer::createShadowMap()
+{
   destroyShadowMap();
-  if (shadowMapSize <= 0) shadowMapSize = DEFAULT_SHADOW_MAP_SIZE;
+  if (shadowMapSize <= 0)
+    shadowMapSize = DEFAULT_SHADOW_MAP_SIZE;
 
   ::glGenTextures(1, &shadowDepthTex);
   ::glBindTexture(GL_TEXTURE_2D, shadowDepthTex);
   ::glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F,
-               shadowMapSize, shadowMapSize, 0,
-               GL_RGBA, GL_FLOAT, nullptr);
+                 shadowMapSize, shadowMapSize, 0,
+                 GL_RGBA, GL_FLOAT, nullptr);
   ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -267,23 +287,23 @@ bool Renderer::createShadowMap() {
   ::glGenRenderbuffers(1, &shadowDepthRbo);
   ::glBindRenderbuffer(GL_RENDERBUFFER, shadowDepthRbo);
   ::glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24,
-                        shadowMapSize, shadowMapSize);
+                          shadowMapSize, shadowMapSize);
   ::glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
   ::glGenFramebuffers(1, &shadowFBO);
   ::glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO);
   ::glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                         GL_TEXTURE_2D, shadowDepthTex, 0);
+                           GL_TEXTURE_2D, shadowDepthTex, 0);
   ::glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-                            GL_RENDERBUFFER, shadowDepthRbo);
+                              GL_RENDERBUFFER, shadowDepthRbo);
 
   GLenum status = ::glCheckFramebufferStatus(GL_FRAMEBUFFER);
   ::glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
   if (status != GL_FRAMEBUFFER_COMPLETE) {
     std::fprintf(stderr,
-            "Renderer: shadow framebuffer incomplete (0x%X), shadows disabled\n",
-            (unsigned int)status);
+                 "Renderer: shadow framebuffer incomplete (0x%X), shadows disabled\n",
+                 (unsigned int)status);
     destroyShadowMap();
     return true;
   }
@@ -293,16 +313,20 @@ bool Renderer::createShadowMap() {
   return true;
 }
 
-void Renderer::computeLightMatrix(Scene &scene) {
+void Renderer::computeLightMatrix(Scene &scene)
+{
   Vec3f bmin, bmax;
   scene.getBounds(bmin, bmax);
 
   Vec3f center = (bmin + bmax) * 0.5f;
   Vec3f extent = bmax - bmin;
   float radius = 0.5f * extent.x();
-  if (0.5f * extent.y() > radius) radius = 0.5f * extent.y();
-  if (0.5f * extent.z() > radius) radius = 0.5f * extent.z();
-  if (radius < 0.01f) radius = 1.0f;
+  if (0.5f * extent.y() > radius)
+    radius = 0.5f * extent.y();
+  if (0.5f * extent.z() > radius)
+    radius = 0.5f * extent.z();
+  if (radius < 0.01f)
+    radius = 1.0f;
   radius *= 1.15f;
 
   lightDirection.Normalize();
@@ -312,9 +336,8 @@ void Renderer::computeLightMatrix(Scene &scene) {
   Vec3f front = center - lightPos;
   front.Normalize();
   Vec3f worldUp(0.0f, 1.0f, 0.0f);
-  if (std::fabs(front.Dot3(worldUp)) > 0.95f) {
+  if (std::fabs(front.Dot3(worldUp)) > 0.95f)
     worldUp = Vec3f(0.0f, 0.0f, 1.0f);
-  }
 
   Vec3f right, up;
   Vec3f::Cross3(right, front, worldUp);
@@ -339,7 +362,8 @@ void Renderer::computeLightMatrix(Scene &scene) {
 
   float nearZ = 0.1f;
   float farZ = radius * 4.0f;
-  if (farZ < nearZ + 1.0f) farZ = nearZ + 1.0f;
+  if (farZ < nearZ + 1.0f)
+    farZ = nearZ + 1.0f;
 
   Matrix lightProj;
   lightProj.Clear();
@@ -352,8 +376,10 @@ void Renderer::computeLightMatrix(Scene &scene) {
   lightViewProjection = lightProj * lightView;
 }
 
-void Renderer::renderShadowMap(std::vector<Mesh *> const& opaque) {
-  if (!shadowsEnabled || !shadowFBO) return;
+void Renderer::renderShadowMap(std::vector<Mesh *> const& opaque)
+{
+  if (!shadowsEnabled || !shadowFBO)
+    return;
 
   ::glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO);
   ::glViewport(0, 0, shadowMapSize, shadowMapSize);
@@ -378,7 +404,8 @@ void Renderer::renderShadowMap(std::vector<Mesh *> const& opaque) {
 
   for (size_t i = 0; i < opaque.size(); i++) {
     Mesh *mesh = opaque[i];
-    if (!mesh) continue;
+    if (!mesh)
+      continue;
 
     float *modelPtr = mesh->getModelMatrix().glGet();
     shadowShader.setMat4("uModel", modelPtr);
@@ -398,38 +425,49 @@ void Renderer::renderShadowMap(std::vector<Mesh *> const& opaque) {
   ::glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Renderer::setLightDirection(Vec3f const&dir) {
+void Renderer::setLightDirection(Vec3f const& dir)
+{
   lightDirection = dir;
   lightDirection.Normalize();
 }
 
-void Renderer::setLightColor(Vec3f const&color) {
+void Renderer::setLightColor(Vec3f const& color)
+{
   lightColor = color;
 }
 
-void Renderer::setAmbientColor(Vec3f const&color) {
+void Renderer::setAmbientColor(Vec3f const& color)
+{
   ambientColor = color;
 }
 
-bool Renderer::isTransparentMesh(Mesh const*mesh) {
-  if (!mesh) return false;
-  PBRMaterial const*mat = mesh->getMaterial();
-  if (!mat) return false;
-  if (mat->alphaMode == ALPHA_BLEND) return true;
-  if (mat->hasTransmission && mat->transmissionFactor > 0.001f) return true;
+bool Renderer::isTransparentMesh(Mesh const* mesh)
+{
+  if (!mesh)
+    return false;
+  PBRMaterial const* mat = mesh->getMaterial();
+  if (!mat)
+    return false;
+  if (mat->alphaMode == ALPHA_BLEND)
+    return true;
+  if (mat->hasTransmission && mat->transmissionFactor > 0.001f)
+    return true;
   return false;
 }
 
-float Renderer::meshSortKey(Mesh const*mesh, Vec3f const&camPos) {
-  Vec3f const&c = mesh->getWorldCenter();
+float Renderer::meshSortKey(Mesh const* mesh, Vec3f const& camPos)
+{
+  Vec3f const& c = mesh->getWorldCenter();
   float dx = c.x() - camPos.x();
   float dy = c.y() - camPos.y();
   float dz = c.z() - camPos.z();
   return dx * dx + dy * dy + dz * dz;
 }
 
-void Renderer::drawSingleMesh(Mesh *mesh, bool transparentPass) {
-  if (!mesh) return;
+void Renderer::drawSingleMesh(Mesh *mesh, bool transparentPass)
+{
+  if (!mesh)
+    return;
 
   PBRMaterial *mat = mesh->getMaterial();
   float *modelPtr = mesh->getModelMatrix().glGet();
@@ -444,7 +482,7 @@ void Renderer::drawSingleMesh(Mesh *mesh, bool transparentPass) {
     normalMat.Get(2, 0), normalMat.Get(2, 1), normalMat.Get(2, 2)
   };
   ::glUniformMatrix3fv(::glGetUniformLocation(pbrShader.programId(), "uNormalMatrix"),
-                     1, GL_FALSE, nm);
+                       1, GL_FALSE, nm);
   delete [] modelPtr;
 
   if (mat) {
@@ -482,7 +520,8 @@ void Renderer::drawSingleMesh(Mesh *mesh, bool transparentPass) {
   mesh->draw();
 }
 
-void Renderer::bindCommonPBRUniforms(Scene &scene) {
+void Renderer::bindCommonPBRUniforms(Scene &scene)
+{
   OrbitCamera &cam = scene.getCamera();
   cam.setAspect((float)viewportWidth / (float)viewportHeight);
   cam.updateMatrices();
@@ -528,15 +567,15 @@ void Renderer::bindCommonPBRUniforms(Scene &scene) {
     const LightStrip *strips = scene.getLightStrips();
     for (int i = 0; i < LIGHT_STRIP_COUNT; i++) {
       char name[64];
-      sprintf(name, "uStripCenter[%d]", i);
+      std::sprintf(name, "uStripCenter[%d]", i);
       pbrShader.setVec3(name, strips[i].center.x(), strips[i].center.y(), strips[i].center.z());
-      sprintf(name, "uStripHalfRight[%d]", i);
+      std::sprintf(name, "uStripHalfRight[%d]", i);
       pbrShader.setVec3(name, strips[i].halfRight.x(), strips[i].halfRight.y(), strips[i].halfRight.z());
-      sprintf(name, "uStripHalfUp[%d]", i);
+      std::sprintf(name, "uStripHalfUp[%d]", i);
       pbrShader.setVec3(name, strips[i].halfUp.x(), strips[i].halfUp.y(), strips[i].halfUp.z());
-      sprintf(name, "uStripNormal[%d]", i);
+      std::sprintf(name, "uStripNormal[%d]", i);
       pbrShader.setVec3(name, strips[i].normal.x(), strips[i].normal.y(), strips[i].normal.z());
-      sprintf(name, "uStripColor[%d]", i);
+      std::sprintf(name, "uStripColor[%d]", i);
       pbrShader.setVec3(name, strips[i].color.x(), strips[i].color.y(), strips[i].color.z());
     }
   }
@@ -546,14 +585,14 @@ void Renderer::bindCommonPBRUniforms(Scene &scene) {
 
 void Renderer::drawMeshes(Scene& scene, bool transparentPassOnly,
                           std::vector<Mesh*> const* opaque,
-                          std::vector<Mesh*> const* transparent) {
+                          std::vector<Mesh*> const* transparent)
+{
   bindCommonPBRUniforms(scene);
 
   if (!transparentPassOnly && opaque) {
     pbrShader.setBool("uHasSceneColor", false);
-    for (size_t i = 0; i < opaque->size(); i++) {
+    for (size_t i = 0; i < opaque->size(); i++)
       drawSingleMesh((*opaque)[i], false);
-    }
   }
 
   if (transparentPassOnly && transparent) {
@@ -562,9 +601,8 @@ void Renderer::drawMeshes(Scene& scene, bool transparentPassOnly,
     pbrShader.setInt("uSceneColorMap", SCENE_SAMPLE_UNIT);
     pbrShader.setBool("uHasSceneColor", true);
 
-    for (size_t i = 0; i < transparent->size(); i++) {
+    for (size_t i = 0; i < transparent->size(); i++)
       drawSingleMesh((*transparent)[i], true);
-    }
   }
 
   ::glEnable(GL_CULL_FACE);
@@ -573,18 +611,21 @@ void Renderer::drawMeshes(Scene& scene, bool transparentPassOnly,
   ::glDepthMask(GL_TRUE);
 }
 
-void Renderer::resolveMsaaToSceneColor() {
-  if (msaaSamples <= 0 || !msaaFBO) return;
+void Renderer::resolveMsaaToSceneColor()
+{
+  if (msaaSamples <= 0 || !msaaFBO)
+    return;
 
   ::glBindFramebuffer(GL_READ_FRAMEBUFFER, msaaFBO);
   ::glBindFramebuffer(GL_DRAW_FRAMEBUFFER, resolveFBO);
   ::glBlitFramebuffer(0, 0, renderWidth, renderHeight,
-                    0, 0, renderWidth, renderHeight,
-                    GL_COLOR_BUFFER_BIT, GL_NEAREST);
+                      0, 0, renderWidth, renderHeight,
+                      GL_COLOR_BUFFER_BIT, GL_NEAREST);
   ::glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Renderer::captureSceneColorSample() {
+void Renderer::captureSceneColorSample()
+{
   ::glBindFramebuffer(GL_FRAMEBUFFER, resolveFBO);
   ::glBindTexture(GL_TEXTURE_2D, sceneSampleTex);
   ::glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, renderWidth, renderHeight);
@@ -592,7 +633,8 @@ void Renderer::captureSceneColorSample() {
   ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 }
 
-void Renderer::blitTonemapToScreen() {
+void Renderer::blitTonemapToScreen()
+{
   ::glBindFramebuffer(GL_FRAMEBUFFER, 0);
   ::glViewport(0, 0, viewportWidth, viewportHeight);
   ::glDisable(GL_DEPTH_TEST);
@@ -613,7 +655,8 @@ void Renderer::blitTonemapToScreen() {
   ::glEnable(GL_DEPTH_TEST);
 }
 
-void Renderer::render(Scene &scene) {
+void Renderer::render(Scene &scene)
+{
   OrbitCamera &cam = scene.getCamera();
   cam.setAspect((float)viewportWidth / (float)viewportHeight);
   cam.updateMatrices();
@@ -626,7 +669,8 @@ void Renderer::render(Scene &scene) {
 
   for (size_t i = 0; i < meshes.size(); i++) {
     Mesh *mesh = meshes[i];
-    if (!mesh) continue;
+    if (!mesh)
+      continue;
     if (isTransparentMesh(mesh)) {
       transparent.push_back(mesh);
     } else {
@@ -636,9 +680,9 @@ void Renderer::render(Scene &scene) {
 
   Vec3f camPos = cam.getPosition();
   std::sort(transparent.begin(), transparent.end(),
-    [&camPos](Mesh const*a, Mesh const*b) {
-      return meshSortKey(a, camPos) > meshSortKey(b, camPos);
-    });
+            [&camPos](Mesh const* a, Mesh const* b) {
+              return meshSortKey(a, camPos) > meshSortKey(b, camPos);
+            });
 
   if (shadowsEnabled && !opaque.empty()) {
     computeLightMatrix(scene);
@@ -677,7 +721,8 @@ void Renderer::render(Scene &scene) {
   blitTonemapToScreen();
 }
 
-void Renderer::destroy() {
+void Renderer::destroy()
+{
   if (fullscreenVAO) {
     ::glDeleteVertexArrays(1, &fullscreenVAO);
     fullscreenVAO = 0;

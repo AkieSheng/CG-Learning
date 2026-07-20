@@ -1,15 +1,19 @@
 #include "material.h"
+
 #include "glCanvas.h"
 #include "gl_options.h"
 #include "gl_headers.h"
-#include <cmath>
+
 #include <cassert>
+#include <cmath>
+
 
 #ifdef SPECULAR_FIX
-extern int SPECULAR_FIX_WHICH_PASS;
+  extern int SPECULAR_FIX_WHICH_PASS;
 #endif
 
-static auto componentMultiply(Vec3f const& a, Vec3f const& b) -> Vec3f {
+static auto componentMultiply(Vec3f const& a, Vec3f const& b) -> Vec3f
+{
   return Vec3f(a.x() * b.x(), a.y() * b.y(), a.z() * b.z());
 }
 
@@ -25,9 +29,8 @@ auto PhongMaterial::Shade(Ray const& ray, Hit const& hit,
                           Vec3f const& lightColor) const -> Vec3f {
   auto normal = hit.getNormal();
   auto nDotL = normal.Dot3(dirToLight);
-  if (nDotL <= 0.0f) {
+  if (nDotL <= 0.0f)
     return Vec3f(0, 0, 0);
-  }
 
   auto diffuse = componentMultiply(lightColor, diffuseColor) * nDotL;
 
@@ -36,19 +39,18 @@ auto PhongMaterial::Shade(Ray const& ray, Hit const& hit,
   auto halfVector = dirToLight + viewDir;
   halfVector.Normalize();
   auto nDotH = normal.Dot3(halfVector);
-  if (nDotH <= 0.0f) {
+  if (nDotH <= 0.0f)
     return diffuse;
-  }
 
   auto spec = ::powf(nDotH, exponent);
-  if (specular_fix) {
+  if (specular_fix)
     spec *= nDotL;
-  }
   auto specular = componentMultiply(lightColor, specularColor) * spec;
   return diffuse + specular;
 }
 
-auto PhongMaterial::glSetMaterial() const -> void {
+auto PhongMaterial::glSetMaterial() const -> void
+{
   GLfloat one[4] = {1.0, 1.0, 1.0, 1.0};
   GLfloat zero[4] = {0.0, 0.0, 0.0, 0.0};
   GLfloat specular[4] = {getSpecularColor().r(), getSpecularColor().g(),
@@ -57,12 +59,10 @@ auto PhongMaterial::glSetMaterial() const -> void {
                         getDiffuseColor().b(), 1.0};
 
   auto glexponent = exponent;
-  if (glexponent < 0) {
+  if (glexponent < 0)
     glexponent = 0;
-  }
-  if (glexponent > 128) {
+  if (glexponent > 128)
     glexponent = 128;
-  }
 
 #if !SPECULAR_FIX
 

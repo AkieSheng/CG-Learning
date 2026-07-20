@@ -1,13 +1,16 @@
 #include "rayTracer.h"
+
 #include "scene_parser.h"
 #include "group.h"
 #include "material.h"
 #include "light.h"
-#include "gl_headers.h"
 #include "rayTree.h"
 #include "gl_options.h"
-#include <cmath>
+#include "gl_headers.h"
+
 #include <cassert>
+#include <cmath>
+
 
 float const RayTracer::RAY_EPSILON = 1e-4f;
 int const RayTracer::MAX_IOR_DEPTH = 16;
@@ -23,15 +26,18 @@ RayTracer::RayTracer(SceneParser* s, int max_bounces, float cutoff_weight,
   transparentShadows = transparent_shadows;
 }
 
-auto RayTracer::componentMultiply(Vec3f const& a, Vec3f const& b) -> Vec3f {
+auto RayTracer::componentMultiply(Vec3f const& a, Vec3f const& b) -> Vec3f
+{
   return Vec3f(a.x() * b.x(), a.y() * b.y(), a.z() * b.z());
 }
 
-auto RayTracer::hasPositive(Vec3f const& c) -> bool {
+auto RayTracer::hasPositive(Vec3f const& c) -> bool
+{
   return c.x() > 0.0f || c.y() > 0.0f || c.z() > 0.0f;
 }
 
-auto RayTracer::isFullyBlocked(Vec3f const& attenuation) -> bool {
+auto RayTracer::isFullyBlocked(Vec3f const& attenuation) -> bool
+{
   return attenuation.x() <= 0.0f && attenuation.y() <= 0.0f &&
          attenuation.z() <= 0.0f;
 }
@@ -62,9 +68,8 @@ auto RayTracer::transmittedDirection(Vec3f const& normal,
   }
   auto eta = index_i / index_t;
   auto k = 1.0f - eta * eta * (1.0f - cosi * cosi);
-  if (k < 0.0f) {
+  if (k < 0.0f)
     return false;
-  }
   transmitted = incoming * eta - n * (eta * cosi + ::sqrtf(k));
   transmitted.Normalize();
   return true;
@@ -81,9 +86,8 @@ auto RayTracer::prepareNormal(Ray const& ray, Hit const& hit,
                               bool& backFacing) const -> Vec3f {
   auto normal = hit.getNormal();
   backFacing = ray.getDirection().Dot3(normal) > 0.0f;
-  if (shadeBack && backFacing) {
+  if (shadeBack && backFacing)
     normal = normal * (-1.0f);
-  }
   return normal;
 }
 
@@ -191,9 +195,8 @@ auto RayTracer::traceRayRecursive(Ray& ray, float tmin, int bounces, float weigh
                                   float const* outsideIOR, int iorDepth) const -> Vec3f {
   auto background = parser->getBackgroundColor();
 
-  if (bounces > maxBounces || weight < cutoffWeight) {
+  if (bounces > maxBounces || weight < cutoffWeight)
     return background;
-  }
 
   constexpr auto max_t = 1.0e30f;
   Hit bestHit(max_t, nullptr, Vec3f(0, 0, 0));
@@ -207,9 +210,8 @@ auto RayTracer::traceRayRecursive(Ray& ray, float tmin, int bounces, float weigh
 
   auto backFacing = false;
   auto normal = prepareNormal(ray, hit, backFacing);
-  if (!shadeBack && backFacing) {
+  if (!shadeBack && backFacing)
     return Vec3f(0, 0, 0);
-  }
 
   auto* phong = static_cast<PhongMaterial*>(hit.getMaterial());
   assert(phong != nullptr);

@@ -6,8 +6,10 @@ struct Particle;
 struct ForceField;
 
 struct Integrator {
-  Integrator() {}
-  virtual ~Integrator() {}
+  Integrator()
+  { }
+  virtual ~Integrator()
+  { }
 
   virtual auto Update(Particle* particle, ForceField* forcefield, float t, float dt) -> void = 0;
   virtual auto getColor() const -> Vec3f = 0;

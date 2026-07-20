@@ -7,12 +7,15 @@
 #include "vectors.h"
 
 struct Matrix final {
-  Matrix() { Clear(); }
+  Matrix()
+  { Clear(); }
   Matrix(Matrix const& m);
   Matrix(float const* m);
-  ~Matrix() {}
+  ~Matrix()
+  { }
 
-  auto glGet() const -> float* {
+  auto glGet() const -> float*
+  {
     auto* glMat = new float[16];
     glMat[0] = data[0][0];
     glMat[1] = data[1][0];
@@ -32,13 +35,15 @@ struct Matrix final {
     glMat[15] = data[3][3];
     return glMat;
   }
-  auto Get(int x, int y) const -> float {
+  auto Get(int x, int y) const -> float
+  {
     assert((x >= 0) && (x < 4));
     assert((y >= 0) && (y < 4));
     return data[y][x];
   }
 
-  auto Set(int x, int y, float v) -> void {
+  auto Set(int x, int y, float v) -> void
+  {
     assert((x >= 0) && (x < 4));
     assert((y >= 0) && (y < 4));
     data[y][x] = v;
@@ -86,18 +91,21 @@ struct Matrix final {
   static auto MakeAxisRotation(Vec3f const& v, float theta) -> Matrix;
 
   auto Transform(Vec4f& v) const -> void;
-  auto Transform(Vec3f& v) const -> void {
+  auto Transform(Vec3f& v) const -> void
+  {
     auto v2 = Vec4f(v.x(), v.y(), v.z(), 1);
     Transform(v2);
     v.Set(v2.x(), v2.y(), v2.z());
   }
-  auto Transform(Vec2f& v) const -> void {
+  auto Transform(Vec2f& v) const -> void
+  {
     auto v2 = Vec4f(v.x(), v.y(), 1, 1);
     Transform(v2);
     v.Set(v2.x(), v2.y());
   }
 
-  auto TransformDirection(Vec3f& v) const -> void {
+  auto TransformDirection(Vec3f& v) const -> void
+  {
     auto v2 = Vec4f(v.x(), v.y(), v.z(), 0);
     Transform(v2);
     v.Set(v2.x(), v2.y(), v2.z());

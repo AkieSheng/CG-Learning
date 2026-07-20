@@ -1,13 +1,13 @@
-#include "gl_headers.h"
-
 #include "system.h"
+#include "gl_headers.h"
 #include "generator.h"
 #include "integrator.h"
 #include "forcefield.h"
 #include "particleSet.h"
 #include "particle.h"
 
-System::System(Generator* g, Integrator* i, ForceField* f) {
+System::System(Generator* g, Integrator* i, ForceField* f)
+{
   assert(g != nullptr);
   assert(i != nullptr);
   assert(f != nullptr);
@@ -18,21 +18,24 @@ System::System(Generator* g, Integrator* i, ForceField* f) {
   Restart();
 }
 
-System::~System() {
+System::~System()
+{
   delete generator;
   delete integrator;
   delete forcefield;
   delete particles;
 }
 
-auto System::Restart() -> void {
+auto System::Restart() -> void
+{
   delete particles;
   particles = new ParticleSet(100);
   generator->Restart();
   current_time = 0;
 }
 
-auto System::Update(float dt) -> void {
+auto System::Update(float dt) -> void
+{
   auto num_particles = particles->getNumParticles();
   for (auto i = 0; i < num_particles; i++) {
     integrator->Update(particles->Get(i), forcefield, current_time, dt);
@@ -49,13 +52,15 @@ auto System::Update(float dt) -> void {
   current_time += dt;
 }
 
-auto System::PaintGeometry() const -> void {
+auto System::PaintGeometry() const -> void
+{
   generator->Paint();
 }
 
 auto System::Paint(float dt, int integrator_color, int draw_vectors, float acceleration_scale,
                    int motion_blur) const -> void {
-  if (integrator_color) {
+  if (integrator_color)
+  {
     auto c = integrator->getColor();
     ::glColor3f(c.r(), c.g(), c.b());
   }
@@ -65,7 +70,8 @@ auto System::Paint(float dt, int integrator_color, int draw_vectors, float accel
     particles->Get(i)->Paint(dt, integrator_color, draw_vectors, motion_blur);
   }
 
-  if (draw_vectors) {
+  if (draw_vectors)
+  {
     ::glColor3f(1, 1, 1);
     ::glBegin(GL_LINES);
     for (auto i = 0; i < num_particles; i++) {

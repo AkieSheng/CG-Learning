@@ -10,7 +10,6 @@ struct RingGenerator final : Generator {
   auto Generate(float current_time, int i) -> Particle* override;
   auto Paint() const -> void override;
 
-private:
   float position_randomness{};
   Vec3f velocity{};
   float velocity_randomness{};

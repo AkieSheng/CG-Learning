@@ -1,11 +1,12 @@
 #pragma once
 
-#include <vector>
 #include "vertex.h"
 #include "pbr_material.h"
 #include "matrix.h"
+#include <vector>
 
-struct Mesh final {
+struct Mesh final
+{
   Mesh();
   ~Mesh();
 

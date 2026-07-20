@@ -1,10 +1,12 @@
 #include "sphere.h"
+
 #include "grid.h"
 #include "boundingbox.h"
 #include "matrix.h"
 #include "raytracing_stats.h"
 #include "gl_options.h"
 #include "gl_headers.h"
+
 #include <cmath>
 
 #ifndef M_PI

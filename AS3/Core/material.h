@@ -4,7 +4,9 @@
 #include "ray.h"
 #include "hit.h"
 
-struct Material {
+
+struct Material
+{
   virtual ~Material() {}
 
   virtual auto getDiffuseColor() const -> Vec3f = 0;
@@ -13,7 +15,8 @@ struct Material {
   virtual auto glSetMaterial() const -> void = 0;
 };
 
-struct PhongMaterial final : Material {
+struct PhongMaterial final : Material
+{
   PhongMaterial(Vec3f const& diffuseColor, Vec3f const& specularColor,
                 float exponent);
 

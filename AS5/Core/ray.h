@@ -1,7 +1,8 @@
 #pragma once
 
-#include <iostream>
 #include "vectors.h"
+
+#include <iostream>
 
 struct Ray final {
   Ray() {}

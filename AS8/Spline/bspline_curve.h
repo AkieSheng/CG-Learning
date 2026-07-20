@@ -9,7 +9,6 @@ struct BSplineCurve final : Curve {
   auto OutputBezier(FILE* file) -> void override;
   auto OutputBSpline(FILE* file) -> void override;
 
- protected:
   auto getNumSegments() const -> int override;
   auto getSegmentControlPoints(int segment, Vec3f pts[4]) const -> void override;
   auto getSegmentBasis() const -> Matrix const& override;

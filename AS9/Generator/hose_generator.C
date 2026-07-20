@@ -1,18 +1,18 @@
 #include "hose_generator.h"
-
+#include <cassert>
 #include "particle.h"
 
-#include <cassert>
-
 HoseGenerator::HoseGenerator(Vec3f position, float position_randomness, Vec3f velocity,
-                             float velocity_randomness) {
+                             float velocity_randomness)
+{
   this->position = position;
   this->position_randomness = position_randomness;
   this->velocity = velocity;
   this->velocity_randomness = velocity_randomness;
 }
 
-auto HoseGenerator::Generate(float /*current_time*/, int /*i*/) -> Particle* {
+auto HoseGenerator::Generate(float, int) -> Particle*
+{
   assert(rng != nullptr);
 
   auto p = position + position_randomness * rng->randomVector();

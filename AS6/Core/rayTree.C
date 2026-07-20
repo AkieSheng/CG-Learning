@@ -2,7 +2,7 @@
 
 
 
-int RayTree::activated = 0;  
+int RayTree::activated = 0;
 Segment RayTree::main_segment;
 SegmentVector RayTree::shadow_segments;
 SegmentVector RayTree::reflected_segments;
@@ -36,7 +36,7 @@ auto RayTree::paintHelper(Vec4f const&m,Vec4f const&s,Vec4f const&r,Vec4f const&
     reflected_segments.getSegment(i).paint(); }
   glColor4f(t.r(),t.g(),t.b(),t.a());
   for (int i = 0; i < transmitted_segments.getNumSegments(); i++) {
-    transmitted_segments.getSegment(i).paint(); }  
+    transmitted_segments.getSegment(i).paint(); }
   glEnd();
 }
 
@@ -52,18 +52,18 @@ auto RayTree::paint() -> void {
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
   paintHelper(Vec4f(0.7,0.7,0.7,0.3),
-	      Vec4f(0.1,0.9,0.1,0.3),
-	      Vec4f(0.9,0.1,0.1,0.3),
-	      Vec4f(0.1,0.1,0.9,0.3));
+        Vec4f(0.1,0.9,0.1,0.3),
+        Vec4f(0.9,0.1,0.1,0.3),
+        Vec4f(0.1,0.1,0.9,0.3));
   glDisable(GL_BLEND);
   glEnable(GL_DEPTH_TEST);
 
 
   paintHelper(Vec4f(0.7,0.7,0.7,1.0),
-	      Vec4f(0.1,0.9,0.1,1.0),
-	      Vec4f(0.9,0.1,0.1,1.0),
-	      Vec4f(0.1,0.1,0.9,1.0));
-	      
+        Vec4f(0.1,0.9,0.1,1.0),
+        Vec4f(0.9,0.1,0.1,1.0),
+        Vec4f(0.1,0.1,0.9,1.0));
+
   glEnable(GL_LIGHTING);
 }
 

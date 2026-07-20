@@ -3,7 +3,8 @@
 #include "integrator.h"
 
 struct MidpointIntegrator final : Integrator {
-  MidpointIntegrator() {}
+  MidpointIntegrator()
+  { }
   ~MidpointIntegrator() override {}
 
   auto Update(Particle* particle, ForceField* forcefield, float t, float dt) -> void override;

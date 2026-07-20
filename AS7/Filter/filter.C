@@ -1,10 +1,11 @@
 #include "filter.h"
+#include <cassert>
+#include <cmath>
+#include <cstdio>
 #include "film.h"
-#include <math.h>
-#include <stdio.h>
-#include <assert.h>
 
-Vec3f Filter::getColor(int i, int j, Film *film) {
+Vec3f Filter::getColor(int i, int j, Film *film)
+{
   assert(film != nullptr);
   int support = getSupportRadius();
   int width = film->getWidth();
@@ -37,7 +38,8 @@ Vec3f Filter::getColor(int i, int j, Film *film) {
     }
   }
 
-  if (weightSum < 1e-8f) {
+  if (weightSum < 1e-8f)
+  {
     ::printf("[DEBUG] Filter::getColor(%d,%d): weightSum≈0, returning black\n",
            i, j);
     return Vec3f(0, 0, 0);

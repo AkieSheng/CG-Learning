@@ -1,5 +1,6 @@
-#include "gl_headers.h"
 #include "grid.h"
+
+#include "gl_headers.h"
 #include "boundingbox.h"
 #include "marchinginfo.h"
 #include "material.h"

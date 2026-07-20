@@ -1,5 +1,5 @@
-#include <stdio.h>
 #include "raytracing_stats.h"
+#include <cstdio>
 
 int RayTracingStats::width;
 int RayTracingStats::height;
@@ -15,7 +15,8 @@ unsigned long long RayTracingStats::num_intersections;
 unsigned long long RayTracingStats::num_grid_cells_traversed;
 
 void RayTracingStats::Initialize(int _width, int _height, BoundingBox *_bbox,
-				 int nx, int ny, int nz) {
+         int nx, int ny, int nz)
+{
   width = _width;
   height = _height;
   bbox = _bbox;
@@ -29,7 +30,8 @@ void RayTracingStats::Initialize(int _width, int _height, BoundingBox *_bbox,
   num_grid_cells_traversed = 0;
 }
 
-void RayTracingStats::PrintStatistics()  {
+void RayTracingStats::PrintStatistics()
+{
 
   int delta_time = ::time(nullptr) - start_time;
   if (delta_time == 0) delta_time = 1;
@@ -63,4 +65,3 @@ void RayTracingStats::PrintStatistics()  {
   ::printf("********************************************\n");
 
 }
-

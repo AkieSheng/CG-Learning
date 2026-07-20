@@ -2,11 +2,13 @@
 
 #include <cstdlib>
 
+
 struct SceneParser;
 
 #define SPECULAR_FIX 0
 
-struct GLCanvas final {
+struct GLCanvas final
+{
   static void (*renderFunction)(void);
   static SceneParser* scene;
   static int mouseButton;

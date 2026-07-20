@@ -7,16 +7,19 @@
 
 struct TriangleMesh {
   TriangleMesh(int num_verts, int num_tris);
-  ~TriangleMesh() {
+  ~TriangleMesh()
+  {
     delete[] vertices;
     delete[] triangles;
   }
 
-  auto SetVertex(int i, Vec3f v) -> void {
+  auto SetVertex(int i, Vec3f v) -> void
+  {
     assert(i >= 0 && i < num_vertices);
     vertices[i] = v;
   }
-  auto SetTriangle(int i, int a, int b, int c) -> void {
+  auto SetTriangle(int i, int a, int b, int c) -> void
+  {
     assert(i >= 0 && i < num_triangles);
     triangles[i * 3 + 0] = a;
     triangles[i * 3 + 1] = b;
@@ -25,7 +28,8 @@ struct TriangleMesh {
   auto Merge(TriangleMesh const& m) -> void;
   auto Output(FILE* file) -> void;
 
-  TriangleMesh() { assert(0); }
+  TriangleMesh()
+  { assert(0); }
 
   int num_vertices{};
   int num_triangles{};
@@ -35,16 +39,19 @@ struct TriangleMesh {
 
 struct TriangleNet final : TriangleMesh {
   TriangleNet(int _u_tess, int _v_tess);
-  ~TriangleNet() {}
+  ~TriangleNet()
+  { }
 
-  auto SetVertex(int i, int j, Vec3f v) -> void {
+  auto SetVertex(int i, int j, Vec3f v) -> void
+  {
     assert(i >= 0 && i <= u_tess);
     assert(j >= 0 && j <= v_tess);
     auto index = i * (v_tess + 1) + j;
     TriangleMesh::SetVertex(index, v);
   }
 
-  TriangleNet() { assert(0); }
+  TriangleNet()
+  { assert(0); }
 
   int u_tess{};
   int v_tess{};

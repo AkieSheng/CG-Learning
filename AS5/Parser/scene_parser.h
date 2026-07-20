@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vectors.h"
+
 #include <cassert>
 #include <cstdio>
 

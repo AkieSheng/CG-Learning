@@ -19,7 +19,6 @@ struct Marble final : Material {
   auto Shade(Ray const& ray, Hit const& hit, Vec3f const& dirToLight,
              Vec3f const& lightColor) const -> Vec3f override;
 
-private:
   auto blendWeight(Vec3f const& worldPoint) const -> float;
 
   Matrix* mapping{};

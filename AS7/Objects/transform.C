@@ -1,16 +1,18 @@
 #include "transform.h"
+#include <cmath>
 #include "grid.h"
 #include "boundingbox.h"
-#include <math.h>
 
 Transform::Transform(Matrix &m, Object3D *o)
-    : matrix(m), object(o) {
+    : matrix(m), object(o)
+{
   matrix.Inverse(inverseMatrix);
   inverseMatrix.Transpose();
 
   BoundingBox *childBox = object->getBoundingBox();
 
-  if (childBox != nullptr) {
+  if (childBox != nullptr)
+  {
     Vec3f cmin = childBox->getMin();
     Vec3f cmax = childBox->getMax();
     Vec3f corners[8] = {
@@ -42,18 +44,21 @@ Transform::Transform(Matrix &m, Object3D *o)
   }
 }
 
-Transform::~Transform() {
+Transform::~Transform()
+{
   delete object;
 }
 
-void Transform::insertIntoGrid(Grid *g, Matrix *m) {
+void Transform::insertIntoGrid(Grid *g, Matrix *m)
+{
   Matrix combined = matrix;
   if (m != nullptr)
     combined = (*m) * matrix;
   object->insertIntoGrid(g, &combined);
 }
 
-bool Transform::intersect(Ray const&r, Hit &h, float tmin) {
+bool Transform::intersect(Ray const&r, Hit &h, float tmin)
+{
   Matrix objectMatrix;
   matrix.Inverse(objectMatrix);
 
@@ -76,7 +81,8 @@ bool Transform::intersect(Ray const&r, Hit &h, float tmin) {
 }
 
 bool Transform::intersectShadow(Ray const&r, float tmin, float tmax, float &t,
-                                Material **outMaterial) {
+                                Material **outMaterial)
+{
   Matrix objectMatrix;
   matrix.Inverse(objectMatrix);
 

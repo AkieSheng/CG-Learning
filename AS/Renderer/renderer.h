@@ -5,7 +5,8 @@
 #include "ibl.h"
 #include "matrix.h"
 
-struct Renderer final {
+struct Renderer final
+{
   Renderer();
   ~Renderer();
 

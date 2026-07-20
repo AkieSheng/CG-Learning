@@ -1,7 +1,8 @@
 #pragma once
 
-#include <cassert>
 #include "vectors.h"
+
+#include <cassert>
 
 struct Image final {
   Image(int w, int h) {

@@ -3,7 +3,9 @@
 #include "ray.h"
 #include "vectors.h"
 
-struct Camera {
+
+struct Camera
+{
   virtual ~Camera() {}
   virtual auto generateRay(Vec2f point) -> Ray = 0;
   virtual auto getTMin() const -> float = 0;
@@ -14,7 +16,8 @@ struct Camera {
   virtual auto rotateCamera(float rx, float ry) -> void = 0;
 };
 
-struct OrthographicCamera final : Camera {
+struct OrthographicCamera final : Camera
+{
   OrthographicCamera(Vec3f center, Vec3f direction, Vec3f up, float size);
   auto generateRay(Vec2f point) -> Ray override;
   auto getTMin() const -> float override;
@@ -33,7 +36,8 @@ struct OrthographicCamera final : Camera {
   float size{};
 };
 
-struct PerspectiveCamera final : Camera {
+struct PerspectiveCamera final : Camera
+{
   PerspectiveCamera(Vec3f center, Vec3f direction, Vec3f up, float angle);
   auto generateRay(Vec2f point) -> Ray override;
   auto getTMin() const -> float override;

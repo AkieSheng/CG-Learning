@@ -53,7 +53,6 @@ struct Grid : Object3D {
                        Material** outMaterial) -> bool override;
   auto paint() const -> void override;
 
-private:
   static int const MAX_DENSITY_LEVELS = 16;
 
   auto index(int i, int j, int k) const -> int;

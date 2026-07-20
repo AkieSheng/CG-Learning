@@ -1,23 +1,29 @@
-#include "gl_headers.h"
 #include "camera.h"
+
 #include "matrix.h"
+#include "gl_headers.h"
+
 #include <cmath>
 
-static auto getScreenUp(Vec3f const& direction, Vec3f const& up) -> Vec3f {
+
+static auto getScreenUp(Vec3f const& direction, Vec3f const& up) -> Vec3f
+{
   auto screenUp = up;
   screenUp -= direction * screenUp.Dot3(direction);
   screenUp.Normalize();
   return screenUp;
 }
 
-auto OrthographicCamera::updateHorizontal() -> void {
+auto OrthographicCamera::updateHorizontal() -> void
+{
   direction.Normalize();
   auto screenUp = getScreenUp(direction, up);
   Vec3f::Cross3(horizontal, direction, screenUp);
   horizontal.Normalize();
 }
 
-OrthographicCamera::OrthographicCamera(Vec3f c, Vec3f dir, Vec3f up_vec, float s) {
+OrthographicCamera::OrthographicCamera(Vec3f c, Vec3f dir, Vec3f up_vec, float s)
+{
   center = c;
   size = s;
   direction = dir;
@@ -26,7 +32,8 @@ OrthographicCamera::OrthographicCamera(Vec3f c, Vec3f dir, Vec3f up_vec, float s
   updateHorizontal();
 }
 
-auto OrthographicCamera::generateRay(Vec2f point) -> Ray {
+auto OrthographicCamera::generateRay(Vec2f point) -> Ray
+{
   auto u = point.x();
   auto v = point.y();
   auto screenUp = getScreenUp(direction, up);
@@ -35,11 +42,13 @@ auto OrthographicCamera::generateRay(Vec2f point) -> Ray {
   return Ray(origin, direction);
 }
 
-auto OrthographicCamera::getTMin() const -> float {
+auto OrthographicCamera::getTMin() const -> float
+{
   return -1.0e30f;
 }
 
-auto OrthographicCamera::glInit(int w, int h) -> void {
+auto OrthographicCamera::glInit(int w, int h) -> void
+{
   ::glMatrixMode(GL_PROJECTION);
   ::glLoadIdentity();
   if (w > h) {
@@ -54,7 +63,8 @@ auto OrthographicCamera::glInit(int w, int h) -> void {
   }
 }
 
-auto OrthographicCamera::glPlaceCamera() -> void {
+auto OrthographicCamera::glPlaceCamera() -> void
+{
   ::gluLookAt(center.x(), center.y(), center.z(),
               center.x() + direction.x(),
               center.y() + direction.y(),
@@ -62,11 +72,13 @@ auto OrthographicCamera::glPlaceCamera() -> void {
               up.x(), up.y(), up.z());
 }
 
-auto OrthographicCamera::dollyCamera(float dist) -> void {
+auto OrthographicCamera::dollyCamera(float dist) -> void
+{
   center += direction * dist;
 }
 
-auto OrthographicCamera::truckCamera(float dx, float dy) -> void {
+auto OrthographicCamera::truckCamera(float dx, float dy) -> void
+{
   Vec3f horizontalAxis;
   Vec3f::Cross3(horizontalAxis, direction, up);
   horizontalAxis.Normalize();
@@ -76,7 +88,8 @@ auto OrthographicCamera::truckCamera(float dx, float dy) -> void {
   updateHorizontal();
 }
 
-auto OrthographicCamera::rotateCamera(float rx, float ry) -> void {
+auto OrthographicCamera::rotateCamera(float rx, float ry) -> void
+{
   Vec3f horizontalAxis;
   Vec3f::Cross3(horizontalAxis, direction, up);
   horizontalAxis.Normalize();
@@ -96,7 +109,8 @@ auto OrthographicCamera::rotateCamera(float rx, float ry) -> void {
   updateHorizontal();
 }
 
-PerspectiveCamera::PerspectiveCamera(Vec3f c, Vec3f dir, Vec3f up_vec, float ang) {
+PerspectiveCamera::PerspectiveCamera(Vec3f c, Vec3f dir, Vec3f up_vec, float ang)
+{
   center = c;
   direction = dir;
   up = up_vec;
@@ -106,7 +120,8 @@ PerspectiveCamera::PerspectiveCamera(Vec3f c, Vec3f dir, Vec3f up_vec, float ang
   updateHorizontal();
 }
 
-auto PerspectiveCamera::generateRay(Vec2f point) -> Ray {
+auto PerspectiveCamera::generateRay(Vec2f point) -> Ray
+{
   auto u = point.x();
   auto v = point.y();
   auto screenUp = getScreenUp(direction, up);
@@ -118,18 +133,21 @@ auto PerspectiveCamera::generateRay(Vec2f point) -> Ray {
   return Ray(center, rayDir);
 }
 
-auto PerspectiveCamera::getTMin() const -> float {
+auto PerspectiveCamera::getTMin() const -> float
+{
   return 1e-4f;
 }
 
-auto PerspectiveCamera::updateHorizontal() -> void {
+auto PerspectiveCamera::updateHorizontal() -> void
+{
   direction.Normalize();
   auto screenUp = getScreenUp(direction, up);
   Vec3f::Cross3(horizontal, direction, screenUp);
   horizontal.Normalize();
 }
 
-auto PerspectiveCamera::glInit(int w, int h) -> void {
+auto PerspectiveCamera::glInit(int w, int h) -> void
+{
   ::glMatrixMode(GL_PROJECTION);
   ::glLoadIdentity();
   ::gluPerspective(angle * 180.0 / 3.14159,
@@ -137,7 +155,8 @@ auto PerspectiveCamera::glInit(int w, int h) -> void {
                    0.5, 40.0);
 }
 
-auto PerspectiveCamera::glPlaceCamera() -> void {
+auto PerspectiveCamera::glPlaceCamera() -> void
+{
   ::gluLookAt(center.x(), center.y(), center.z(),
               center.x() + direction.x(),
               center.y() + direction.y(),
@@ -145,11 +164,13 @@ auto PerspectiveCamera::glPlaceCamera() -> void {
               up.x(), up.y(), up.z());
 }
 
-auto PerspectiveCamera::dollyCamera(float dist) -> void {
+auto PerspectiveCamera::dollyCamera(float dist) -> void
+{
   center += direction * dist;
 }
 
-auto PerspectiveCamera::truckCamera(float dx, float dy) -> void {
+auto PerspectiveCamera::truckCamera(float dx, float dy) -> void
+{
   Vec3f horizontalAxis;
   Vec3f::Cross3(horizontalAxis, direction, up);
   horizontalAxis.Normalize();
@@ -159,7 +180,8 @@ auto PerspectiveCamera::truckCamera(float dx, float dy) -> void {
   updateHorizontal();
 }
 
-auto PerspectiveCamera::rotateCamera(float rx, float ry) -> void {
+auto PerspectiveCamera::rotateCamera(float rx, float ry) -> void
+{
   Vec3f horizontalAxis;
   Vec3f::Cross3(horizontalAxis, direction, up);
   horizontalAxis.Normalize();

@@ -2,7 +2,8 @@
 
 #include "vectors.h"
 
-struct Vertex {
+struct Vertex
+{
   Vec3f position{};
   Vec3f normal{};
   Vec4f tangent{};

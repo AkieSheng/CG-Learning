@@ -1,11 +1,12 @@
+#include "matrix.h"
+
+#include "vectors.h"
+
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
 #include <cstring>
 #include <cassert>
-
-#include "matrix.h"
-#include "vectors.h"
 
 namespace {
 

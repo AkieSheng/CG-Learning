@@ -4,20 +4,24 @@
 #include "object3d.h"
 
 struct Light {
-  Light() {}
-  virtual ~Light() {}
+  Light()
+  { }
+  virtual ~Light()
+  { }
 
   virtual auto getIllumination(Vec3f const& p, Vec3f& dir, Vec3f& col,
                                float& distanceToLight) const -> void = 0;
 };
 
 struct DirectionalLight final : Light {
-  DirectionalLight(Vec3f const& d, Vec3f const& c) {
+  DirectionalLight(Vec3f const& d, Vec3f const& c)
+  {
     direction = d;
     direction.Normalize();
     color = c;
   }
-  ~DirectionalLight() {}
+  ~DirectionalLight()
+  { }
 
   auto getIllumination(Vec3f const& p, Vec3f& dir, Vec3f& col,
                        float& distanceToLight) const -> void override {
@@ -33,14 +37,16 @@ struct DirectionalLight final : Light {
 };
 
 struct PointLight final : Light {
-  PointLight(Vec3f const& p, Vec3f const& c, float a1, float a2, float a3) {
+  PointLight(Vec3f const& p, Vec3f const& c, float a1, float a2, float a3)
+  {
     position = p;
     color = c;
     attenuation_1 = a1;
     attenuation_2 = a2;
     attenuation_3 = a3;
   }
-  ~PointLight() {}
+  ~PointLight()
+  { }
 
   auto getIllumination(Vec3f const& p, Vec3f& dir, Vec3f& col,
                        float& distanceToLight) const -> void override {

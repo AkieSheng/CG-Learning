@@ -1,7 +1,10 @@
 #include "transform.h"
+
 #include "gl_headers.h"
 
-auto Transform::intersect(Ray const& r, Hit& h, float tmin) -> bool {
+
+auto Transform::intersect(Ray const& r, Hit& h, float tmin) -> bool
+{
   Matrix objectMatrix;
   matrix.Inverse(objectMatrix);
 
@@ -24,7 +27,8 @@ auto Transform::intersect(Ray const& r, Hit& h, float tmin) -> bool {
   return true;
 }
 
-auto Transform::paint() const -> void {
+auto Transform::paint() const -> void
+{
   ::glPushMatrix();
   auto* glMatrix = matrix.glGet();
   ::glMultMatrixf(glMatrix);

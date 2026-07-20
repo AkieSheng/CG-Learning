@@ -21,8 +21,8 @@ struct System {
              int motion_blur) const -> void;
   auto PaintGeometry() const -> void;
 
-private:
-  System() { assert(0); }
+  System()
+  { assert(0); }
 
   ParticleSet* particles{};
   Generator* generator{};

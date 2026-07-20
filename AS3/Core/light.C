@@ -1,7 +1,10 @@
-#include "gl_headers.h"
 #include "light.h"
 
-auto DirectionalLight::glInit(int id) -> void {
+#include "gl_headers.h"
+
+
+auto DirectionalLight::glInit(int id) -> void
+{
   GLenum glLightID;
   switch (id) {
     case 0:

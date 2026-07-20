@@ -1,11 +1,14 @@
 #pragma once
 
-#include <iostream>
 #include "vectors.h"
 
-struct Ray final {
+#include <iostream>
+
+struct Ray final
+{
   Ray() {}
-  Ray(Vec3f const& orig, Vec3f const& dir) {
+  Ray(Vec3f const& orig, Vec3f const& dir)
+  {
     origin = orig;
     direction = dir;
   }
@@ -13,7 +16,8 @@ struct Ray final {
 
   auto getOrigin() const -> Vec3f const& { return origin; }
   auto getDirection() const -> Vec3f const& { return direction; }
-  auto pointAtParameter(float t) const -> Vec3f {
+  auto pointAtParameter(float t) const -> Vec3f
+  {
     return origin + direction * t;
   }
 
@@ -21,7 +25,8 @@ struct Ray final {
   Vec3f direction{};
 };
 
-inline auto operator<<(std::ostream& os, Ray const& r) -> std::ostream& {
+inline auto operator<<(std::ostream& os, Ray const& r) -> std::ostream&
+{
   os << "Ray <o:" << r.getOrigin() << ", d:" << r.getDirection() << ">";
   return os;
 }

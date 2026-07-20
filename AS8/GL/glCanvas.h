@@ -7,8 +7,10 @@ struct SplineParser;
 struct Spline;
 
 struct GLCanvas final {
-  GLCanvas() {}
-  ~GLCanvas() {}
+  GLCanvas()
+  { }
+  ~GLCanvas()
+  { }
 
   static auto initialize(ArgParser* args, SplineParser* splines) -> void;
 

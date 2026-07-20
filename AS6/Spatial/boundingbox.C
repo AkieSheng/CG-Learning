@@ -1,12 +1,13 @@
-#include "gl_headers.h"
 #include "boundingbox.h"
+
+#include "gl_headers.h"
 
 
 
 
 auto BoundingBox::paint()const -> void {
 
-  
+
   glColor3f(1,1,1);
   glDisable(GL_LIGHTING);
   glBegin(GL_LINES);
@@ -39,7 +40,7 @@ auto BoundingBox::paint()const -> void {
   glVertex3f(min.x(),max.y(),max.z());
 
   glEnd();
-  glEnable(GL_LIGHTING);	   
+  glEnable(GL_LIGHTING);
 }
 
 

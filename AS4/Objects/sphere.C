@@ -1,22 +1,25 @@
 #include "sphere.h"
+
 #include "gl_options.h"
 #include "gl_headers.h"
+
 #include <cmath>
+
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
 
-auto Sphere::intersect(Ray const& r, Hit& h, float tmin) -> bool {
+auto Sphere::intersect(Ray const& r, Hit& h, float tmin) -> bool
+{
   auto oc = r.getOrigin() - center;
   auto dir = r.getDirection();
   auto a = dir.Dot3(dir);
   auto b = 2.0f * oc.Dot3(dir);
   auto c = oc.Dot3(oc) - radius * radius;
   auto discriminant = b * b - 4.0f * a * c;
-  if (discriminant < 0.0f) {
+  if (discriminant < 0.0f)
     return false;
-  }
 
   auto sqrt_disc = ::sqrtf(discriminant);
   auto hit = false;
@@ -45,9 +48,8 @@ auto Sphere::intersectShadow(Ray const& r, float tmin, float tmax, float& t,
   auto b = 2.0f * oc.Dot3(dir);
   auto c = oc.Dot3(oc) - radius * radius;
   auto discriminant = b * b - 4.0f * a * c;
-  if (discriminant < 0.0f) {
+  if (discriminant < 0.0f)
     return false;
-  }
 
   auto sqrt_disc = ::sqrtf(discriminant);
   auto tNear = (-b - sqrt_disc) / (2.0f * a);
@@ -85,19 +87,17 @@ static auto spherePoint(Vec3f const& center, float radius, float theta,
   return center + p * radius;
 }
 
-auto Sphere::paint() const -> void {
-  if (material != nullptr) {
+auto Sphere::paint() const -> void
+{
+  if (material != nullptr)
     material->glSetMaterial();
-  }
 
   auto thetaSteps = tessellation_theta;
   auto phiSteps = tessellation_phi;
-  if (thetaSteps < 2) {
+  if (thetaSteps < 2)
     thetaSteps = 2;
-  }
-  if (phiSteps < 2) {
+  if (phiSteps < 2)
     phiSteps = 2;
-  }
   auto dTheta = 2.0f * static_cast<float>(M_PI) / thetaSteps;
   auto dPhi = static_cast<float>(M_PI) / phiSteps;
 

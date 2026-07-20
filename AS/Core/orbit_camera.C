@@ -3,55 +3,59 @@
 #include <cmath>
 
 #ifndef M_PI
-#define M_PI 3.14159265358979323846
+  #define M_PI 3.14159265358979323846
 #endif
 
-OrbitCamera::OrbitCamera() {
+OrbitCamera::OrbitCamera()
+{
   viewMatrix.SetToIdentity();
   projectionMatrix.SetToIdentity();
   updatePosition();
   updateMatrices();
 }
 
-auto OrbitCamera::setTarget(Vec3f const& t) -> void {
+auto OrbitCamera::setTarget(Vec3f const& t) -> void
+{
   target = t;
   updatePosition();
   updateMatrices();
 }
 
-auto OrbitCamera::setDistance(float d) -> void {
+auto OrbitCamera::setDistance(float d) -> void
+{
   distance = d;
-  if (distance < 0.1f) {
+  if (distance < 0.1f)
     distance = 0.1f;
-  }
   updatePosition();
   updateMatrices();
 }
 
-auto OrbitCamera::setAspect(float a) -> void {
+auto OrbitCamera::setAspect(float a) -> void
+{
   aspect = a;
   updateMatrices();
 }
 
-auto OrbitCamera::setFovY(float degrees) -> void {
+auto OrbitCamera::setFovY(float degrees) -> void
+{
   fovY = degrees;
   updateMatrices();
 }
 
-auto OrbitCamera::rotate(float deltaYaw, float deltaPitch) -> void {
+auto OrbitCamera::rotate(float deltaYaw, float deltaPitch) -> void
+{
   yaw += deltaYaw;
   pitch += deltaPitch;
-  if (pitch > 89.0f) {
+  if (pitch > 89.0f)
     pitch = 89.0f;
-  }
-  if (pitch < -89.0f) {
+  if (pitch < -89.0f)
     pitch = -89.0f;
-  }
   updatePosition();
   updateMatrices();
 }
 
-auto OrbitCamera::pan(float deltaX, float deltaY) -> void {
+auto OrbitCamera::pan(float deltaX, float deltaY) -> void
+{
   Vec3f front = getFront();
   Vec3f right, up;
   Vec3f::Cross3(right, front, worldUp);
@@ -63,11 +67,13 @@ auto OrbitCamera::pan(float deltaX, float deltaY) -> void {
   updateMatrices();
 }
 
-auto OrbitCamera::zoom(float delta) -> void {
+auto OrbitCamera::zoom(float delta) -> void
+{
   setDistance(distance * (1.0f - delta));
 }
 
-auto OrbitCamera::updatePosition() -> void {
+auto OrbitCamera::updatePosition() -> void
+{
   float yawRad = yaw * static_cast<float>(M_PI) / 180.0f;
   float pitchRad = pitch * static_cast<float>(M_PI) / 180.0f;
   float x = distance * std::cos(pitchRad) * std::sin(yawRad);
@@ -76,13 +82,15 @@ auto OrbitCamera::updatePosition() -> void {
   position = target + Vec3f(x, y, z);
 }
 
-auto OrbitCamera::getFront() const -> Vec3f {
+auto OrbitCamera::getFront() const -> Vec3f
+{
   Vec3f f = target - position;
   f.Normalize();
   return f;
 }
 
-auto OrbitCamera::updateMatrices() -> void {
+auto OrbitCamera::updateMatrices() -> void
+{
   Vec3f front = getFront();
   Vec3f right, up;
   Vec3f::Cross3(right, front, worldUp);
@@ -110,9 +118,8 @@ auto OrbitCamera::updateMatrices() -> void {
   farZ = 1000.0f;
   if (distance > farZ * 0.45f) {
     nearZ = distance * 0.01f;
-    if (nearZ < 0.1f) {
+    if (nearZ < 0.1f)
       nearZ = 0.1f;
-    }
     farZ = distance * 10.0f;
   }
 
@@ -124,19 +131,17 @@ auto OrbitCamera::updateMatrices() -> void {
   projectionMatrix.Set(2, 3, -1.0f);
 }
 
-auto OrbitCamera::frameBounds(Vec3f const& bmin, Vec3f const& bmax) -> void {
+auto OrbitCamera::frameBounds(Vec3f const& bmin, Vec3f const& bmax) -> void
+{
   Vec3f center = (bmin + bmax) * 0.5f;
   Vec3f extent = bmax - bmin;
   float radius = 0.5f * extent.x();
-  if (0.5f * extent.y() > radius) {
+  if (0.5f * extent.y() > radius)
     radius = 0.5f * extent.y();
-  }
-  if (0.5f * extent.z() > radius) {
+  if (0.5f * extent.z() > radius)
     radius = 0.5f * extent.z();
-  }
-  if (radius < 0.001f) {
+  if (radius < 0.001f)
     radius = 1.0f;
-  }
 
   yaw = 0.0f;
   pitch = 20.0f;

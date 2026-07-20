@@ -19,7 +19,6 @@ struct GLCanvas final {
                   void (*_traceRayFunction)(float, float),
                   Grid* _grid, bool _visualize_grid) -> void;
 
-private:
   static void (*renderFunction)();
   static void (*traceRayFunction)(float, float);
   static SceneParser* scene;

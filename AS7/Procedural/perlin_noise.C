@@ -1,5 +1,3 @@
-
-
 #include "perlin_noise.h"
 
 int PerlinNoise::p[512] =

@@ -1,39 +1,41 @@
-#include <cstdlib>
-#include <cstdio>
-#include <cstring>
+#include "image.h"
+
 #include <cassert>
 #include <cmath>
-
-#include "image.h"
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 namespace {
 
-auto ReadByte(FILE* file) -> unsigned char {
+auto ReadByte(FILE* file) -> unsigned char
+{
   unsigned char b{};
   auto success = int(::fread(static_cast<void*>(&b), sizeof(unsigned char), 1, file));
   assert(success == 1);
   return b;
 }
 
-auto WriteByte(FILE* file, unsigned char b) -> void {
+auto WriteByte(FILE* file, unsigned char b) -> void
+{
   auto success = int(::fwrite(static_cast<void*>(&b), sizeof(unsigned char), 1, file));
   assert(success == 1);
 }
 
-auto ClampColorComponent(float c) -> unsigned char {
+auto ClampColorComponent(float c) -> unsigned char
+{
   auto tmp = int(c * 255);
-  if (tmp < 0) {
+  if (tmp < 0)
     tmp = 0;
-  }
-  if (tmp > 255) {
+  if (tmp > 255)
     tmp = 255;
-  }
   return static_cast<unsigned char>(tmp);
 }
 
 }  // namespace
 
-auto Image::SaveTGA(char const* filename) const -> void {
+auto Image::SaveTGA(char const* filename) const -> void
+{
   assert(filename != nullptr);
   auto const* ext = &filename[::strlen(filename) - 4];
   assert(!::strcmp(ext, ".tga"));
@@ -68,7 +70,8 @@ auto Image::SaveTGA(char const* filename) const -> void {
   ::fclose(file);
 }
 
-auto Image::LoadTGA(char const* filename) -> Image* {
+auto Image::LoadTGA(char const* filename) -> Image*
+{
   assert(filename != nullptr);
   auto const* ext = &filename[::strlen(filename) - 4];
   assert(!::strcmp(ext, ".tga"));
@@ -109,7 +112,8 @@ auto Image::LoadTGA(char const* filename) -> Image* {
   return answer;
 }
 
-auto Image::SavePPM(char const* filename) const -> void {
+auto Image::SavePPM(char const* filename) const -> void
+{
   assert(filename != nullptr);
   auto const* ext = &filename[::strlen(filename) - 4];
   assert(!::strcmp(ext, ".ppm"));
@@ -130,7 +134,8 @@ auto Image::SavePPM(char const* filename) const -> void {
   ::fclose(file);
 }
 
-auto Image::LoadPPM(char const* filename) -> Image* {
+auto Image::LoadPPM(char const* filename) -> Image*
+{
   assert(filename != nullptr);
   auto const* ext = &filename[::strlen(filename) - 4];
   assert(!::strcmp(ext, ".ppm"));
@@ -160,7 +165,8 @@ auto Image::LoadPPM(char const* filename) -> Image* {
   return answer;
 }
 
-auto Image::Compare(Image* img1, Image* img2) -> Image* {
+auto Image::Compare(Image* img1, Image* img2) -> Image*
+{
   assert(img1->Width() == img2->Width());
   assert(img1->Height() == img2->Height());
 

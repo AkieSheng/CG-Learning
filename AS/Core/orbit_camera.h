@@ -3,7 +3,8 @@
 #include "vectors.h"
 #include "matrix.h"
 
-struct OrbitCamera final {
+struct OrbitCamera final
+{
   OrbitCamera();
 
   auto setTarget(Vec3f const& t) -> void;

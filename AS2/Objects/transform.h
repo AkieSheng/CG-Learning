@@ -1,11 +1,13 @@
 #pragma once
 
-#include "object3d.h"
 #include "matrix.h"
+#include "object3d.h"
 
-struct Transform final : Object3D {
+struct Transform final : Object3D
+{
   Transform(Matrix& m, Object3D* o)
-      : matrix(m), object(o) {
+      : matrix(m), object(o)
+  {
     matrix.Inverse(inverseMatrix);
     inverseMatrix.Transpose();
   }
