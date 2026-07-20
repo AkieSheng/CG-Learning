@@ -1,14 +1,8 @@
-#ifndef _RANDOM_SAMPLER_H_
-#define _RANDOM_SAMPLER_H_
+#pragma once
 
 #include "sampler.h"
 
-// 像素内完全随机采样
-class RandomSampler : public Sampler {
-
-public:
+struct RandomSampler final : Sampler {
   RandomSampler(int num_samples);
-  virtual Vec2f getSamplePosition(int n);
+  auto getSamplePosition(int n) -> Vec2f override;
 };
-
-#endif

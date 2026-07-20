@@ -1,39 +1,32 @@
-#ifndef _MARBLE_H_
-#define _MARBLE_H_
+#pragma once
 
 #include "material.h"
 
-class Matrix;
+struct Matrix;
 
-// 大理石纹理程序化材质
-class Marble : public Material {
-
-public:
-  Marble(Matrix *m, Material *mat1, Material *mat2, int octaves,
+struct Marble final : Material {
+  Marble(Matrix* m, Material* mat1, Material* mat2, int octaves,
          float frequency, float amplitude);
-  virtual ~Marble();
+  ~Marble() override;
 
-  virtual Vec3f getDiffuseColor(const Vec3f &point) const;
-  virtual Vec3f getSpecularColor(const Vec3f &point) const;
-  virtual float getExponent(const Vec3f &point) const;
-  virtual Vec3f getReflectiveColor(const Vec3f &point) const;
-  virtual Vec3f getTransparentColor(const Vec3f &point) const;
-  virtual float getIndexOfRefraction(const Vec3f &point) const;
+  auto getDiffuseColor(Vec3f const& point) const -> Vec3f override;
+  auto getSpecularColor(Vec3f const& point) const -> Vec3f override;
+  auto getExponent(Vec3f const& point) const -> float override;
+  auto getReflectiveColor(Vec3f const& point) const -> Vec3f override;
+  auto getTransparentColor(Vec3f const& point) const -> Vec3f override;
+  auto getIndexOfRefraction(Vec3f const& point) const -> float override;
 
-  virtual Vec3f Shade(const Ray &ray, const Hit &hit,
-                      const Vec3f &dirToLight,
-                      const Vec3f &lightColor) const;
-  virtual void glSetMaterial(void) const;
+  auto Shade(Ray const& ray, Hit const& hit, Vec3f const& dirToLight,
+             Vec3f const& lightColor) const -> Vec3f override;
+  auto glSetMaterial() const -> void override;
 
 private:
-  float blendWeight(const Vec3f &worldPoint) const; // 混合权重
+  auto blendWeight(Vec3f const& worldPoint) const -> float;
 
-  Matrix *mapping; // 映射矩阵
-  Material *mat1; // 材质1
-  Material *mat2; // 材质2
-  int octaves; // 八度
-  float frequency; // 频率
-  float amplitude; // 振幅
+  Matrix* mapping{};
+  Material* mat1{};
+  Material* mat2{};
+  int octaves{};
+  float frequency{};
+  float amplitude{};
 };
-
-#endif

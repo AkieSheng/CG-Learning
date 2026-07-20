@@ -1,26 +1,19 @@
-#ifndef _SPHERE_H_
-#define _SPHERE_H_
+#pragma once
 
 #include "object3d.h"
 #include "vectors.h"
 
-class Grid;
-class Matrix;
+struct Grid;
+struct Matrix;
 
-// 球体图元
-class Sphere : public Object3D {
+struct Sphere final : Object3D {
+  Sphere(Vec3f center, float radius, Material* m);
 
-public:
-  Sphere(Vec3f center, float radius, Material *m);
+  auto intersect(Ray const& r, Hit& h, float tmin) -> bool override;
+  auto intersectShadow(Ray const& r, float tmin, float tmax, float& t,
+                       Material** outMaterial) -> bool override;
+  auto insertIntoGrid(Grid* g, Matrix* m) -> void override;
 
-  virtual bool intersect(const Ray &r, Hit &h, float tmin);
-  virtual bool intersectShadow(const Ray &r, float tmin, float tmax, float &t,
-                               Material **outMaterial);
-  virtual void insertIntoGrid(Grid *g, Matrix *m);
-
-private:
-  Vec3f center;  // 球心
-  float radius;  // 半径
+  Vec3f center{};
+  float radius{};
 };
-
-#endif

@@ -3,27 +3,25 @@
 #include "grid.h"
 #include "matrix.h"
 
-#include <stdio.h>
+#include <cstdio>
 
 Object3D::~Object3D() {
   delete bbox;
 }
 
-// 将图元栅格化到体素网格
-void Object3D::insertIntoGrid(Grid *g, Matrix *m) {
-  if (g == NULL || bbox == NULL)
+auto Object3D::insertIntoGrid(Grid* g, Matrix* m) -> void {
+  if (g == nullptr || bbox == nullptr)
     return;
   g->insertObjectInBBox(bbox, this, m);
 }
 
-// [DEBUG] 打印包围盒
-void Object3D::debugPrintBoundingBox(int depth) const {
+auto Object3D::debugPrintBoundingBox(int depth) const -> void {
   for (int i = 0; i < depth; i++)
-    printf("  ");
-  if (bbox == NULL)
-    printf("Object3D: NULL bounding box\n");
+    ::printf("  ");
+  if (bbox == nullptr)
+    ::printf("Object3D: NULL bounding box\n");
   else {
-    printf("Object3D: ");
+    ::printf("Object3D: ");
     bbox->Print();
   }
 }

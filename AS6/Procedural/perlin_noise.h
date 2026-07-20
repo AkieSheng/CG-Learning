@@ -1,50 +1,47 @@
-// JAVA REFERENCE IMPLEMENTATION OF IMPROVED NOISE - COPYRIGHT 2002 KEN PERLIN.
-// http://mrl.nyu.edu/~perlin/noise/
-// translated to C++ for 6.837
+#pragma once
 
-#ifndef _PERLIN_NOISE_H_
-#define _PERLIN_NOISE_H_
+#include <cmath>
 
-#include <math.h>
-#include <stdio.h>
-
-class PerlinNoise {
-
-public:
-   static double noise(double x, double y, double z) {
-      int X = (int)floor(x) & 255;                  // FIND UNIT CUBE THAT
-      int Y = (int)floor(y) & 255;                  // CONTAINS POINT.
-      int Z = (int)floor(z) & 255;
-      x -= floor(x);                                // FIND RELATIVE X,Y,Z
-      y -= floor(y);                                // OF POINT IN CUBE.
-      z -= floor(z);
-      double u = fade(x);                                // COMPUTE FADE CURVES
-      double v = fade(y);                                // FOR EACH OF X,Y,Z.
-      double w = fade(z);
-      int A = p[X  ]+Y; int AA = p[A]+Z; int AB = p[A+1]+Z;      // HASH COORDINATES OF
-      int B = p[X+1]+Y; int BA = p[B]+Z; int BB = p[B+1]+Z;      // THE 8 CUBE CORNERS,
-      return lerp(w, lerp(v, lerp(u, grad(p[AA  ], x  , y  , z   ),  // AND ADD
-                                     grad(p[BA  ], x-1, y  , z   )), // BLENDED
-                             lerp(u, grad(p[AB  ], x  , y-1, z   ),  // RESULTS
-                                     grad(p[BB  ], x-1, y-1, z   ))),// FROM  8
-                     lerp(v, lerp(u, grad(p[AA+1], x  , y  , z-1 ),  // CORNERS
-                                     grad(p[BA+1], x-1, y  , z-1 )), // OF CUBE
-                             lerp(u, grad(p[AB+1], x  , y-1, z-1 ),
-                                     grad(p[BB+1], x-1, y-1, z-1 ))));
-   }
+struct PerlinNoise final {
+  static auto noise(double x, double y, double z) -> double {
+    int X = static_cast<int>(::floor(x)) & 255;
+    int Y = static_cast<int>(::floor(y)) & 255;
+    int Z = static_cast<int>(::floor(z)) & 255;
+    x -= ::floor(x);
+    y -= ::floor(y);
+    z -= ::floor(z);
+    double u = fade(x);
+    double v = fade(y);
+    double w = fade(z);
+    int A = p[X] + Y;
+    int AA = p[A] + Z;
+    int AB = p[A + 1] + Z;
+    int B = p[X + 1] + Y;
+    int BA = p[B] + Z;
+    int BB = p[B + 1] + Z;
+    return lerp(w, lerp(v, lerp(u, grad(p[AA], x, y, z),
+                                     grad(p[BA], x - 1, y, z)),
+                             lerp(u, grad(p[AB], x, y - 1, z),
+                                     grad(p[BB], x - 1, y - 1, z))),
+                lerp(v, lerp(u, grad(p[AA + 1], x, y, z - 1),
+                                     grad(p[BA + 1], x - 1, y, z - 1)),
+                             lerp(u, grad(p[AB + 1], x, y - 1, z - 1),
+                                     grad(p[BB + 1], x - 1, y - 1, z - 1))));
+  }
 
 private:
-   static double fade(double t) { 
-     return t * t * t * (t * (t * 6 - 15) + 10); }
-   static double lerp(double t, double a, double b) { 
-     return a + t * (b - a); }
-   static double grad(int hash, double x, double y, double z) {
-      int h = hash & 15;                      // CONVERT LO 4 BITS OF HASH CODE
-      double u = h<8 ? x : y;                 // INTO 12 GRADIENT DIRECTIONS.
-      double v = h<4 ? y : h==12||h==14 ? x : z;
-      return ((h&1) == 0 ? u : -u) + ((h&2) == 0 ? v : -v); }
-  // permutation
+  static auto fade(double t) -> double {
+    return t * t * t * (t * (t * 6 - 15) + 10);
+  }
+  static auto lerp(double t, double a, double b) -> double {
+    return a + t * (b - a);
+  }
+  static auto grad(int hash, double x, double y, double z) -> double {
+    int h = hash & 15;
+    double u = h < 8 ? x : y;
+    double v = h < 4 ? y : h == 12 || h == 14 ? x : z;
+    return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
+  }
+
   static int p[512];
 };
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef _SCENE_H_
-#define _SCENE_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -7,49 +6,43 @@
 #include "orbit_camera.h"
 #include "vectors.h"
 
-static const int LIGHT_STRIP_COUNT = 3;
+static int const LIGHT_STRIP_COUNT = 3;
 
-// 不可见工作室水平灯带
 struct LightStrip {
-  Vec3f center;
-  Vec3f halfRight;   // 沿灯带长度的半轴
-  Vec3f halfUp;      // 沿灯带宽度的半轴
-  Vec3f normal;      // 朝向场景
-  Vec3f color;       // 线性 HDR 发光色
+  Vec3f center{};
+  Vec3f halfRight{};
+  Vec3f halfUp{};
+  Vec3f normal{};
+  Vec3f color{};
 };
 
-// 场景
-class Scene {
-public:
+struct Scene final {
   Scene();
   ~Scene();
 
-  bool loadModel(const std::string &gltfPath, float aspect = 16.0f / 9.0f);
-  void clear();
+  auto loadModel(std::string const& gltfPath, float aspect = 16.0f / 9.0f)
+      -> bool;
+  auto clear() -> void;
 
-  const std::vector<Mesh *> &getMeshes() const;
-  OrbitCamera &getCamera() { return camera; }
-  const OrbitCamera &getCamera() const { return camera; }
+  auto getMeshes() const -> std::vector<Mesh*> const&;
+  auto getCamera() -> OrbitCamera& { return camera; }
+  auto getCamera() const -> OrbitCamera const& { return camera; }
 
-  Vec3f getBackgroundColor() const { return backgroundColor; }
-  void setBackgroundColor(const Vec3f &c) { backgroundColor = c; }
+  auto getBackgroundColor() const -> Vec3f { return backgroundColor; }
+  auto setBackgroundColor(Vec3f const& c) -> void { backgroundColor = c; }
 
-  // 场景 AABB（方向光阴影包围盒）
-  void getBounds(Vec3f &bmin, Vec3f &bmax) const;
+  auto getBounds(Vec3f& bmin, Vec3f& bmax) const -> void;
 
-  const LightStrip *getLightStrips() const { return lightStrips; }
-  bool hasLightStrips() const { return lightStripsReady; }
+  auto getLightStrips() const -> LightStrip const* { return lightStrips; }
+  auto hasLightStrips() const -> bool { return lightStripsReady; }
 
-private:
-  void destroyLightStrips();
-  void createLightStrips(const Vec3f &bmin, const Vec3f &bmax);
+  GltfLoader loader{};
+  OrbitCamera camera{};
+  Vec3f backgroundColor{0.10f, 0.10f, 0.11f};
 
-  GltfLoader loader;  // glTF 模型加载器
-  OrbitCamera camera;  // 轨道相机
-  Vec3f backgroundColor;  // 背景颜色
+  LightStrip lightStrips[LIGHT_STRIP_COUNT]{};
+  bool lightStripsReady{};
 
-  LightStrip lightStrips[LIGHT_STRIP_COUNT];
-  bool lightStripsReady;
+  auto destroyLightStrips() -> void;
+  auto createLightStrips(Vec3f const& bmin, Vec3f const& bmax) -> void;
 };
-
-#endif

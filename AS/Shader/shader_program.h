@@ -1,37 +1,33 @@
-#ifndef _SHADER_PROGRAM_H_
-#define _SHADER_PROGRAM_H_
+#pragma once
 
 #include <string>
 #include <map>
 
-// 着色器，封装 GLSL 编译、链接和 Uniform 设置
-class ShaderProgram {
-public:
+struct ShaderProgram final {
   ShaderProgram();
   ~ShaderProgram();
 
-  bool loadFromFiles(const std::string &vertPath, const std::string &fragPath);
-  bool loadFromSource(const char *vertSrc, const char *fragSrc);
-  void use() const;
-  void destroy();
+  auto loadFromFiles(std::string const& vertPath,
+                     std::string const& fragPath) -> bool;
+  auto loadFromSource(char const* vertSrc, char const* fragSrc) -> bool;
+  auto use() const -> void;
+  auto destroy() -> void;
 
-  unsigned int programId() const { return program; }
+  auto programId() const -> unsigned int { return program; }
 
-  void setBool(const std::string &name, bool value) const;
-  void setInt(const std::string &name, int value) const;
-  void setFloat(const std::string &name, float value) const;
-  void setVec2(const std::string &name, float x, float y) const;
-  void setVec3(const std::string &name, float x, float y, float z) const;
-  void setVec4(const std::string &name, float x, float y, float z, float w) const;
-  void setMat4(const std::string &name, const float *value) const;
+  auto setBool(std::string const& name, bool value) const -> void;
+  auto setInt(std::string const& name, int value) const -> void;
+  auto setFloat(std::string const& name, float value) const -> void;
+  auto setVec2(std::string const& name, float x, float y) const -> void;
+  auto setVec3(std::string const& name, float x, float y, float z) const -> void;
+  auto setVec4(std::string const& name, float x, float y, float z,
+               float w) const -> void;
+  auto setMat4(std::string const& name, float const* value) const -> void;
 
-private:
-  unsigned int compileShader(unsigned int type, const char *source);  // 从文件读源码并编译链接
-  bool linkProgram(unsigned int vert, unsigned int frag);  // 从字符串编译链接
-  int getUniformLocation(const std::string &name) const;
+  unsigned int program{};
+  mutable std::map<std::string, int> uniformCache{};
 
-  unsigned int program;  // 着色器程序 ID
-  mutable std::map<std::string, int> uniformCache;  // 缓存 uniform 位置
+  auto compileShader(unsigned int type, char const* source) -> unsigned int;
+  auto linkProgram(unsigned int vert, unsigned int frag) -> bool;
+  auto getUniformLocation(std::string const& name) const -> int;
 };
-
-#endif

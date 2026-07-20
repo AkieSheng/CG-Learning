@@ -1,7 +1,6 @@
 #include "gravity_force_field.h"
 
-// 重力场
-// 加速度 a = g
-Vec3f GravityForceField::getAcceleration(const Vec3f & /*position*/, float /*mass*/, float /*t*/) const {
+auto GravityForceField::getAcceleration(Vec3f const& /*position*/, float /*mass*/,
+                                        float /*t*/) const -> Vec3f {
   return gravity;
 }

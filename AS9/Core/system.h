@@ -1,55 +1,32 @@
-#ifndef _SYSTEM_H_
-#define _SYSTEM_H_
+#pragma once
 
-#include <assert.h>
+#include <cassert>
+
 #include "vectors.h"
 
-class Particle;
-class ParticleSet;
-class Generator;
-class Integrator;
-class ForceField;
+struct Particle;
+struct ParticleSet;
+struct Generator;
+struct Integrator;
+struct ForceField;
 
-// ====================================================================
-// ====================================================================
-// The class for managing a particle system.
-
-// This class keeps track of the list of particles, the 
-// generator, iterator & force field of the system and
-// has the main loop for updating particles.
-
-class System {
-
-public:
-
-  // CONSTRUCTOR & DESTRUCTOR
-  System(Generator *g, Integrator *i, ForceField *f);
+struct System {
+  System(Generator* g, Integrator* i, ForceField* f);
   ~System();
 
-  // FUNCTIONALITY
-  void Restart();
-  void Update(float dt);
+  auto Restart() -> void;
+  auto Update(float dt) -> void;
 
-  // RENDERING
-  void Paint(float dt, int integrator_color, int draw_vectors, 
-	     float acceleration_scale, int motion_blur) const;
-  void PaintGeometry() const;
-
+  auto Paint(float dt, int integrator_color, int draw_vectors, float acceleration_scale,
+             int motion_blur) const -> void;
+  auto PaintGeometry() const -> void;
 
 private:
-  // don't use this constructor
-  System() { assert(0); } 
+  System() { assert(0); }
 
-  // REPRESENTATION
-  ParticleSet *particles;
-  Generator *generator;
-  Integrator *integrator;
-  ForceField *forcefield;
-  float current_time;
+  ParticleSet* particles{};
+  Generator* generator{};
+  Integrator* integrator{};
+  ForceField* forcefield{};
+  float current_time{};
 };
-
-// ====================================================================
-// ====================================================================
-
-
-#endif

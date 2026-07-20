@@ -1,19 +1,13 @@
-#ifndef _VERTICAL_FORCE_FIELD_H_
-#define _VERTICAL_FORCE_FIELD_H_
+#pragma once
 
 #include "force_field.h"
 
-// 垂直力场
-class VerticalForceField : public ForceField {
-
-public:
+struct VerticalForceField final : ForceField {
   VerticalForceField(float magnitude) { this->magnitude = magnitude; }
-  virtual ~VerticalForceField() {}
+  ~VerticalForceField() override {}
 
-  virtual Vec3f getAcceleration(const Vec3f &position, float mass, float t) const;
+  auto getAcceleration(Vec3f const& position, float mass, float t) const -> Vec3f override;
 
 private:
-  float magnitude;  // 垂直力场强度
+  float magnitude{};
 };
-
-#endif

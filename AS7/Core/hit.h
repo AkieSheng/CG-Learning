@@ -1,55 +1,45 @@
-#ifndef _HIT_H
-#define _HIT_H
+#pragma once
 
+#include <iostream>
 #include "vectors.h"
 #include "ray.h"
 
-class Material;
+struct Material;
 
-// ====================================================================
-// ====================================================================
-
-class Hit {
-  
-public:
-
-  // CONSTRUCTOR & DESTRUCTOR
-  Hit() { material = NULL; }
-  Hit(float _t, Material *m, Vec3f n) { 
-    t = _t; material = m; normal = n; }
-  Hit(const Hit &h) { 
-    t = h.t; 
-    material = h.material; 
-    normal = h.normal; 
-    intersectionPoint = h.intersectionPoint; }
+struct Hit final {
+  Hit() { material = nullptr; }
+  Hit(float _t, Material* m, Vec3f n) {
+    t = _t;
+    material = m;
+    normal = n;
+  }
+  Hit(Hit const& h) {
+    t = h.t;
+    material = h.material;
+    normal = h.normal;
+    intersectionPoint = h.intersectionPoint;
+  }
   ~Hit() {}
 
-  // ACCESSORS
-  float getT() const { return t; }
-  Material* getMaterial() const { return material; }
-  Vec3f getNormal() const { return normal; }
-  Vec3f getIntersectionPoint() const { return intersectionPoint; }
-  
-  // MODIFIER
-  void set(float _t, Material *m, Vec3f n, const Ray &ray) {
-    t = _t; material = m; normal = n; 
-    intersectionPoint = ray.pointAtParameter(t); }
+  auto getT() const -> float { return t; }
+  auto getMaterial() const -> Material* { return material; }
+  auto getNormal() const -> Vec3f { return normal; }
+  auto getIntersectionPoint() const -> Vec3f { return intersectionPoint; }
 
-private:
+  auto set(float _t, Material* m, Vec3f n, Ray const& ray) -> void {
+    t = _t;
+    material = m;
+    normal = n;
+    intersectionPoint = ray.pointAtParameter(t);
+  }
 
-  // REPRESENTATION
-  float t;
-  Material *material;
-  Vec3f normal;
-  Vec3f intersectionPoint;
-
+  float t{};
+  Material* material{};
+  Vec3f normal{};
+  Vec3f intersectionPoint{};
 };
 
-inline std::ostream &operator<<(std::ostream &os, const Hit &h) {
-  os << "Hit <" <<h.getT()<<", "<<h.getNormal()<<">";
+inline auto operator<<(std::ostream& os, Hit const& h) -> std::ostream& {
+  os << "Hit <" << h.getT() << ", " << h.getNormal() << ">";
   return os;
 }
-// ====================================================================
-// ====================================================================
-
-#endif

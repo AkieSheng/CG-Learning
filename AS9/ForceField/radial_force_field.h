@@ -1,19 +1,13 @@
-#ifndef _RADIAL_FORCE_FIELD_H_
-#define _RADIAL_FORCE_FIELD_H_
+#pragma once
 
 #include "force_field.h"
 
-// 径向力场
-class RadialForceField : public ForceField {
-
-public:
+struct RadialForceField final : ForceField {
   RadialForceField(float magnitude) { this->magnitude = magnitude; }
-  virtual ~RadialForceField() {}
+  ~RadialForceField() override {}
 
-  virtual Vec3f getAcceleration(const Vec3f &position, float mass, float t) const;
+  auto getAcceleration(Vec3f const& position, float mass, float t) const -> Vec3f override;
 
 private:
-  float magnitude;  // 径向力场强度
+  float magnitude{};
 };
-
-#endif

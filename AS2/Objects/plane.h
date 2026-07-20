@@ -1,24 +1,17 @@
-#ifndef _PLANE_H_
-#define _PLANE_H_
+#pragma once
 
 #include "object3d.h"
 #include "vectors.h"
 
-// 无限平面图元，方程 P·n = d
-class Plane : public Object3D {
-
-public:
-  Plane(Vec3f normal, float d, Material *m)
-    : normal(normal), d(d) {
+struct Plane final : Object3D {
+  Plane(Vec3f normal, float d, Material* m)
+      : normal(normal), d(d) {
     material = m;
     normal.Normalize();
   }
 
-  virtual bool intersect(const Ray &r, Hit &h, float tmin);
+  auto intersect(Ray const& r, Hit& h, float tmin) -> bool override;
 
-private:
-  Vec3f normal;  // 平面法线（单位向量）
-  float d;       // 原点到平面的距离（沿法线方向，有符号）
+  Vec3f normal{};
+  float d{};
 };
-
-#endif

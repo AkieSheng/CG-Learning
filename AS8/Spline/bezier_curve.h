@@ -1,25 +1,18 @@
-#ifndef _BEZIER_CURVE_H_
-#define _BEZIER_CURVE_H_
+#pragma once
 
 #include "curve.h"
 
-// 三次贝塞尔曲线
-class BezierCurve : public Curve {
-
-public:
+struct BezierCurve final : Curve {
   BezierCurve(int num_vertices);
-  ~BezierCurve() {}
+  ~BezierCurve() override {}
 
-  void OutputBezier(FILE *file);
-  void OutputBSpline(FILE *file);
+  auto OutputBezier(FILE* file) -> void override;
+  auto OutputBSpline(FILE* file) -> void override;
 
-protected:
-  int getNumSegments() const;
-  void getSegmentControlPoints(int segment, Vec3f pts[4]) const;
-  const Matrix &getSegmentBasis() const;
-  // 不允许添加/删除控制点
-  bool allowAddControlPoints() const { return false; }
-  bool allowDeleteControlPoints() const { return false; }
+ protected:
+  auto getNumSegments() const -> int override;
+  auto getSegmentControlPoints(int segment, Vec3f pts[4]) const -> void override;
+  auto getSegmentBasis() const -> Matrix const& override;
+  auto allowAddControlPoints() const -> bool override { return false; }
+  auto allowDeleteControlPoints() const -> bool override { return false; }
 };
-
-#endif

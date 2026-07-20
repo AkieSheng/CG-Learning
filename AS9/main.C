@@ -1,65 +1,56 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
-using namespace std;
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+
+#include <cassert>
 
 #include "gl_headers.h"
 #include "glCanvas.h"
 #include "parser.h"
 
-// ====================================================================
-// ====================================================================
+auto main(int argc, char* argv[]) -> int {
+  char const* filename = nullptr;
+  auto refresh = 0.1f;
+  auto dt = 0.1f;
+  auto integrator_color = 0;
+  auto draw_vectors = 0;
+  auto acceleration_scale = 1.0f;
+  auto motion_blur = 0;
 
-int main(int argc, char *argv[]) {
-
-  // command line argument defaults
-  const char *filename = NULL;
-  float refresh = 0.1;  // in seconds
-  float dt = 0.1;       // in seconds
-  int integrator_color = 0;
-  int draw_vectors = 0;
-  float acceleration_scale = 1;
-  int motion_blur = 0;
- 
-  // parse command line arguments
-  for (int i = 1; i < argc; i++) {
-    if (!strcmp(argv[i],"-input")) {
-      i++; assert (i < argc);      
+  for (auto i = 1; i < argc; i++) {
+    if (!::strcmp(argv[i], "-input")) {
+      i++;
+      assert(i < argc);
       filename = argv[i];
-    } else if (!strcmp(argv[i],"-refresh")) {
-      i++; assert (i < argc);      
-      refresh = atof(argv[i]);
-    } else if (!strcmp(argv[i],"-dt")) {
-      i++; assert (i < argc);      
-      dt = atof(argv[i]);
-    } else if (!strcmp(argv[i],"-integrator_color")) {
+    } else if (!::strcmp(argv[i], "-refresh")) {
+      i++;
+      assert(i < argc);
+      refresh = static_cast<float>(::atof(argv[i]));
+    } else if (!::strcmp(argv[i], "-dt")) {
+      i++;
+      assert(i < argc);
+      dt = static_cast<float>(::atof(argv[i]));
+    } else if (!::strcmp(argv[i], "-integrator_color")) {
       integrator_color = 1;
-    } else if (!strcmp(argv[i],"-motion_blur")) {
+    } else if (!::strcmp(argv[i], "-motion_blur")) {
       motion_blur = 1;
-    } else if (!strcmp(argv[i],"-draw_vectors")) {
+    } else if (!::strcmp(argv[i], "-draw_vectors")) {
       draw_vectors = 1;
-      i++; assert (i < argc);      
-      acceleration_scale = atof(argv[i]);
+      i++;
+      assert(i < argc);
+      acceleration_scale = static_cast<float>(::atof(argv[i]));
     } else {
-      printf ("WARNING:  unknown command line argument %s\n", argv[i]);
+      ::printf("WARNING:  unknown command line argument %s\n", argv[i]);
       assert(0);
     }
   }
 
-  // load the particle system
-  assert (filename != NULL);
-  Parser *parser = new Parser(filename);
+  assert(filename != nullptr);
+  auto* parser = new Parser(filename);
 
-  // launch viewer!   and it never returns...
-  glutInit(&argc, argv);
+  ::glutInit(&argc, argv);
   GLCanvas glcanvas;
-  glcanvas.initialize(parser,refresh,dt,integrator_color,
-		      draw_vectors,acceleration_scale,motion_blur);
+  glcanvas.initialize(parser, refresh, dt, integrator_color, draw_vectors, acceleration_scale,
+                      motion_blur);
   return 0;
 }
-
-// ====================================================================
-// ====================================================================
-
-

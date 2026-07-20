@@ -1,50 +1,29 @@
-#ifndef _GL_CANVAS_H_
-#define _GL_CANVAS_H_
+#pragma once
 
-#include <stdlib.h>
+#include <cstdlib>
 
-class ArgParser;
-class SplineParser;
-class Spline;
+struct ArgParser;
+struct SplineParser;
+struct Spline;
 
-// ====================================================================
-// A simplied version of the code from the OpenGL assignment
+struct GLCanvas final {
+  GLCanvas() {}
+  ~GLCanvas() {}
 
-class GLCanvas {
+  static auto initialize(ArgParser* args, SplineParser* splines) -> void;
 
-public:
-  // Constructor and destructor
-  GLCanvas(void) { }
-  ~GLCanvas(void) { }
-
-  // Set up the canvas and enter the rendering loop
-  // Note that this function will not return but can be
-  // terminated by calling 'exit(0)'
-  static void initialize(ArgParser *args, SplineParser *splines);
-
-private:
-
-  static ArgParser *args;
-  static SplineParser *splines;
-
-  // viewport information
+  static ArgParser* args;
+  static SplineParser* splines;
   static int width;
   static int height;
   static float size;
-
-  // the currently selected point (for editing)
   static Spline* selected_spline;
   static int selected_control_point;
 
-  // Callback functions for mouse and keyboard events
-  static void display(void);
-  static void reshape(int w, int h);
-  static void mouse(int button, int state, int x, int y);
-  static void motion(int x, int y);
-  static void keyboard(unsigned char key, int x, int y);
-  static void mouseToScreen(int i, int j, float &x, float &y, float &epsilon);
+  static auto display() -> void;
+  static auto reshape(int w, int h) -> void;
+  static auto mouse(int button, int state, int x, int y) -> void;
+  static auto motion(int x, int y) -> void;
+  static auto keyboard(unsigned char key, int x, int y) -> void;
+  static auto mouseToScreen(int i, int j, float& x, float& y, float& epsilon) -> void;
 };
-
-// ====================================================================
-
-#endif

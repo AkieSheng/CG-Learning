@@ -1,52 +1,40 @@
-#ifndef _HIT_H
-#define _HIT_H
+#pragma once
 
+#include <iostream>
 #include "vectors.h"
 #include "ray.h"
 
-class Material;
+struct Material;
 
-// ====================================================================
-// ====================================================================
-
-class Hit {
-  
-public:
-
-  // CONSTRUCTOR & DESTRUCTOR
-  Hit() { material = NULL; }
-  Hit(float _t, Material *m) { 
-    t = _t; material = m; }
-  Hit(const Hit &h) { 
-    t = h.t; 
-    material = h.material; 
-    intersectionPoint = h.intersectionPoint; }
+struct Hit final {
+  Hit() { material = nullptr; }
+  Hit(float _t, Material* m) {
+    t = _t;
+    material = m;
+  }
+  Hit(Hit const& h) {
+    t = h.t;
+    material = h.material;
+    intersectionPoint = h.intersectionPoint;
+  }
   ~Hit() {}
 
-  // ACCESSORS
-  float getT() const { return t; }
-  Material* getMaterial() const { return material; }
-  Vec3f getIntersectionPoint() const { return intersectionPoint; }
-  
-  // MODIFIER
-  void set(float _t, Material *m, const Ray &ray) {
-    t = _t; material = m; 
-    intersectionPoint = ray.pointAtParameter(t); }
+  auto getT() const -> float { return t; }
+  auto getMaterial() const -> Material* { return material; }
+  auto getIntersectionPoint() const -> Vec3f { return intersectionPoint; }
 
-private: 
+  auto set(float _t, Material* m, Ray const& ray) -> void {
+    t = _t;
+    material = m;
+    intersectionPoint = ray.pointAtParameter(t);
+  }
 
-  // REPRESENTATION
-  float t;
-  Material *material;
-  Vec3f intersectionPoint;
-
+  float t{};
+  Material* material{};
+  Vec3f intersectionPoint{};
 };
 
-inline ostream &operator<<(ostream &os, const Hit &h) {
-  os << "Hit <t:" << h.getT() <<">";
+inline auto operator<<(std::ostream& os, Hit const& h) -> std::ostream& {
+  os << "Hit <t:" << h.getT() << ">";
   return os;
 }
-// ====================================================================
-// ====================================================================
-
-#endif

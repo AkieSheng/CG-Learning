@@ -1,37 +1,27 @@
-#ifndef _RAY_H
-#define _RAY_H
+#pragma once
 
 #include <iostream>
-using namespace std;
-
 #include "vectors.h"
 
-// 射线
-class Ray {
-
-public:
+struct Ray final {
   Ray() {}
-  Ray(const Vec3f &orig, const Vec3f &dir) {
+  Ray(Vec3f const& orig, Vec3f const& dir) {
     origin = orig;
     direction = dir;
   }
-  Ray(const Ray &r) { *this = r; }
+  Ray(Ray const& r) { *this = r; }
 
-  const Vec3f& getOrigin() const { return origin; }
-  const Vec3f& getDirection() const { return direction; }
-  Vec3f pointAtParameter(float t) const {  // 计算射线上的点
-    return origin + direction * t;  // P(t) = origin + t * direction
+  auto getOrigin() const -> Vec3f const& { return origin; }
+  auto getDirection() const -> Vec3f const& { return direction; }
+  auto pointAtParameter(float t) const -> Vec3f {
+    return origin + direction * t;
   }
 
-private:
-  Vec3f origin;      // 射线起点
-  Vec3f direction;   // 射线方向
+  Vec3f origin{};
+  Vec3f direction{};
 };
 
-// 输出射线
-inline ostream &operator<<(ostream &os, const Ray &r) {
+inline auto operator<<(std::ostream& os, Ray const& r) -> std::ostream& {
   os << "Ray <o:" << r.getOrigin() << ", d:" << r.getDirection() << ">";
   return os;
 }
-
-#endif

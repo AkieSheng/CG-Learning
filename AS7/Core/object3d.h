@@ -1,49 +1,45 @@
-#ifndef _OBJECT3D_H_
-#define _OBJECT3D_H_
+#pragma once
 
 #include "material.h"
 #include "ray.h"
 #include "hit.h"
 
-class BoundingBox;  // 轴对齐包围盒
-class Grid;  // 均匀体素网格
-class Matrix;  // 变换矩阵
+struct BoundingBox;
+struct Grid;
+struct Matrix;
 
-// 物体抽象基类
-class Object3D {
-
-public:
-  Object3D() : material(NULL), bbox(NULL), intersectionMark(0),
-               hasMarkedIntersection(false), markedHit(1.0e30f, NULL, Vec3f(0, 0, 0)) {}
+struct Object3D {
+  Object3D()
+      : material(nullptr),
+        bbox(nullptr),
+        intersectionMark(0),
+        hasMarkedIntersection(false),
+        markedHit(1.0e30f, nullptr, Vec3f(0, 0, 0)) {}
   virtual ~Object3D();
 
-  virtual bool intersect(const Ray &r, Hit &h, float tmin) = 0;
-  virtual bool intersectShadow(const Ray &r, float tmin, float tmax, float &t,
-                               Material **outMaterial) = 0;
+  virtual auto intersect(Ray const& r, Hit& h, float tmin) -> bool = 0;
+  virtual auto intersectShadow(Ray const& r, float tmin, float tmax, float& t,
+                               Material** outMaterial) -> bool = 0;
 
-  int getIntersectionMark() const { return intersectionMark; }
-  void setIntersectionMark(int mark) const { intersectionMark = mark; }
+  auto getIntersectionMark() const -> int { return intersectionMark; }
+  auto setIntersectionMark(int mark) const -> void { intersectionMark = mark; }
 
-  bool getHasMarkedIntersection() const { return hasMarkedIntersection; }
-  void setMarkedIntersection(const Hit &h) const {
+  auto getHasMarkedIntersection() const -> bool { return hasMarkedIntersection; }
+  auto setMarkedIntersection(Hit const& h) const -> void {
     hasMarkedIntersection = true;
     markedHit = h;
   }
-  void clearMarkedIntersection() const { hasMarkedIntersection = false; }
-  const Hit &getMarkedHit() const { return markedHit; }
+  auto clearMarkedIntersection() const -> void { hasMarkedIntersection = false; }
+  auto getMarkedHit() const -> Hit const& { return markedHit; }
 
-  // 获取保守包围盒
-  BoundingBox *getBoundingBox() const { return bbox; }
+  auto getBoundingBox() const -> BoundingBox* { return bbox; }
 
-  // 将图元栅格化到体素网格
-  virtual void insertIntoGrid(Grid *g, Matrix *m);
+  virtual auto insertIntoGrid(Grid* g, Matrix* m) -> void;
 
 protected:
-  Material *material;     // 物体材质
-  BoundingBox *bbox;    // 轴对齐包围盒
-  mutable int intersectionMark;  // 当前射线求交标记（grid marking）
-  mutable bool hasMarkedIntersection; // 是否已标记
-  mutable Hit markedHit; // 已标记交点
+  Material* material{};
+  BoundingBox* bbox{};
+  mutable int intersectionMark{};
+  mutable bool hasMarkedIntersection{};
+  mutable Hit markedHit{};
 };
-
-#endif

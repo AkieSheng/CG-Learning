@@ -1,60 +1,60 @@
 #include "group.h"
 #include "grid.h"
 #include "boundingbox.h"
-#include <assert.h>
-#include <stdio.h>
+#include <cassert>
+#include <cstdio>
 
-// 构造场景容器
+
 Group::Group(int numObjects) : numObjects(numObjects) {
   objects = new Object3D*[numObjects];
   for (int i = 0; i < numObjects; i++)
-    objects[i] = NULL;
+    objects[i] = nullptr;
 }
 
-// 析构时释放子物体
+
 Group::~Group() {
   for (int i = 0; i < numObjects; i++)
     delete objects[i];
   delete [] objects;
 }
 
-// 添加子物体并合并其包围盒
-void Group::addObject(int index, Object3D *obj) {
+
+auto Group::addObject(int index, Object3D *obj) -> void {
   assert(index >= 0 && index < numObjects);
   objects[index] = obj;
-  if (obj == NULL)
+  if (obj == nullptr)
     return;
 
   BoundingBox *childBox = obj->getBoundingBox();
-  if (childBox == NULL)
+  if (childBox == nullptr)
     return;
 
-  if (bbox == NULL)
+  if (bbox == nullptr)
     bbox = new BoundingBox(childBox->getMin(), childBox->getMax());
   else
     bbox->Extend(childBox);
 }
 
-// 求交
-bool Group::intersect(const Ray &r, Hit &h, float tmin) {
+
+auto Group::intersect(Ray const&r, Hit &h, float tmin) -> bool {
   bool hit = false;
   for (int i = 0; i < numObjects; i++) {
-    if (objects[i] != NULL && objects[i]->intersect(r, h, tmin))
+    if (objects[i] != nullptr && objects[i]->intersect(r, h, tmin))
       hit = true;
   }
   return hit;
 }
 
-// 阴影射线求交
-bool Group::intersectShadow(const Ray &r, float tmin, float tmax, float &t,
-                            Material **outMaterial) {
-  // 如果 outMaterial 为 NULL，则返回最近交点
-  if (outMaterial == NULL) {
+
+auto Group::intersectShadow(Ray const&r, float tmin, float tmax, float &t,
+                            Material **outMaterial) -> bool {
+
+  if (outMaterial == nullptr) {
     for (int i = 0; i < numObjects; i++) {
-      if (objects[i] == NULL)
+      if (objects[i] == nullptr)
         continue;
       float hitT;
-      if (objects[i]->intersectShadow(r, tmin, tmax, hitT, NULL)) {
+      if (objects[i]->intersectShadow(r, tmin, tmax, hitT, nullptr)) {
         t = hitT;
         return true;
       }
@@ -62,15 +62,15 @@ bool Group::intersectShadow(const Ray &r, float tmin, float tmax, float &t,
     return false;
   }
 
-  // 如果 outMaterial 不为 NULL，则返回物体材质
+
   bool hit = false;
   float bestT = tmax;
-  Material *bestMat = NULL;
+  Material *bestMat = nullptr;
   for (int i = 0; i < numObjects; i++) {
-    if (objects[i] == NULL)
+    if (objects[i] == nullptr)
       continue;
     float hitT;
-    Material *hitMat = NULL;
+    Material *hitMat = nullptr;
     if (objects[i]->intersectShadow(r, tmin, bestT, hitT, &hitMat)) {
       bestT = hitT;
       bestMat = hitMat;
@@ -84,33 +84,33 @@ bool Group::intersectShadow(const Ray &r, float tmin, float tmax, float &t,
   return hit;
 }
 
-// OpenGL 绘制
-void Group::paint(void) const {
+
+auto Group::paint(void)const -> void {
   for (int i = 0; i < numObjects; i++) {
-    if (objects[i] != NULL)
+    if (objects[i] != nullptr)
       objects[i]->paint();
   }
 }
 
-// 将每个子物体写入网格
-void Group::insertIntoGrid(Grid *g, Matrix *m) {
+
+auto Group::insertIntoGrid(Grid *g, Matrix *m) -> void {
   for (int i = 0; i < numObjects; i++) {
-    if (objects[i] != NULL)
+    if (objects[i] != nullptr)
       objects[i]->insertIntoGrid(g, m);
   }
 }
 
-void Group::debugPrintBoundingBox(int depth) const {
+auto Group::debugPrintBoundingBox(int depth)const -> void {
   for (int i = 0; i < depth; i++)
-    printf("  ");
-  printf("Group: ");
-  if (bbox == NULL)
-    printf("NULL bounding box\n");
+    ::printf("  ");
+  ::printf("Group: ");
+  if (bbox == nullptr)
+    ::printf("nullptr bounding box\n");
   else
     bbox->Print();
 
   for (int i = 0; i < numObjects; i++) {
-    if (objects[i] != NULL)
+    if (objects[i] != nullptr)
       objects[i]->debugPrintBoundingBox(depth + 1);
   }
 }

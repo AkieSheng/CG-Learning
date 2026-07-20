@@ -1,24 +1,19 @@
-#include <stdio.h>
-#include <assert.h>
-using namespace std;
+#include <cstdio>
+#include <cassert>
 
 #include "arg_parser.h"
 #include "gl_headers.h"
 #include "glCanvas.h"
 #include "spline_parser.h"
 
-// ====================================================================
-// ====================================================================
-
-int main(int argc, char *argv[]) {
-
-  ArgParser *args = new ArgParser(argc,argv);
-  SplineParser* splines = new SplineParser(args->input_file);
+auto main(int argc, char* argv[]) -> int {
+  auto* args = new ArgParser(argc, argv);
+  auto* splines = new SplineParser(args->input_file);
 
   if (args->gui) {
-    glutInit(&argc, argv);
+    ::glutInit(&argc, argv);
     GLCanvas glcanvas;
-    glcanvas.initialize(args,splines);
+    glcanvas.initialize(args, splines);
   }
 
   splines->SaveBezier(args);
@@ -29,8 +24,3 @@ int main(int argc, char *argv[]) {
   delete splines;
   return 0;
 }
-
-// ====================================================================
-// ====================================================================
-
-

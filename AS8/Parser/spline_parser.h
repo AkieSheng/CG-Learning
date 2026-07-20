@@ -1,70 +1,51 @@
-#ifndef _SPLINE_PARSER_H_
-#define _SPLINE_PARSER_H_
+#pragma once
 
-#include <assert.h>
+#include <cassert>
+#include <cstdio>
+
 #include "vectors.h"
-class Spline;
-class Curve;
-class Surface;
-class ArgParser;
 
-#define MAX_PARSER_TOKEN_LENGTH 100
+struct Spline;
+struct Curve;
+struct Surface;
+struct ArgParser;
 
-// ====================================================================
-// ====================================================================
+constexpr auto MAX_PARSER_TOKEN_LENGTH = 100;
 
-class SplineParser {
-
-public:
-
-  // CONSTRUCTOR & DESTRUCTOR
-  SplineParser(const char *file);
+struct SplineParser final {
+  SplineParser(char const* file);
   ~SplineParser();
 
-  // ACCESSORS
-  int getNumSplines() { return num_splines; }
-  Spline* getSpline(int i) {
-    assert (i >= 0 && i < num_splines);
-    return splines[i]; }
+  auto getNumSplines() const -> int { return num_splines; }
+  auto getSpline(int i) const -> Spline* {
+    assert(i >= 0 && i < num_splines);
+    return splines[i];
+  }
 
-  // OUTPUT
-  void SaveBezier(ArgParser *args);
-  void SaveBSpline(ArgParser *args);
-  void SaveTriangles(ArgParser *args);
+  auto SaveBezier(ArgParser* args) -> void;
+  auto SaveBSpline(ArgParser* args) -> void;
+  auto SaveTriangles(ArgParser* args) -> void;
 
-  // PICK!  
-  // iterates through all of the splines and finds the closest control
-  // point to the current mouse position (or the closest edge)
-  void Pick(float x, float y, float epsilon,
-	    Spline*& selected_spline, int &selected_control_point);
-  void PickEdge(float x, float y, float epsilon,
-		Spline*& selected_spline, int &selected_control_point);
+  auto Pick(float x, float y, float epsilon, Spline*& selected_spline,
+            int& selected_control_point) -> void;
+  auto PickEdge(float x, float y, float epsilon, Spline*& selected_spline,
+                int& selected_control_point) -> void;
 
-private:
-  // don't use this constructor
-  SplineParser() { assert(0); } 
+  SplineParser() { assert(0); }
 
-  // HELPER FUNCTIONS
-  Spline* ParseSpline();
-  Curve* ParseBezierCurve();
-  Curve* ParseBSplineCurve();
-  Surface* ParseSurfaceOfRevolution();
-  Surface* ParseBezierPatch();
+  auto ParseSpline() -> Spline*;
+  auto ParseBezierCurve() -> Curve*;
+  auto ParseBSplineCurve() -> Curve*;
+  auto ParseSurfaceOfRevolution() -> Surface*;
+  auto ParseBezierPatch() -> Surface*;
 
-  int getToken(char token[MAX_PARSER_TOKEN_LENGTH]);
-  Vec3f readVec3f();
-  Vec2f readVec2f();
-  float readFloat();
-  int readInt();
+  auto getToken(char token[MAX_PARSER_TOKEN_LENGTH]) -> int;
+  auto readVec3f() -> Vec3f;
+  auto readVec2f() -> Vec2f;
+  auto readFloat() -> float;
+  auto readInt() -> int;
 
-  // REPRESENTATION
-  int num_splines;
-  Spline **splines;
-  FILE *file;
+  int num_splines{};
+  Spline** splines{};
+  FILE* file{};
 };
-
-// ====================================================================
-// ====================================================================
-
-
-#endif

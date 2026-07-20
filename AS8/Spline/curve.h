@@ -1,70 +1,57 @@
-#ifndef _CURVE_H_
-#define _CURVE_H_
+#pragma once
 
 #include "spline.h"
 #include "matrix.h"
 
-class ArgParser;
+struct ArgParser;
 
 #define DEBUG_CURVE 0
 
-// 曲线基层
-class Curve : public Spline {
-
-public:
+struct Curve : Spline {
   Curve(int _num_vertices);
-  virtual ~Curve();
+  ~Curve() override;
 
-  int getNumVertices() { return num_vertices; }
-  Vec3f getVertex(int i);
-  void set(int i, Vec3f v);
+  auto getNumVertices() -> int override { return num_vertices; }
+  auto getVertex(int i) -> Vec3f override;
+  auto set(int i, Vec3f v) -> void;
 
-  void moveControlPoint(int selectedPoint, float x, float y);
-  void addControlPoint(int selectedPoint, float x, float y);
-  void deleteControlPoint(int selectedPoint);
+  auto moveControlPoint(int selectedPoint, float x, float y) -> void override;
+  auto addControlPoint(int selectedPoint, float x, float y) -> void override;
+  auto deleteControlPoint(int selectedPoint) -> void override;
 
-  void Paint(ArgParser *args);
+  auto Paint(ArgParser* args) -> void override;
+  auto OutputTriangles(ArgParser* args) -> TriangleMesh* override;
 
-  TriangleMesh* OutputTriangles(ArgParser *args);
+  auto numSegments() const -> int;
+  auto evaluateAlongCurve(float u) const -> Vec3f;
 
-  // 对旋转曲面沿轮廓采样
-  int numSegments() const; // 获取分段数量
-  Vec3f evaluateAlongCurve(float u) const; // 沿曲线参数 u 求值
+ protected:
+  virtual auto getNumSegments() const -> int = 0;
+  virtual auto getSegmentControlPoints(int segment, Vec3f pts[4]) const -> void = 0;
+  virtual auto allowAddControlPoints() const -> bool = 0;
+  virtual auto allowDeleteControlPoints() const -> bool = 0;
 
-protected:
-  virtual int getNumSegments() const = 0; // 获取分段数量
-  virtual void getSegmentControlPoints(int segment, Vec3f pts[4]) const = 0; // 获取分段控制点
-  virtual bool allowAddControlPoints() const = 0; // 是否允许添加控制点
-  virtual bool allowDeleteControlPoints() const = 0; // 是否允许删除控制点
+  auto evaluateSegment(int segment, float t) const -> Vec3f;
+  virtual auto getSegmentBasis() const -> Matrix const& = 0;
 
-  Vec3f evaluateSegment(int segment, float t) const; // 分段求值
-  virtual const Matrix &getSegmentBasis() const = 0; // 获取分段基矩阵
+  auto writeControlPoints(FILE* file, char const* type) const -> void;
+  auto insertControlPoint(int index, Vec3f v) -> void;
+  auto removeControlPoint(int index) -> void;
 
-  void writeControlPoints(FILE *file, const char *type) const; // 输出控制点
-  void insertControlPoint(int index, Vec3f v); // 插入控制点
-  void removeControlPoint(int index); // 删除控制点
-
-  int num_vertices;  // 控制点数量
-  Vec3f *vertices;  // 控制点
+  int num_vertices{};
+  Vec3f* vertices{};
 };
 
-Matrix GetBezierBasisMatrix();  // 三次贝塞尔基矩阵
-Matrix GetBSplineBasisMatrix();  // 三次均匀B样条基矩阵
-
-Matrix GeometryMatrixFromControlPoints(const Vec3f pts[4]); // 从控制点获取控制点矩阵
-void ControlPointsFromGeometryMatrix(const Matrix &G, Vec3f pts[4]); // 从控制点矩阵获取控制点
-
-Vec3f EvaluateCubicCurve(const Vec3f pts[4], const Matrix &basis, float t); // 三次样条曲线求值
-
-// 控制点转换
-void ConvertBezierControlPointsToBSpline(const Vec3f bezier[4], Vec3f bspline[4]);
-void ConvertBSplineControlPointsToBezier(const Vec3f bspline[4], Vec3f bezier[4]);
+auto GetBezierBasisMatrix() -> Matrix;
+auto GetBSplineBasisMatrix() -> Matrix;
+auto GeometryMatrixFromControlPoints(Vec3f const pts[4]) -> Matrix;
+auto ControlPointsFromGeometryMatrix(Matrix const& G, Vec3f pts[4]) -> void;
+auto EvaluateCubicCurve(Vec3f const pts[4], Matrix const& basis, float t) -> Vec3f;
+auto ConvertBezierControlPointsToBSpline(Vec3f const bezier[4], Vec3f bspline[4]) -> void;
+auto ConvertBSplineControlPointsToBezier(Vec3f const bspline[4], Vec3f bezier[4]) -> void;
 
 #if DEBUG_CURVE
-// 在 Bezier/BSpline 互转时打印采样对比
-void DebugVerifyCurveConversion(const Vec3f src[4], const Vec3f dst[4],
-                                const Matrix &srcBasis, const Matrix &dstBasis,
-                                const char *label);
-#endif
-
+auto DebugVerifyCurveConversion(Vec3f const src[4], Vec3f const dst[4],
+                                Matrix const& srcBasis, Matrix const& dstBasis,
+                                char const* label) -> void;
 #endif

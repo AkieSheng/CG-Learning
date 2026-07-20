@@ -12,10 +12,9 @@ static const int PREFILTER_SAMPLE_COUNT = 64;
 static const int BRDF_LUT_SIZE = 512;
 static const float PI = 3.14159265359f;
 
-// 平滑工作室渐变（天空盒可见 + 辐照度漫反射）
 static void proceduralSkyDiffuse(float dx, float dy, float dz,
                                  float *r, float *g, float *b) {
-  float len = sqrtf(dx * dx + dy * dy + dz * dz);
+  float len = std::sqrt(dx * dx + dy * dy + dz * dz);
   if (len < 1e-6f) len = 1.0f;
   dx /= len; dy /= len; dz /= len;
 
@@ -27,23 +26,21 @@ static void proceduralSkyDiffuse(float dx, float dy, float dz,
   *g = base;
   *b = base * 0.98f;
 
-  // 极弱宽填充：与主光同向，作环境底
   float kx = -0.54f, ky = 0.50f, kz = 0.68f;
-  float klen = sqrtf(kx * kx + ky * ky + kz * kz);
+  float klen = std::sqrt(kx * kx + ky * ky + kz * kz);
   kx /= klen; ky /= klen; kz /= klen;
   float keyDot = dx * kx + dy * ky + dz * kz;
   if (keyDot > 0.0f) {
-    float keyWide = powf(keyDot, 8.0f) * 0.06f;
+    float keyWide = std::pow(keyDot, 8.0f) * 0.06f;
     *r += keyWide;
     *g += keyWide;
     *b += keyWide * 1.02f;
   }
 }
 
-// 天空盒显示：暗灰平滑渐变
 static void proceduralSkyDisplay(float dx, float dy, float dz,
                                  float *r, float *g, float *b) {
-  float len = sqrtf(dx * dx + dy * dy + dz * dz);
+  float len = std::sqrt(dx * dx + dy * dy + dz * dz);
   if (len < 1e-6f) len = 1.0f;
   dy /= len;
 
@@ -56,42 +53,37 @@ static void proceduralSkyDisplay(float dx, float dy, float dz,
   *b = base * 1.02f;
 }
 
-// 照明 HDR：漫反射底 + 强对比镜面亮斑
 static void proceduralSkyLighting(float dx, float dy, float dz,
                                   float *r, float *g, float *b) {
   proceduralSkyDiffuse(dx, dy, dz, r, g, b);
 
-  float len = sqrtf(dx * dx + dy * dy + dz * dz);
+  float len = std::sqrt(dx * dx + dy * dy + dz * dz);
   if (len < 1e-6f) len = 1.0f;
   dx /= len; dy /= len; dz /= len;
 
-  // 主光：降低高度以拉长阴影；偏左、偏初始相机侧（+Z）
-  // 与 Renderer 的固定方向光一致，作为同一盏工作室灯的反射亮斑。
   float kx = -0.54f, ky = 0.50f, kz = 0.68f;
-  float klen = sqrtf(kx * kx + ky * ky + kz * kz);
+  float klen = std::sqrt(kx * kx + ky * ky + kz * kz);
   kx /= klen; ky /= klen; kz /= klen;
   float keyDot = dx * kx + dy * ky + dz * kz;
   if (keyDot > 0.0f) {
-    float keySharp = powf(keyDot, 140.0f) * 36.0f;
+    float keySharp = std::pow(keyDot, 140.0f) * 36.0f;
     *r += keySharp;
     *g += keySharp;
     *b += keySharp * 1.05f;
   }
 
-  // 背光轮廓：保留背面金属可读性
   float bx = 0.0f, by = 0.55f, bz = -0.72f;
-  float blen = sqrtf(bx * bx + by * by + bz * bz);
+  float blen = std::sqrt(bx * bx + by * by + bz * bz);
   bx /= blen; by /= blen; bz /= blen;
   float backDot = dx * bx + dy * by + dz * bz;
   if (backDot > 0.0f) {
-    float backSharp = powf(backDot, 90.0f) * 4.0f;
+    float backSharp = std::pow(backDot, 90.0f) * 4.0f;
     *r += backSharp;
     *g += backSharp;
     *b += backSharp * 1.03f;
   }
 }
 
-// 将 UV 转换为方向向量
 static void cubemapUVToDir(int face, float u, float v, float *dx, float *dy, float *dz) {
   float s = 2.0f * u - 1.0f;
   float t = 2.0f * v - 1.0f;
@@ -105,7 +97,6 @@ static void cubemapUVToDir(int face, float u, float v, float *dx, float *dy, flo
   }
 }
 
-// 计算两个向量的叉积
 static void cross3(float ax, float ay, float az,
                    float bx, float by, float bz,
                    float *cx, float *cy, float *cz) {
@@ -114,13 +105,11 @@ static void cross3(float ax, float ay, float az,
   *cz = ax * by - ay * bx;
 }
 
-// 归一化一个向量
 static void normalize3(float *x, float *y, float *z) {
-  float len = sqrtf((*x) * (*x) + (*y) * (*y) + (*z) * (*z));
+  float len = std::sqrt((*x) * (*x) + (*y) * (*y) + (*z) * (*z));
   if (len > 1e-6f) { *x /= len; *y /= len; *z /= len; }
 }
 
-// GGX Split-Sum 预滤波
 static float radicalInverseVdC(unsigned int bits) {
   bits = (bits << 16u) | (bits >> 16u);
   bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);
@@ -141,15 +130,15 @@ static void importanceSampleGGX(float xi0, float xi1,
                                 float *hx, float *hy, float *hz) {
   float a = roughness * roughness;
   float phi = 2.0f * PI * xi0;
-  float cosTheta = sqrtf((1.0f - xi1) / (1.0f + (a * a - 1.0f) * xi1));
-  float sinTheta = sqrtf(fmaxf(1.0f - cosTheta * cosTheta, 0.0f));
+  float cosTheta = std::sqrt((1.0f - xi1) / (1.0f + (a * a - 1.0f) * xi1));
+  float sinTheta = std::sqrt(std::fmax(1.0f - cosTheta * cosTheta, 0.0f));
 
-  float hxLocal = cosf(phi) * sinTheta;
-  float hyLocal = sinf(phi) * sinTheta;
+  float hxLocal = std::cos(phi) * sinTheta;
+  float hyLocal = std::sin(phi) * sinTheta;
   float hzLocal = cosTheta;
 
   float upx = 0.0f, upy = 0.0f, upz = 1.0f;
-  if (fabsf(nz) >= 0.999f) {
+  if (std::fabs(nz) >= 0.999f) {
     upx = 1.0f; upy = 0.0f; upz = 0.0f;
   }
   float tx, ty, tz;
@@ -164,7 +153,6 @@ static void importanceSampleGGX(float xi0, float xi1,
   normalize3(hx, hy, hz);
 }
 
-// 对反射方向 R 做 GGX 镜面预滤波（roughness=0 时退化为环境采样）
 static void convolvePrefilter(float rx, float ry, float rz, float roughness,
                               float *outR, float *outG, float *outB) {
   normalize3(&rx, &ry, &rz);
@@ -184,7 +172,6 @@ static void convolvePrefilter(float rx, float ry, float rz, float roughness,
     float hx, hy, hz;
     importanceSampleGGX(xi0, xi1, rx, ry, rz, roughness, &hx, &hy, &hz);
 
-    // L = reflect(-V, H)；Split-Sum 取 V = R = N
     float vdh = rx * hx + ry * hy + rz * hz;
     float lx = 2.0f * vdh * hx - rx;
     float ly = 2.0f * vdh * hy - ry;
@@ -211,13 +198,12 @@ static void convolvePrefilter(float rx, float ry, float rz, float roughness,
   }
 }
 
-// 卷积辐照度
 static void convolveIrradiance(float nx, float ny, float nz,
                                float *r, float *g, float *b) {
   float upx = 0.0f, upy = 1.0f, upz = 0.0f;
   float rx, ry, rz;
   cross3(upy, upz, 0.0f, nx, ny, nz, &rx, &ry, &rz);
-  float rlen = sqrtf(rx * rx + ry * ry + rz * rz);
+  float rlen = std::sqrt(rx * rx + ry * ry + rz * rz);
   if (rlen < 1e-4f) {
     upx = 1.0f; upy = 0.0f; upz = 0.0f;
     cross3(upx, upy, upz, nx, ny, nz, &rx, &ry, &rz);
@@ -232,10 +218,10 @@ static void convolveIrradiance(float nx, float ny, float nz,
   int nrSamples = 0;
   for (float phi = 0.0f; phi < 2.0f * PI; phi += sampleDelta) {
     for (float theta = 0.0f; theta < 0.5f * PI; theta += sampleDelta) {
-      float sinT = sinf(theta);
-      float cosT = cosf(theta);
-      float sinP = sinf(phi);
-      float cosP = cosf(phi);
+      float sinT = std::sin(theta);
+      float cosT = std::cos(theta);
+      float sinP = std::sin(phi);
+      float cosP = std::cos(phi);
       float sx = cosP * sinT * rx + sinP * sinT * ux + cosT * nx;
       float sy = cosP * sinT * ry + sinP * sinT * uy + cosT * ny;
       float sz = cosP * sinT * rz + sinP * sinT * uz + cosT * nz;
@@ -270,23 +256,22 @@ IBL::~IBL() {
 
 void IBL::destroy() {
   brdfLUTShader.destroy();
-  if (skyboxVBO) { glDeleteBuffers(1, &skyboxVBO); skyboxVBO = 0; }
-  if (skyboxVAO) { glDeleteVertexArrays(1, &skyboxVAO); skyboxVAO = 0; }
-  if (captureFBO) { glDeleteFramebuffers(1, &captureFBO); captureFBO = 0; }
-  if (brdfLUT) { glDeleteTextures(1, &brdfLUT); brdfLUT = 0; }
+  if (skyboxVBO) { ::glDeleteBuffers(1, &skyboxVBO); skyboxVBO = 0; }
+  if (skyboxVAO) { ::glDeleteVertexArrays(1, &skyboxVAO); skyboxVAO = 0; }
+  if (captureFBO) { ::glDeleteFramebuffers(1, &captureFBO); captureFBO = 0; }
+  if (brdfLUT) { ::glDeleteTextures(1, &brdfLUT); brdfLUT = 0; }
   if (prefilterMap && prefilterMap != envCubemap) {
-    glDeleteTextures(1, &prefilterMap);
+    ::glDeleteTextures(1, &prefilterMap);
   }
   prefilterMap = 0;
-  if (irradianceMap) { glDeleteTextures(1, &irradianceMap); irradianceMap = 0; }
-  if (envCubemap) { glDeleteTextures(1, &envCubemap); envCubemap = 0; }
-  if (skyboxCubemap) { glDeleteTextures(1, &skyboxCubemap); skyboxCubemap = 0; }
+  if (irradianceMap) { ::glDeleteTextures(1, &irradianceMap); irradianceMap = 0; }
+  if (envCubemap) { ::glDeleteTextures(1, &envCubemap); envCubemap = 0; }
+  if (skyboxCubemap) { ::glDeleteTextures(1, &skyboxCubemap); skyboxCubemap = 0; }
 }
 
-// 照明 HDR cubemap（窄高光，供 prefilter 镜面采样）
 bool IBL::createEnvironmentCubemap() {
-  glGenTextures(1, &envCubemap);
-  glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+  ::glGenTextures(1, &envCubemap);
+  ::glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
 
   std::vector<float> pixels((size_t)ENV_SIZE * ENV_SIZE * 3);
   for (int face = 0; face < 6; face++) {
@@ -303,22 +288,21 @@ bool IBL::createEnvironmentCubemap() {
         pixels[idx + 2] = b;
       }
     }
-    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, GL_RGB16F,
+    ::glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, GL_RGB16F,
                  ENV_SIZE, ENV_SIZE, 0, GL_RGB, GL_FLOAT, &pixels[0]);
   }
 
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  ::glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  ::glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  ::glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+  ::glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  ::glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   return true;
 }
 
-// 天空盒显示 cubemap（平滑暗灰，无灯珠）
 bool IBL::createSkyboxCubemap() {
-  glGenTextures(1, &skyboxCubemap);
-  glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxCubemap);
+  ::glGenTextures(1, &skyboxCubemap);
+  ::glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxCubemap);
 
   std::vector<unsigned char> pixels((size_t)ENV_SIZE * ENV_SIZE * 3);
   for (int face = 0; face < 6; face++) {
@@ -330,27 +314,26 @@ bool IBL::createSkyboxCubemap() {
         cubemapUVToDir(face, u, v, &dx, &dy, &dz);
         proceduralSkyDisplay(dx, dy, dz, &r, &g, &b);
         size_t idx = (size_t)(y * ENV_SIZE + x) * 3;
-        pixels[idx + 0] = (unsigned char)(fminf(r * 255.0f, 255.0f));
-        pixels[idx + 1] = (unsigned char)(fminf(g * 255.0f, 255.0f));
-        pixels[idx + 2] = (unsigned char)(fminf(b * 255.0f, 255.0f));
+        pixels[idx + 0] = (unsigned char)(std::fmin(r * 255.0f, 255.0f));
+        pixels[idx + 1] = (unsigned char)(std::fmin(g * 255.0f, 255.0f));
+        pixels[idx + 2] = (unsigned char)(std::fmin(b * 255.0f, 255.0f));
       }
     }
-    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, GL_RGB,
+    ::glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, GL_RGB,
                  ENV_SIZE, ENV_SIZE, 0, GL_RGB, GL_UNSIGNED_BYTE, &pixels[0]);
   }
 
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  ::glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  ::glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  ::glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+  ::glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  ::glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   return true;
 }
 
-// 创建辐照度卷积 cubemap
 bool IBL::createIrradianceMap() {
-  glGenTextures(1, &irradianceMap);
-  glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
+  ::glGenTextures(1, &irradianceMap);
+  ::glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
 
   std::vector<float> pixels((size_t)IRRADIANCE_SIZE * IRRADIANCE_SIZE * 3);
   for (int face = 0; face < 6; face++) {
@@ -367,19 +350,18 @@ bool IBL::createIrradianceMap() {
         pixels[idx + 2] = b;
       }
     }
-    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, GL_RGB16F,
+    ::glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, GL_RGB16F,
                  IRRADIANCE_SIZE, IRRADIANCE_SIZE, 0, GL_RGB, GL_FLOAT, &pixels[0]);
   }
 
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  ::glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  ::glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  ::glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+  ::glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  ::glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   return true;
 }
 
-// 创建 GGX 镜面预滤波 cubemap（mip 对应 roughness，供 Split-Sum 采样）
 bool IBL::createPrefilterMap() {
   int mipLevels = 1;
   int size = PREFILTER_SIZE;
@@ -389,27 +371,26 @@ bool IBL::createPrefilterMap() {
   }
   maxReflectionLod_ = (float)(mipLevels - 1);
 
-  glGenTextures(1, &prefilterMap);
-  glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
+  ::glGenTextures(1, &prefilterMap);
+  ::glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
 
   size = PREFILTER_SIZE;
   for (int mip = 0; mip < mipLevels; mip++) {
     for (int face = 0; face < 6; face++) {
-      glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, mip, GL_RGB16F,
-                   size, size, 0, GL_RGB, GL_FLOAT, NULL);
+      ::glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, mip, GL_RGB16F,
+                   size, size, 0, GL_RGB, GL_FLOAT, nullptr);
     }
     size = size > 1 ? size / 2 : 1;
   }
 
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  ::glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  ::glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  ::glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+  ::glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+  ::glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
   size = PREFILTER_SIZE;
   for (int mip = 0; mip < mipLevels; mip++) {
-    // mip 0 → roughness 0（镜面），最高 mip → roughness 1
     float roughness = (mipLevels > 1)
       ? (float)mip / (float)(mipLevels - 1)
       : 0.0f;
@@ -429,58 +410,56 @@ bool IBL::createPrefilterMap() {
           pixels[idx + 2] = b;
         }
       }
-      glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, mip, GL_RGB16F,
+      ::glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, mip, GL_RGB16F,
                    size, size, 0, GL_RGB, GL_FLOAT, &pixels[0]);
     }
     size = size > 1 ? size / 2 : 1;
   }
 
-  fprintf(stderr, "IBL: GGX prefilter %dx%d, %d mips, %d samples/texel\n",
+  std::fprintf(stderr, "IBL: GGX prefilter %dx%d, %d mips, %d samples/texel\n",
           PREFILTER_SIZE, PREFILTER_SIZE, mipLevels, PREFILTER_SAMPLE_COUNT);
   return true;
 }
 
-// 创建 BRDF LUT
 bool IBL::createBrdfLUT() {
   if (!brdfLUTShader.loadFromFiles("Shader/brdf_lut.vert", "Shader/brdf_lut.frag")) {
-    fprintf(stderr, "IBL: failed to load BRDF LUT shader\n");
+    std::fprintf(stderr, "IBL: failed to load BRDF LUT shader\n");
     return false;
   }
 
-  glGenTextures(1, &brdfLUT);
-  glBindTexture(GL_TEXTURE_2D, brdfLUT);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, BRDF_LUT_SIZE, BRDF_LUT_SIZE,
-               0, GL_RGBA, GL_FLOAT, NULL);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  ::glGenTextures(1, &brdfLUT);
+  ::glBindTexture(GL_TEXTURE_2D, brdfLUT);
+  ::glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, BRDF_LUT_SIZE, BRDF_LUT_SIZE,
+               0, GL_RGBA, GL_FLOAT, nullptr);
+  ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-  glGenFramebuffers(1, &captureFBO);
-  glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, brdfLUT, 0);
+  ::glGenFramebuffers(1, &captureFBO);
+  ::glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+  ::glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, brdfLUT, 0);
 
-  if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-    fprintf(stderr, "IBL: BRDF LUT framebuffer incomplete\n");
+  if (::glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+    std::fprintf(stderr, "IBL: BRDF LUT framebuffer incomplete\n");
     return false;
   }
 
   GLint prevViewport[4];
-  glGetIntegerv(GL_VIEWPORT, prevViewport);
+  ::glGetIntegerv(GL_VIEWPORT, prevViewport);
 
-  glViewport(0, 0, BRDF_LUT_SIZE, BRDF_LUT_SIZE);
+  ::glViewport(0, 0, BRDF_LUT_SIZE, BRDF_LUT_SIZE);
   brdfLUTShader.use();
-  glDisable(GL_DEPTH_TEST);
-  glClear(GL_COLOR_BUFFER_BIT);
-  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-  glEnable(GL_DEPTH_TEST);
+  ::glDisable(GL_DEPTH_TEST);
+  ::glClear(GL_COLOR_BUFFER_BIT);
+  ::glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+  ::glEnable(GL_DEPTH_TEST);
 
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  glViewport(prevViewport[0], prevViewport[1], prevViewport[2], prevViewport[3]);
+  ::glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  ::glViewport(prevViewport[0], prevViewport[1], prevViewport[2], prevViewport[3]);
   return true;
 }
 
-// 创建天空盒 VAO
 bool IBL::createSkyboxVAO() {
   float skyboxVertices[] = {
     -1.0f,  1.0f, -1.0f,  -1.0f, -1.0f, -1.0f,   1.0f, -1.0f, -1.0f,
@@ -497,18 +476,17 @@ bool IBL::createSkyboxVAO() {
      1.0f, -1.0f, -1.0f,  -1.0f, -1.0f,  1.0f,   1.0f, -1.0f,  1.0f
   };
 
-  glGenVertexArrays(1, &skyboxVAO);
-  glGenBuffers(1, &skyboxVBO);
-  glBindVertexArray(skyboxVAO);
-  glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), skyboxVertices, GL_STATIC_DRAW);
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
-  glBindVertexArray(0);
+  ::glGenVertexArrays(1, &skyboxVAO);
+  ::glGenBuffers(1, &skyboxVBO);
+  ::glBindVertexArray(skyboxVAO);
+  ::glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
+  ::glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), skyboxVertices, GL_STATIC_DRAW);
+  ::glEnableVertexAttribArray(0);
+  ::glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+  ::glBindVertexArray(0);
   return true;
 }
 
-// 初始化 IBL
 bool IBL::initialize() {
   destroy();
   if (!createEnvironmentCubemap()) return false;
@@ -517,52 +495,50 @@ bool IBL::initialize() {
   if (!createPrefilterMap()) return false;
   if (!createBrdfLUT()) return false;
   if (!createSkyboxVAO()) return false;
-  fprintf(stderr,
+  std::fprintf(stderr,
           "IBL: initialized (env %dx%d, irradiance %d, prefilter %dx%d lod=%.0f, BRDF LUT %d)\n",
           ENV_SIZE, ENV_SIZE, IRRADIANCE_SIZE,
           PREFILTER_SIZE, PREFILTER_SIZE, maxReflectionLod_, BRDF_LUT_SIZE);
   return true;
 }
 
-// 渲染天空盒
-void IBL::renderSkybox(const ShaderProgram &skyboxShader,
-                       const float *view, const float *projection) const {
+void IBL::renderSkybox(ShaderProgram const&skyboxShader,
+                       float const*view, float const*projection) const {
   if (!valid()) return;
 
-  glDepthFunc(GL_LEQUAL);
-  glDepthMask(GL_FALSE);
-  glDisable(GL_CULL_FACE);
+  ::glDepthFunc(GL_LEQUAL);
+  ::glDepthMask(GL_FALSE);
+  ::glDisable(GL_CULL_FACE);
 
   skyboxShader.use();
   skyboxShader.setMat4("uView", view);
   skyboxShader.setMat4("uProjection", projection);
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxCubemap);
+  ::glActiveTexture(GL_TEXTURE0);
+  ::glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxCubemap);
   skyboxShader.setInt("uEnvironmentMap", 0);
 
-  glBindVertexArray(skyboxVAO);
-  glDrawArrays(GL_TRIANGLES, 0, 36);
-  glBindVertexArray(0);
+  ::glBindVertexArray(skyboxVAO);
+  ::glDrawArrays(GL_TRIANGLES, 0, 36);
+  ::glBindVertexArray(0);
 
-  glDepthMask(GL_TRUE);
-  glDepthFunc(GL_LESS);
-  glEnable(GL_CULL_FACE);
+  ::glDepthMask(GL_TRUE);
+  ::glDepthFunc(GL_LESS);
+  ::glEnable(GL_CULL_FACE);
 }
 
-// 绑定 IBL 环境光
 void IBL::bindForPBR(ShaderProgram &pbrShader) const {
   if (!valid()) return;
 
-  glActiveTexture(GL_TEXTURE0 + IRRADIANCE_UNIT);
-  glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
+  ::glActiveTexture(GL_TEXTURE0 + IRRADIANCE_UNIT);
+  ::glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
   pbrShader.setInt("uIrradianceMap", IRRADIANCE_UNIT);
 
-  glActiveTexture(GL_TEXTURE0 + PREFILTER_UNIT);
-  glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
+  ::glActiveTexture(GL_TEXTURE0 + PREFILTER_UNIT);
+  ::glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
   pbrShader.setInt("uPrefilterMap", PREFILTER_UNIT);
 
-  glActiveTexture(GL_TEXTURE0 + BRDF_LUT_UNIT);
-  glBindTexture(GL_TEXTURE_2D, brdfLUT);
+  ::glActiveTexture(GL_TEXTURE0 + BRDF_LUT_UNIT);
+  ::glBindTexture(GL_TEXTURE_2D, brdfLUT);
   pbrShader.setInt("uBrdfLUT", BRDF_LUT_UNIT);
 
   pbrShader.setBool("uUseIBL", true);

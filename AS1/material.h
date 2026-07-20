@@ -1,32 +1,12 @@
-#ifndef _MATERIAL_H_
-#define _MATERIAL_H_
+#pragma once
 
 #include "vectors.h"
 
-// ====================================================================
-// ====================================================================
-
-// You will extend this class in later assignments
-
-class Material {
-
-public:
-
-  // CONSTRUCTORS & DESTRUCTOR
-  Material(const Vec3f &d_color) { diffuseColor = d_color; }
+struct Material {
+  Material(Vec3f const& d_color) { diffuseColor = d_color; }
   virtual ~Material() {}
 
-  // ACCESSORS
-  virtual Vec3f getDiffuseColor() const { return diffuseColor; }
+  virtual auto getDiffuseColor() const -> Vec3f { return diffuseColor; }
 
-protected:
-
-  // REPRESENTATION
-  Vec3f diffuseColor;
-  
+  Vec3f diffuseColor{};
 };
-
-// ====================================================================
-// ====================================================================
-
-#endif

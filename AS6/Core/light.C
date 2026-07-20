@@ -2,17 +2,17 @@
 
 #include "light.h"
 
-// ====================================================================
-// Given below are the bodies of the glInit function for the
-// DirectionalLight and PointLight subclasses.
-// ====================================================================
 
-// ====================================================================
-// Create an OpenGL directional light source with the appropriate
-// color and position 
-// ====================================================================
 
-void DirectionalLight::glInit(int id) {
+
+
+
+
+
+
+
+
+auto DirectionalLight::glInit(int id) -> void {
   GLenum glLightID;
   switch(id) {
     case 0 : glLightID = GL_LIGHT0; break;
@@ -24,13 +24,13 @@ void DirectionalLight::glInit(int id) {
     case 6 : glLightID = GL_LIGHT6; break;
     case 7 : glLightID = GL_LIGHT7; break;
     default: {
-      printf ("WARNING!  Too many lights for GL to imitate\n");
+      ::printf("WARNING!  Too many lights for GL to imitate\n");
       return;
     }
   }
 
-  // Set the last component of the position to 0 to indicate
-  // a directional light source
+
+
   GLfloat glPosition[4];
   glPosition[0] = -direction.x();
   glPosition[1] = -direction.y();
@@ -52,12 +52,12 @@ void DirectionalLight::glInit(int id) {
   glEnable(glLightID);
 }
 
-// ====================================================================
-// Create an OpenGL point light source with the appropriate
-// color and position 
-// ====================================================================
 
-void PointLight::glInit(int id) {
+
+
+
+
+auto PointLight::glInit(int id) -> void {
   GLenum glLightID;
   switch(id) {
     case 0 : glLightID = GL_LIGHT0; break;
@@ -69,13 +69,13 @@ void PointLight::glInit(int id) {
     case 6 : glLightID = GL_LIGHT6; break;
     case 7 : glLightID = GL_LIGHT7; break;
     default: {
-      printf ("WARNING!  Too many lights for GL to imitate\n");
+      ::printf("WARNING!  Too many lights for GL to imitate\n");
       return;
     }
   }
 
-  // Set the last component of the position to 1 to indicate
-  // a point light source
+
+
   GLfloat glPosition[4];
   glPosition[0] = position.x();
   glPosition[1] = position.y();
@@ -97,5 +97,4 @@ void PointLight::glInit(int id) {
   glEnable(glLightID);
 }
 
-// ====================================================================
-// ====================================================================
+

@@ -1,26 +1,21 @@
-#ifndef _TRIANGLE_H_
-#define _TRIANGLE_H_
+#pragma once
 
 #include "object3d.h"
 #include "vectors.h"
 
-class Grid;
-class Matrix;
+struct Grid;
+struct Matrix;
 
-// 三角形图元
-class Triangle : public Object3D {
+struct Triangle final : Object3D {
+  Triangle(Vec3f a, Vec3f b, Vec3f c, Material* m);
 
-public:
-  Triangle(Vec3f a, Vec3f b, Vec3f c, Material *m);
+  auto intersect(Ray const& r, Hit& h, float tmin) -> bool override;
+  auto intersectShadow(Ray const& r, float tmin, float tmax, float& t,
+                       Material** outMaterial) -> bool override;
+  auto insertIntoGrid(Grid* g, Matrix* m) -> void override;
 
-  virtual bool intersect(const Ray &r, Hit &h, float tmin);
-  virtual bool intersectShadow(const Ray &r, float tmin, float tmax, float &t,
-                               Material **outMaterial);
-  virtual void insertIntoGrid(Grid *g, Matrix *m);
-
-private:
-  Vec3f a, b, c;  // 三个顶点
-  Vec3f normal;   // 面法线
+  Vec3f a{};
+  Vec3f b{};
+  Vec3f c{};
+  Vec3f normal{};
 };
-
-#endif

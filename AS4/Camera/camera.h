@@ -1,72 +1,54 @@
-#ifndef _CAMERA_H_
-#define _CAMERA_H_
+#pragma once
 
 #include "ray.h"
 #include "vectors.h"
 
-// 相机抽象基类
-class Camera {
-
-public:
+struct Camera {
   virtual ~Camera() {}
-  virtual Ray generateRay(Vec2f point) = 0;  // 由屏幕坐标生成射线
-  virtual float getTMin() const = 0;  // 射线参数 t 的下界
-
-  // OpenGL 预览接口（参考 camera_additions.txt）
-  virtual void glInit(int w, int h) = 0;  // 设置投影矩阵
-  virtual void glPlaceCamera(void) = 0;  // 设置模型视图矩阵
-  virtual void dollyCamera(float dist) = 0;  // 沿视线方向推拉
-  virtual void truckCamera(float dx, float dy) = 0;  // 垂直于视线平移
-  virtual void rotateCamera(float rx, float ry) = 0;  // 绕 up / horizontal 旋转
+  virtual auto generateRay(Vec2f point) -> Ray = 0;
+  virtual auto getTMin() const -> float = 0;
+  virtual auto glInit(int w, int h) -> void = 0;
+  virtual auto glPlaceCamera() -> void = 0;
+  virtual auto dollyCamera(float dist) -> void = 0;
+  virtual auto truckCamera(float dx, float dy) -> void = 0;
+  virtual auto rotateCamera(float rx, float ry) -> void = 0;
 };
 
-// 正交相机（平行射线）
-class OrthographicCamera : public Camera {
-
-public:
+struct OrthographicCamera final : Camera {
   OrthographicCamera(Vec3f center, Vec3f direction, Vec3f up, float size);
-  virtual Ray generateRay(Vec2f point);
-  virtual float getTMin() const;
+  auto generateRay(Vec2f point) -> Ray override;
+  auto getTMin() const -> float override;
+  auto glInit(int w, int h) -> void override;
+  auto glPlaceCamera() -> void override;
+  auto dollyCamera(float dist) -> void override;
+  auto truckCamera(float dx, float dy) -> void override;
+  auto rotateCamera(float rx, float ry) -> void override;
 
-  virtual void glInit(int w, int h);
-  virtual void glPlaceCamera(void);
-  virtual void dollyCamera(float dist);
-  virtual void truckCamera(float dx, float dy);
-  virtual void rotateCamera(float rx, float ry);
+  auto updateHorizontal() -> void;
 
-private:
-  void updateHorizontal();  // 相机运动后重算 horizontal
-
-  Vec3f center;       // 图像平面中心
-  Vec3f direction;    // 射线方向
-  Vec3f up;           // 原始 up 向量
-  Vec3f horizontal;   // 图像平面水平方向
-  float size;         // 图像平面边长
+  Vec3f center{};
+  Vec3f direction{};
+  Vec3f up{};
+  Vec3f horizontal{};
+  float size{};
 };
 
-// 透视相机（射线从 center 发出，穿过虚拟成像平面上的采样点）
-class PerspectiveCamera : public Camera {
-
-public:
+struct PerspectiveCamera final : Camera {
   PerspectiveCamera(Vec3f center, Vec3f direction, Vec3f up, float angle);
-  virtual Ray generateRay(Vec2f point);
-  virtual float getTMin() const;
+  auto generateRay(Vec2f point) -> Ray override;
+  auto getTMin() const -> float override;
+  auto glInit(int w, int h) -> void override;
+  auto glPlaceCamera() -> void override;
+  auto dollyCamera(float dist) -> void override;
+  auto truckCamera(float dx, float dy) -> void override;
+  auto rotateCamera(float rx, float ry) -> void override;
 
-  virtual void glInit(int w, int h);
-  virtual void glPlaceCamera(void);
-  virtual void dollyCamera(float dist);
-  virtual void truckCamera(float dx, float dy);
-  virtual void rotateCamera(float rx, float ry);
+  auto updateHorizontal() -> void;
 
-private:
-  void updateHorizontal();
-
-  Vec3f center;       // 相机位置
-  Vec3f direction;    // 视线方向
-  Vec3f up;           // 原始 up 向量
-  Vec3f horizontal;   // 成像平面水平方向
-  float angle;        // 垂直视场角
-  float halfHeight;   // 成像平面半高（tan(fov/2)）
+  Vec3f center{};
+  Vec3f direction{};
+  Vec3f up{};
+  Vec3f horizontal{};
+  float angle{};
+  float halfHeight{};
 };
-
-#endif

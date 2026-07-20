@@ -1,19 +1,13 @@
-#ifndef _CONSTANT_FORCE_FIELD_H_
-#define _CONSTANT_FORCE_FIELD_H_
+#pragma once
 
 #include "force_field.h"
 
-// 恒定力场
-class ConstantForceField : public ForceField {
-
-public:
+struct ConstantForceField final : ForceField {
   ConstantForceField(Vec3f force) { this->force = force; }
-  virtual ~ConstantForceField() {}
+  ~ConstantForceField() override {}
 
-  virtual Vec3f getAcceleration(const Vec3f &position, float mass, float t) const;
+  auto getAcceleration(Vec3f const& position, float mass, float t) const -> Vec3f override;
 
 private:
-  Vec3f force;  // 恒定力
+  Vec3f force{};
 };
-
-#endif

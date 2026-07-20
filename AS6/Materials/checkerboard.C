@@ -12,88 +12,88 @@ Checkerboard::~Checkerboard() {
   delete mapping;
 }
 
-// 根据世界点选择材质
-Material *Checkerboard::selectMaterial(const Vec3f &worldPoint) const {
+
+Material *Checkerboard::selectMaterial(Vec3f const&worldPoint) const {
   Vec3f p = mapToTextureSpace(mapping, worldPoint);
-  int ix = (int)floor(p.x());
-  int iy = (int)floor(p.y());
-  int iz = (int)floor(p.z());
+  int ix = static_cast<int>(::floor(p.x()));
+  int iy = static_cast<int>(::floor(p.y()));
+  int iz = static_cast<int>(::floor(p.z()));
   if (procOdd(ix) ^ procOdd(iy) ^ procOdd(iz))
     return mat2;
   return mat1;
 }
 
-const Wood *Checkerboard::selectedWood(const Vec3f &worldPoint) const {
-  return dynamic_cast<const Wood *>(selectMaterial(worldPoint));
+Wood const*Checkerboard::selectedWood(Vec3f const&worldPoint) const {
+  return dynamic_cast<Wood const*>(selectMaterial(worldPoint));
 }
 
-// 地板格：带频率系数（FLOOR_WOOD_FREQ_BOOST）的 Checkerboard 映射
-float Checkerboard::woodCellWeight(const Vec3f &worldPoint,
-                                   const Wood *wood) const {
+
+auto Checkerboard::woodCellWeight(Vec3f const&worldPoint,
+                                   Wood const*wood)const -> float {
   Vec3f p = mapToTextureSpace(mapping, worldPoint);
   return woodBlendWeight(p, wood->octaves, wood->frequency, wood->amplitude,
                          FLOOR_WOOD_FREQ_BOOST);
 }
 
-Vec3f Checkerboard::getDiffuseColor(const Vec3f &point) const {
-  const Wood *wood = selectedWood(point);
-  if (wood == NULL)
+auto Checkerboard::getDiffuseColor(Vec3f const&point)const -> Vec3f {
+  Wood const*wood = selectedWood(point);
+  if (wood == nullptr)
     return selectMaterial(point)->getDiffuseColor(point);
   float t = woodCellWeight(point, wood);
   return lerpVec3(wood->mat1->getDiffuseColor(point),
                   wood->mat2->getDiffuseColor(point), t);
 }
 
-Vec3f Checkerboard::getSpecularColor(const Vec3f &point) const {
-  const Wood *wood = selectedWood(point);
-  if (wood == NULL)
+auto Checkerboard::getSpecularColor(Vec3f const&point)const -> Vec3f {
+  Wood const*wood = selectedWood(point);
+  if (wood == nullptr)
     return selectMaterial(point)->getSpecularColor(point);
   float t = woodCellWeight(point, wood);
   return lerpVec3(wood->mat1->getSpecularColor(point),
                   wood->mat2->getSpecularColor(point), t);
 }
 
-float Checkerboard::getExponent(const Vec3f &point) const {
-  const Wood *wood = selectedWood(point);
-  if (wood == NULL)
+auto Checkerboard::getExponent(Vec3f const&point)const -> float {
+  Wood const*wood = selectedWood(point);
+  if (wood == nullptr)
     return selectMaterial(point)->getExponent(point);
   float t = woodCellWeight(point, wood);
   return lerpFloat(wood->mat1->getExponent(point),
                    wood->mat2->getExponent(point), t);
 }
 
-Vec3f Checkerboard::getReflectiveColor(const Vec3f &point) const {
-  const Wood *wood = selectedWood(point);
-  if (wood == NULL)
+auto Checkerboard::getReflectiveColor(Vec3f const&point)const -> Vec3f {
+  Wood const*wood = selectedWood(point);
+  if (wood == nullptr)
     return selectMaterial(point)->getReflectiveColor(point);
   float t = woodCellWeight(point, wood);
   return lerpVec3(wood->mat1->getReflectiveColor(point),
                   wood->mat2->getReflectiveColor(point), t);
 }
 
-Vec3f Checkerboard::getTransparentColor(const Vec3f &point) const {
-  const Wood *wood = selectedWood(point);
-  if (wood == NULL)
+auto Checkerboard::getTransparentColor(Vec3f const&point)const -> Vec3f {
+  Wood const*wood = selectedWood(point);
+  if (wood == nullptr)
     return selectMaterial(point)->getTransparentColor(point);
   float t = woodCellWeight(point, wood);
   return lerpVec3(wood->mat1->getTransparentColor(point),
                   wood->mat2->getTransparentColor(point), t);
 }
 
-float Checkerboard::getIndexOfRefraction(const Vec3f &point) const {
-  const Wood *wood = selectedWood(point);
-  if (wood == NULL)
+auto Checkerboard::getIndexOfRefraction(Vec3f const&point)const -> float {
+  Wood const*wood = selectedWood(point);
+  if (wood == nullptr)
     return selectMaterial(point)->getIndexOfRefraction(point);
   float t = woodCellWeight(point, wood);
   return lerpFloat(wood->mat1->getIndexOfRefraction(point),
                      wood->mat2->getIndexOfRefraction(point), t);
 }
 
-Vec3f Checkerboard::Shade(const Ray &ray, const Hit &hit,
-                          const Vec3f &dirToLight,
-                          const Vec3f &lightColor) const {
-  const Wood *wood = selectedWood(hit.getIntersectionPoint());
-  if (wood == NULL)
+auto Checkerboard::Shade(Ray const&ray, Hit const&hit,
+                          Vec3f const&dirToLight,
+                          Vec3f const&lightColor)const -> Vec3f {
+  Wood const*wood = selectedWood(hit.getIntersectionPoint());
+  if (wood == nullptr)
     return selectMaterial(hit.getIntersectionPoint())
         ->Shade(ray, hit, dirToLight, lightColor);
   float t = woodCellWeight(hit.getIntersectionPoint(), wood);
@@ -102,6 +102,6 @@ Vec3f Checkerboard::Shade(const Ray &ray, const Hit &hit,
   return lerpVec3(s1, s2, t);
 }
 
-void Checkerboard::glSetMaterial(void) const {
+auto Checkerboard::glSetMaterial(void)const -> void {
   mat1->glSetMaterial();
 }

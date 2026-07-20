@@ -1,95 +1,85 @@
-#ifndef _RENDERER_H_
-#define _RENDERER_H_
+#pragma once
 
 #include "scene.h"
 #include "shader_program.h"
 #include "ibl.h"
 #include "matrix.h"
 
-// PBR 渲染器：MSAA HDR FBO + 方向光阴影 + 屏幕空间折射 + ACES/sRGB + FXAA
-class Renderer {
-public:
+struct Renderer final {
   Renderer();
   ~Renderer();
 
-  bool initialize(int width, int height);
-  void resize(int width, int height);
-  void render(Scene &scene);
-  void destroy();
+  auto initialize(int width, int height) -> bool;
+  auto resize(int width, int height) -> void;
+  auto render(Scene& scene) -> void;
+  auto destroy() -> void;
 
-  void setLightDirection(const Vec3f &dir);
-  void setLightColor(const Vec3f &color);
-  void setAmbientColor(const Vec3f &color);
-  bool toggleFXAA();
-  float cycleSupersampling();
+  auto setLightDirection(Vec3f const& dir) -> void;
+  auto setLightColor(Vec3f const& color) -> void;
+  auto setAmbientColor(Vec3f const& color) -> void;
+  auto toggleFXAA() -> bool;
+  auto cycleSupersampling() -> float;
 
-private:
-  bool loadShaders();
-  void setupGLState();
-  bool createSceneTargets(int width, int height);
-  void destroySceneTargets();
-  bool createShadowMap();
-  void destroyShadowMap();
-  void updateRenderSize();
-  float currentRenderScale() const;
-  void computeLightMatrix(Scene &scene);
-  void renderShadowMap(const std::vector<Mesh *> &opaque);
-  void bindCommonPBRUniforms(Scene &scene);
-  void drawMeshes(Scene &scene, bool transparentPassOnly,
-                  const std::vector<Mesh *> *opaque,
-                  const std::vector<Mesh *> *transparent);
-  void drawSingleMesh(Mesh *mesh, bool transparentPass);
-  void resolveMsaaToSceneColor();
-  void captureSceneColorSample();
-  void blitTonemapToScreen();
+  ShaderProgram pbrShader{};
+  ShaderProgram skyboxShader{};
+  ShaderProgram tonemapShader{};
+  ShaderProgram shadowShader{};
+  IBL ibl{};
 
-  static bool isTransparentMesh(const Mesh *mesh);
-  static float meshSortKey(const Mesh *mesh, const Vec3f &camPos);
+  unsigned int msaaFBO{};
+  unsigned int msaaColorRbo{};
+  unsigned int msaaDepthRbo{};
+  int msaaSamples{};
 
-  ShaderProgram pbrShader;
-  ShaderProgram skyboxShader;
-  ShaderProgram tonemapShader;
-  ShaderProgram shadowShader;
-  IBL ibl;
+  unsigned int resolveFBO{};
+  unsigned int sceneColorTex{};
+  unsigned int sceneSampleTex{};
+  unsigned int sceneDepthRbo{};
 
-  // MSAA HDR 场景缓冲
-  unsigned int msaaFBO;
-  unsigned int msaaColorRbo;
-  unsigned int msaaDepthRbo;
-  int msaaSamples;
+  unsigned int shadowFBO{};
+  unsigned int shadowDepthTex{};
+  unsigned int shadowDepthRbo{};
+  int shadowMapSize{DEFAULT_SHADOW_MAP_SIZE};
+  Matrix lightViewProjection{};
+  bool shadowsEnabled{};
 
-  // 单采样 resolve 目标（tonemap / 折射源）
-  unsigned int resolveFBO;
-  unsigned int sceneColorTex;
-  unsigned int sceneSampleTex;
-  // 无 MSAA 时的单采样深度
-  unsigned int sceneDepthRbo;
+  unsigned int fullscreenVAO{};
 
-  // 方向光 shadow map（颜色纹理存深度 + depth RBO 测试）
-  unsigned int shadowFBO;
-  unsigned int shadowDepthTex;
-  unsigned int shadowDepthRbo;
-  int shadowMapSize;
-  Matrix lightViewProjection;
-  bool shadowsEnabled;
+  int viewportWidth{800};
+  int viewportHeight{600};
+  int renderWidth{1200};
+  int renderHeight{900};
+  int renderScaleMode{1};
+  bool fxaaEnabled{};
 
-  unsigned int fullscreenVAO;
+  Vec3f lightDirection{0.54f, -0.50f, -0.68f};
+  Vec3f lightColor{1.0f, 1.0f, 1.0f};
+  Vec3f ambientColor{0.03f, 0.03f, 0.035f};
 
-  int viewportWidth;
-  int viewportHeight;
-  int renderWidth;
-  int renderHeight;
-  int renderScaleMode;
-  bool fxaaEnabled;
+  static int const SCENE_SAMPLE_UNIT = 14;
+  static int const SHADOW_MAP_UNIT = 15;
+  static int const TARGET_MSAA_SAMPLES = 8;
+  static int const DEFAULT_SHADOW_MAP_SIZE = 2048;
 
-  Vec3f lightDirection;
-  Vec3f lightColor;
-  Vec3f ambientColor;
+  auto loadShaders() -> bool;
+  auto setupGLState() -> void;
+  auto createSceneTargets(int width, int height) -> bool;
+  auto destroySceneTargets() -> void;
+  auto createShadowMap() -> bool;
+  auto destroyShadowMap() -> void;
+  auto updateRenderSize() -> void;
+  auto currentRenderScale() const -> float;
+  auto computeLightMatrix(Scene& scene) -> void;
+  auto renderShadowMap(std::vector<Mesh*> const& opaque) -> void;
+  auto bindCommonPBRUniforms(Scene& scene) -> void;
+  auto drawMeshes(Scene& scene, bool transparentPassOnly,
+                  std::vector<Mesh*> const* opaque,
+                  std::vector<Mesh*> const* transparent) -> void;
+  auto drawSingleMesh(Mesh* mesh, bool transparentPass) -> void;
+  auto resolveMsaaToSceneColor() -> void;
+  auto captureSceneColorSample() -> void;
+  auto blitTonemapToScreen() -> void;
 
-  static const int SCENE_SAMPLE_UNIT = 14;
-  static const int SHADOW_MAP_UNIT = 15;
-  static const int TARGET_MSAA_SAMPLES = 8;
-  static const int DEFAULT_SHADOW_MAP_SIZE = 2048;
+  static auto isTransparentMesh(Mesh const* mesh) -> bool;
+  static auto meshSortKey(Mesh const* mesh, Vec3f const& camPos) -> float;
 };
-
-#endif

@@ -1,48 +1,31 @@
-#ifndef _MATERIAL_H_
-#define _MATERIAL_H_
+#pragma once
 
 #include "vectors.h"
 #include "ray.h"
 #include "hit.h"
 
-// 材质抽象基类
-class Material {
-
-public:
+struct Material {
   virtual ~Material() {}
 
-  virtual Vec3f getDiffuseColor() const = 0;
-  // 计算单光源下的局部着色
-  virtual Vec3f Shade(const Ray &ray, const Hit &hit,
-                      const Vec3f &dirToLight,
-                      const Vec3f &lightColor) const = 0;
-  // 设置材质参数
-  virtual void glSetMaterial(void) const = 0;
+  virtual auto getDiffuseColor() const -> Vec3f = 0;
+  virtual auto Shade(Ray const& ray, Hit const& hit, Vec3f const& dirToLight,
+                     Vec3f const& lightColor) const -> Vec3f = 0;
+  virtual auto glSetMaterial() const -> void = 0;
 };
 
-// Phong 材质
-class PhongMaterial : public Material {
-
-public:
-  PhongMaterial(const Vec3f &diffuseColor, const Vec3f &specularColor,
+struct PhongMaterial final : Material {
+  PhongMaterial(Vec3f const& diffuseColor, Vec3f const& specularColor,
                 float exponent);
 
-  virtual Vec3f getDiffuseColor() const { return diffuseColor; }
-  // 获取高光颜色
-  Vec3f getSpecularColor() const { return specularColor; }
-  // 获取高光指数
-  float getExponent() const { return exponent; }
+  auto getDiffuseColor() const -> Vec3f override { return diffuseColor; }
+  auto getSpecularColor() const -> Vec3f { return specularColor; }
+  auto getExponent() const -> float { return exponent; }
 
-  // 计算单光源下的局部着色
-  virtual Vec3f Shade(const Ray &ray, const Hit &hit,
-                      const Vec3f &dirToLight,
-                      const Vec3f &lightColor) const;
-  virtual void glSetMaterial(void) const;
+  auto Shade(Ray const& ray, Hit const& hit, Vec3f const& dirToLight,
+             Vec3f const& lightColor) const -> Vec3f override;
+  auto glSetMaterial() const -> void override;
 
-private:
-  Vec3f diffuseColor;   // 漫反射颜色 kd
-  Vec3f specularColor;  // 高光颜色 ks
-  float exponent;       // 高光指数 n
+  Vec3f diffuseColor{};
+  Vec3f specularColor{};
+  float exponent{};
 };
-
-#endif

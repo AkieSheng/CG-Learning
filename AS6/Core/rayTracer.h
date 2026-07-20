@@ -1,81 +1,73 @@
-#ifndef _RAY_TRACER_H_
-#define _RAY_TRACER_H_
+#pragma once
 
 #include "vectors.h"
 #include "ray.h"
 #include "hit.h"
 
-class SceneParser;
-class Material;
-class Grid;
-class Object3D;
+struct SceneParser;
+struct Material;
+struct Grid;
+struct Object3D;
 
-// 递归光线追踪器
-class RayTracer {
-
-public:
-  RayTracer(SceneParser *s, int max_bounces, float cutoff_weight,
+struct RayTracer final {
+  RayTracer(SceneParser* s, int max_bounces, float cutoff_weight,
             bool shadows, bool shade_back, bool transparent_shadows,
             int grid_nx, int grid_ny, int grid_nz, bool visualize_grid);
   ~RayTracer();
 
-  // 获取体素网格
-  Grid *getGrid() const { return grid; }
-  bool getVisualizeGrid() const { return visualizeGrid; }
+  auto getGrid() const -> Grid* { return grid; }
+  auto getVisualizeGrid() const -> bool { return visualizeGrid; }
 
-  // 沿射线计算 radiance
-  Vec3f traceRay(Ray &ray, float tmin, int bounces, float weight,
-                 float indexOfRefraction, Hit &hit) const;
+  auto traceRay(Ray& ray, float tmin, int bounces, float weight,
+                float indexOfRefraction, Hit& hit) const -> Vec3f;
 
 private:
-  SceneParser *parser;  // 场景解析器
-  Grid *grid;  // 均匀体素网格
-  bool visualizeGrid;   // 是否以网格占用替代场景渲染
-  int maxBounces;  // 最大反弹次数
-  float cutoffWeight;  // 截断权重
-  bool castShadows;  // 是否投射阴影
-  bool shadeBack;  // 是否背面着色
-  bool transparentShadows;  // 是否透明阴影
-  mutable int intersectionMarkCounter;  // grid marking 计数器
+  SceneParser* parser{};
+  Grid* grid{};
+  bool visualizeGrid{};
+  int maxBounces{};
+  float cutoffWeight{};
+  bool castShadows{};
+  bool shadeBack{};
+  bool transparentShadows{};
+  mutable int intersectionMarkCounter{};
 
-  static const float RAY_EPSILON;  // 射线偏移量
-  static const int MAX_IOR_DEPTH;  // 最大折射率深度
-  static const float SHADOW_ATTENUATION_SCALE;  // 阴影衰减因子
+  static float const RAY_EPSILON;
+  static int const MAX_IOR_DEPTH;
+  static float const SHADOW_ATTENUATION_SCALE;
 
-  Vec3f mirrorDirection(const Vec3f &normal, const Vec3f &incoming) const;  // 镜像方向
-  bool transmittedDirection(const Vec3f &normal, const Vec3f &incoming,
+  auto mirrorDirection(Vec3f const& normal, Vec3f const& incoming) const -> Vec3f;
+  auto transmittedDirection(Vec3f const& normal, Vec3f const& incoming,
                             float index_i, float index_t,
-                            Vec3f &transmitted) const;  // 折射方向
+                            Vec3f& transmitted) const -> bool;
 
-  Vec3f prepareNormal(const Ray &ray, const Hit &hit, bool &backFacing) const;  // 准备法线
-  Vec3f getShadowAttenuation(const Vec3f &point, const Vec3f &geomNormal,
-                             const Vec3f &lightDir,
-                             float distanceToLight) const;  // 阴影衰减
-  Vec3f computeLocalShading(const Ray &ray, const Hit &hit,
-                            const Vec3f &normal) const;  // 局部着色
+  auto prepareNormal(Ray const& ray, Hit const& hit, bool& backFacing) const -> Vec3f;
+  auto getShadowAttenuation(Vec3f const& point, Vec3f const& geomNormal,
+                            Vec3f const& lightDir,
+                            float distanceToLight) const -> Vec3f;
+  auto computeLocalShading(Ray const& ray, Hit const& hit,
+                           Vec3f const& normal) const -> Vec3f;
 
-  bool rayCast(const Ray &ray, Hit &hit, float tmin) const;  // 无加速求交
-  bool rayCastFast(const Ray &ray, Hit &hit, float tmin) const;  // 网格加速求交
-  bool rayCastShadow(const Ray &ray, float tmin, float tmax, float &t,
-                     Material **outMaterial) const;  // 阴影求交
+  auto rayCast(Ray const& ray, Hit& hit, float tmin) const -> bool;
+  auto rayCastFast(Ray const& ray, Hit& hit, float tmin) const -> bool;
+  auto rayCastShadow(Ray const& ray, float tmin, float tmax, float& t,
+                     Material** outMaterial) const -> bool;
 
-  bool castSceneIntersect(const Ray &ray, Hit &hit, float tmin) const;  // 场景求交
-  bool castSceneShadow(const Ray &ray, float tmin, float tmax, float &t,
-                       Material **outMaterial) const;  // 场景阴影求交
+  auto castSceneIntersect(Ray const& ray, Hit& hit, float tmin) const -> bool;
+  auto castSceneShadow(Ray const& ray, float tmin, float tmax, float& t,
+                       Material** outMaterial) const -> bool;
 
-  void beginIntersectionMarking() const;  // 射线求交标记
-  bool isMarked(const Object3D *obj) const;
-  void markObject(Object3D *obj) const; // 标记物体
+  auto beginIntersectionMarking() const -> void;
+  auto isMarked(Object3D const* obj) const -> bool;
+  auto markObject(Object3D* obj) const -> void;
 
-  Vec3f traceRayRecursive(Ray &ray, float tmin, int bounces, float weight,
-                          float indexOfRefraction, Hit &hit,
-                          const float *outsideIOR, int iorDepth) const;  // 递归光线追踪
+  auto traceRayRecursive(Ray& ray, float tmin, int bounces, float weight,
+                       float indexOfRefraction, Hit& hit,
+                       float const* outsideIOR, int iorDepth) const -> Vec3f;
 
-  static Vec3f componentMultiply(const Vec3f &a, const Vec3f &b);  // 颜色向量逐分量相乘
-  static bool hasPositive(const Vec3f &c);  // 是否为正向
-  static Vec3f transmittanceThrough(const Vec3f &transparentColor,
-                                    float distance);  // 半透明物体内的 Beer-Lambert 衰减
-  static bool isFullyBlocked(const Vec3f &attenuation);  // 阴影遮挡判定
+  static auto componentMultiply(Vec3f const& a, Vec3f const& b) -> Vec3f;
+  static auto hasPositive(Vec3f const& c) -> bool;
+  static auto transmittanceThrough(Vec3f const& transparentColor,
+                                   float distance) -> Vec3f;
+  static auto isFullyBlocked(Vec3f const& attenuation) -> bool;
 };
-
-#endif

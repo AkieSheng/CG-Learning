@@ -3,7 +3,7 @@
 
 #include <math.h>
 
-static const float MARCH_INF = 1.0e30f;  // 射线步进的最大距离
+static const float MARCH_INF = 1.0e30f;
 
 MarchingInfo::MarchingInfo()
     : tmin(0), t_exit(MARCH_INF), valid(false),
@@ -13,8 +13,6 @@ MarchingInfo::MarchingInfo()
       sign_x(0), sign_y(0), sign_z(0),
       normal(Vec3f(0, 0, 0)) {}
 
-
-// 选择最小的 t_next_*，前进到相邻体素并更新进入面的法线
 void MarchingInfo::nextCell() {
   RayTracingStats::IncrementNumGridCellsTraversed();
   if (t_next_x < t_next_y) {
@@ -74,6 +72,6 @@ void MarchingInfo::setDTz(float d) { d_tz = d; }
 void MarchingInfo::setSignX(int s) { sign_x = s; }
 void MarchingInfo::setSignY(int s) { sign_y = s; }
 void MarchingInfo::setSignZ(int s) { sign_z = s; }
-void MarchingInfo::setNormal(const Vec3f &n) { normal = n; }
+void MarchingInfo::setNormal(Vec3f const&n) { normal = n; }
 void MarchingInfo::setTExit(float t) { t_exit = t; }
 void MarchingInfo::setValid(bool v) { valid = v; }

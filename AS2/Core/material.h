@@ -1,19 +1,12 @@
-#ifndef _MATERIAL_H_
-#define _MATERIAL_H_
+#pragma once
 
 #include "vectors.h"
 
-// 材质
-class Material {
-
-public:
-  Material(const Vec3f &d_color) { diffuseColor = d_color; }
+struct Material {
+  Material(Vec3f const& d_color) { diffuseColor = d_color; }
   virtual ~Material() {}
 
-  virtual Vec3f getDiffuseColor() const { return diffuseColor; }
+  virtual auto getDiffuseColor() const -> Vec3f { return diffuseColor; }
 
-protected:
-  Vec3f diffuseColor;  // 漫反射颜色
+  Vec3f diffuseColor{};
 };
-
-#endif

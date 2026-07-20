@@ -1,40 +1,32 @@
-#ifndef _CHECKERBOARD_H_
-#define _CHECKERBOARD_H_
+#pragma once
 
 #include "material.h"
 
-class Matrix;
-class Wood;
+struct Matrix;
+struct Wood;
 
-// 3D 棋盘格程序化材质
-// 储存两个材质的指针，以及指向映射矩阵的指针
-class Checkerboard : public Material {
+struct Checkerboard final : Material {
+  Checkerboard(Matrix* m, Material* mat1, Material* mat2);
+  ~Checkerboard() override;
 
-public:
-  Checkerboard(Matrix *m, Material *mat1, Material *mat2);
-  virtual ~Checkerboard();
+  auto getDiffuseColor(Vec3f const& point) const -> Vec3f override;
+  auto getSpecularColor(Vec3f const& point) const -> Vec3f override;
+  auto getExponent(Vec3f const& point) const -> float override;
+  auto getReflectiveColor(Vec3f const& point) const -> Vec3f override;
+  auto getTransparentColor(Vec3f const& point) const -> Vec3f override;
+  auto getIndexOfRefraction(Vec3f const& point) const -> float override;
 
-  virtual Vec3f getDiffuseColor(const Vec3f &point) const;
-  virtual Vec3f getSpecularColor(const Vec3f &point) const;
-  virtual float getExponent(const Vec3f &point) const;
-  virtual Vec3f getReflectiveColor(const Vec3f &point) const;
-  virtual Vec3f getTransparentColor(const Vec3f &point) const;
-  virtual float getIndexOfRefraction(const Vec3f &point) const;
-
-  virtual Vec3f Shade(const Ray &ray, const Hit &hit,
-                      const Vec3f &dirToLight,
-                      const Vec3f &lightColor) const; // 着色函数，委托到对应子材质
+  auto Shade(Ray const& ray, Hit const& hit, Vec3f const& dirToLight,
+             Vec3f const& lightColor) const -> Vec3f override;
 
 private:
-  Material *selectMaterial(const Vec3f &worldPoint) const;
-  const Wood *selectedWood(const Vec3f &worldPoint) const;
-  float woodCellWeight(const Vec3f &worldPoint, const Wood *wood) const;
+  auto selectMaterial(Vec3f const& worldPoint) const -> Material*;
+  auto selectedWood(Vec3f const& worldPoint) const -> Wood const*;
+  auto woodCellWeight(Vec3f const& worldPoint, Wood const* wood) const -> float;
 
-  static const float FLOOR_WOOD_FREQ_BOOST;  // 地板木纹频率系数
+  static float const FLOOR_WOOD_FREQ_BOOST;
 
-  Matrix *mapping;  // 映射矩阵
-  Material *mat1;  // 材质1
-  Material *mat2;  // 材质2
+  Matrix* mapping{};
+  Material* mat1{};
+  Material* mat2{};
 };
-
-#endif

@@ -1,61 +1,42 @@
-#ifndef _PARSER_H_
-#define _PARSER_H_
+#pragma once
 
-#include <assert.h>
-#include <stdio.h>
+#include <cassert>
+#include <cstdio>
+
 #include "vectors.h"
 
 #define MAX_PARSER_TOKEN_LENGTH 100
 
-class System;
-class Generator;
-class Integrator;
-class ForceField;
+struct System;
+struct Generator;
+struct Integrator;
+struct ForceField;
 
-// ====================================================================
-// ====================================================================
-
-// parse the particle system file
-
-class Parser {
-
-public:
-
-  // CONSTRUCTOR & DESTRUCTOR
-  Parser(const char *file);
+struct Parser final {
+  Parser(char const* file);
   ~Parser();
 
-  // ACCESSORS
-  int getNumSystems() { return num_systems; }
-  System* getSystem(int i) {
-    assert (i >= 0 && i < num_systems);
-    return systems[i]; }
+  auto getNumSystems() -> int { return num_systems; }
+  auto getSystem(int i) -> System* {
+    assert(i >= 0 && i < num_systems);
+    return systems[i];
+  }
 
 private:
-  // don't use this constructor
-  Parser() { assert(0); } 
+  Parser() { assert(0); }
 
-  // HELPER FUNCTIONS
-  System* ParseSystem();
-  Generator* ParseGenerator();
-  Integrator* ParseIntegrator();
-  ForceField* ParseForceField();
+  auto ParseSystem() -> System*;
+  auto ParseGenerator() -> Generator*;
+  auto ParseIntegrator() -> Integrator*;
+  auto ParseForceField() -> ForceField*;
 
-  // UTILITY FUNCTIONS
-  int getToken(char token[MAX_PARSER_TOKEN_LENGTH]);
-  Vec3f readVec3f();
-  Vec2f readVec2f();
-  float readFloat();
-  int readInt();
+  auto getToken(char token[MAX_PARSER_TOKEN_LENGTH]) -> int;
+  auto readVec3f() -> Vec3f;
+  auto readVec2f() -> Vec2f;
+  auto readFloat() -> float;
+  auto readInt() -> int;
 
-  // REPRESENTATION
-  int num_systems;
-  System **systems;
-  FILE *file;
+  int num_systems{};
+  System** systems{};
+  FILE* file{};
 };
-
-// ====================================================================
-// ====================================================================
-
-
-#endif

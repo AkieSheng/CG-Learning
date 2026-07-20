@@ -1,90 +1,73 @@
-#ifndef _SceneParser_H_
-#define _SceneParser_H_
+#pragma once
 
 #include "vectors.h"
-#include <assert.h>
+#include <cassert>
+#include <cstdio>
 
-class Camera;
-class Light;
-class Material;
-class Object3D;
-class Group;
-class Sphere;
-class Plane;
-class Triangle;
-class Transform;
+struct Camera;
+struct Light;
+struct Material;
+struct Object3D;
+struct Group;
+struct Sphere;
+struct Plane;
+struct Triangle;
+struct Transform;
 
-#define MAX_PARSER_TOKEN_LENGTH 100
+constexpr auto MAX_PARSER_TOKEN_LENGTH = 100;
 
-// ====================================================================
-// ====================================================================
-
-class SceneParser {
-
-public:
-
-  // CONSTRUCTOR & DESTRUCTOR
-  SceneParser(const char *filename);
+struct SceneParser final {
+  SceneParser(char const* filename);
   ~SceneParser();
 
-  // ACCESSORS
-  Camera* getCamera() const { return camera; }
-  Vec3f getBackgroundColor() const { return background_color; }
-  Vec3f getAmbientLight() const { return ambient_light; }
-  int getNumLights() const { return num_lights; }
-  Light* getLight(int i) const { 
-    assert(i >= 0 && i < num_lights); 
-    return lights[i]; }  
-  int getNumMaterials() const { return num_materials; }
-  Material* getMaterial(int i) const { 
-    assert(i >= 0 && i < num_materials); 
-    return materials[i]; }  
-  Group* getGroup() const { return group; }
+  auto getCamera() const -> Camera* { return camera; }
+  auto getBackgroundColor() const -> Vec3f { return background_color; }
+  auto getAmbientLight() const -> Vec3f { return ambient_light; }
+  auto getNumLights() const -> int { return num_lights; }
+  auto getLight(int i) const -> Light* {
+    assert(i >= 0 && i < num_lights);
+    return lights[i];
+  }
+  auto getNumMaterials() const -> int { return num_materials; }
+  auto getMaterial(int i) const -> Material* {
+    assert(i >= 0 && i < num_materials);
+    return materials[i];
+  }
+  auto getGroup() const -> Group* { return group; }
 
-private:
+  SceneParser() { assert(0); }
 
-  SceneParser() { assert(0); } // don't use
+  auto parseFile() -> void;
+  auto parseOrthographicCamera() -> void;
+  auto parsePerspectiveCamera() -> void;
+  auto parseBackground() -> void;
+  auto parseLights() -> void;
+  auto parseDirectionalLight() -> Light*;
+  auto parseMaterials() -> void;
+  auto parseMaterial() -> Material*;
 
-  // PARSING
-  void parseFile();
-  void parseOrthographicCamera();
-  void parsePerspectiveCamera();
-  void parseBackground();
-  void parseLights();
-  Light* parseDirectionalLight();
-  void parseMaterials();
-  Material* parseMaterial();
+  auto parseObject(char token[MAX_PARSER_TOKEN_LENGTH]) -> Object3D*;
+  auto parseGroup() -> Group*;
+  auto parseSphere() -> Sphere*;
+  auto parsePlane() -> Plane*;
+  auto parseTriangle() -> Triangle*;
+  auto parseTriangleMesh() -> Group*;
+  auto parseTransform() -> Transform*;
 
-  Object3D* parseObject(char token[MAX_PARSER_TOKEN_LENGTH]);
-  Group* parseGroup();
-  Sphere* parseSphere();
-  Plane* parsePlane();
-  Triangle* parseTriangle();
-  Group* parseTriangleMesh();
-  Transform* parseTransform();
+  auto getToken(char token[MAX_PARSER_TOKEN_LENGTH]) -> int;
+  auto readVec3f() -> Vec3f;
+  auto readVec2f() -> Vec2f;
+  auto readFloat() -> float;
+  auto readInt() -> int;
 
-  // HELPER FUNCTIONS
-  int getToken(char token[MAX_PARSER_TOKEN_LENGTH]);
-  Vec3f readVec3f();
-  Vec2f readVec2f();
-  float readFloat();
-  int readInt();
-
-  // ==============
-  // REPRESENTATION
-  FILE *file;
-  Camera *camera;
-  Vec3f background_color;
-  Vec3f ambient_light;
-  int num_lights;
-  Light **lights;
-  int num_materials;
-  Material **materials;
-  Material *current_material;
-  Group *group;
+  FILE* file{};
+  Camera* camera{};
+  Vec3f background_color{};
+  Vec3f ambient_light{};
+  int num_lights{};
+  Light** lights{};
+  int num_materials{};
+  Material** materials{};
+  Material* current_material{};
+  Group* group{};
 };
-
-// ====================================================================
-// ====================================================================
-
-#endif

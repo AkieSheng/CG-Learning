@@ -1,21 +1,14 @@
-#ifndef _SURFACE_H_
-#define _SURFACE_H_
+#pragma once
 
 #include "spline.h"
 
-class Curve;
+struct Curve;
 
-// 曲面基层
-class Surface : public Spline {
-
-public:
+struct Surface : Spline {
   Surface() {}
-  virtual ~Surface() {}
+  ~Surface() override {}
 
-  // 编辑控制点
-  void moveControlPoint(int selectedPoint, float x, float y) {}
-  void addControlPoint(int selectedPoint, float x, float y) {}
-  void deleteControlPoint(int selectedPoint) {}
+  auto moveControlPoint(int selectedPoint, float x, float y) -> void override {}
+  auto addControlPoint(int selectedPoint, float x, float y) -> void override {}
+  auto deleteControlPoint(int selectedPoint) -> void override {}
 };
-
-#endif

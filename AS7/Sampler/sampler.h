@@ -1,26 +1,18 @@
-#ifndef _SAMPLER_H_
-#define _SAMPLER_H_
+#pragma once
 
-#include <assert.h>
+#include <cassert>
 #include "vectors.h"
 
-// 像素内超采样策略抽象基类
-class Sampler {
-
-public:
+struct Sampler {
   Sampler(int num_samples) : numSamples(num_samples) {
     assert(numSamples > 0);
   }
   virtual ~Sampler() {}
 
-  // 获取每像素样本数
-  int getNumSamples() const { return numSamples; }
+  auto getNumSamples() const -> int { return numSamples; }
 
-  // 获取第 n 个样本在像素内的 2D 偏移
-  virtual Vec2f getSamplePosition(int n) = 0;
+  virtual auto getSamplePosition(int n) -> Vec2f = 0;
 
 protected:
-  int numSamples;  // 每像素样本数
+  int numSamples{};
 };
-
-#endif

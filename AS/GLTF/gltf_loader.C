@@ -9,13 +9,13 @@
 #include <vector>
 #include <string>
 
-static std::string getDirectory(const std::string &path) {
+static std::string getDirectory(std::string const& path) {
   size_t pos = path.find_last_of("/\\");
   if (pos == std::string::npos) return "";
   return path.substr(0, pos + 1);
 }
 
-static Matrix matrixFromGltfColumnMajor(const std::vector<double> &m) {
+static Matrix matrixFromGltfColumnMajor(std::vector<double> const& m) {
   Matrix mat;
   if (m.size() < 16) {
     mat.SetToIdentity();
@@ -29,9 +29,9 @@ static Matrix matrixFromGltfColumnMajor(const std::vector<double> &m) {
   return mat;
 }
 
-static Matrix matrixFromTRS(const std::vector<double> &t,
-                            const std::vector<double> &r,
-                            const std::vector<double> &s) {
+static Matrix matrixFromTRS(std::vector<double> const& t,
+                            std::vector<double> const& r,
+                            std::vector<double> const& s) {
   float tx = t.size() > 0 ? (float)t[0] : 0.0f;
   float ty = t.size() > 1 ? (float)t[1] : 0.0f;
   float tz = t.size() > 2 ? (float)t[2] : 0.0f;
@@ -43,7 +43,6 @@ static Matrix matrixFromTRS(const std::vector<double> &t,
   float qz = r.size() > 2 ? (float)r[2] : 0.0f;
   float qw = r.size() > 3 ? (float)r[3] : 1.0f;
 
-  // glTF 四元数 → 矩阵（列向量）；Set(col, row) 写入 data[row][col]
   Matrix rot;
   rot.SetToIdentity();
   float x2 = qx + qx, y2 = qy + qy, z2 = qz + qz;
@@ -65,28 +64,30 @@ static Matrix matrixFromTRS(const std::vector<double> &t,
   return trans * rot * scale;
 }
 
-static const unsigned char *getAccessorPtr(const tinygltf::Model &model,
+static unsigned char const* getAccessorPtr(const tinygltf::Model &model,
                                            const tinygltf::Accessor &acc) {
-  if (acc.bufferView < 0 || acc.bufferView >= (int)model.bufferViews.size())
-    return NULL;
+  if (acc.bufferView < 0 || acc.bufferView >= static_cast<int>(model.bufferViews.size()))
+    return nullptr;
   const tinygltf::BufferView &bv = model.bufferViews[acc.bufferView];
-  if (bv.buffer < 0 || bv.buffer >= (int)model.buffers.size()) return NULL;
+  if (bv.buffer < 0 || bv.buffer >= static_cast<int>(model.buffers.size())) return nullptr;
   const tinygltf::Buffer &buf = model.buffers[bv.buffer];
   return buf.data.data() + bv.byteOffset + acc.byteOffset;
 }
 
 static bool readFloatAttribute(const tinygltf::Model &model, int accessorIndex,
                                int type, int components,
-                               std::vector<float> &out) {
+                               std::vector<float>& out) {
   out.clear();
-  if (accessorIndex < 0 || accessorIndex >= (int)model.accessors.size())
+  if (accessorIndex < 0 ||
+      accessorIndex >= static_cast<int>(model.accessors.size())) {
     return false;
+  }
 
   const tinygltf::Accessor &acc = model.accessors[accessorIndex];
   if (acc.type != type) return false;
   if (acc.componentType != TINYGLTF_COMPONENT_TYPE_FLOAT) return false;
 
-  const unsigned char *base = getAccessorPtr(model, acc);
+  unsigned char const* base = getAccessorPtr(model, acc);
   if (!base) return false;
 
   int stride = acc.ByteStride(model.bufferViews[acc.bufferView]);
@@ -94,7 +95,7 @@ static bool readFloatAttribute(const tinygltf::Model &model, int accessorIndex,
 
   out.resize(acc.count * (size_t)components);
   for (size_t i = 0; i < acc.count; i++) {
-    const float *ptr = (const float *)(base + (size_t)i * (size_t)stride);
+    float const* ptr = (float const*)(base + (size_t)i * (size_t)stride);
     for (int c = 0; c < components; c++)
       out[i * (size_t)components + c] = ptr[c];
   }
@@ -102,13 +103,15 @@ static bool readFloatAttribute(const tinygltf::Model &model, int accessorIndex,
 }
 
 static bool readIndices(const tinygltf::Model &model, int accessorIndex,
-                        std::vector<unsigned int> &out) {
+                        std::vector<unsigned int>& out) {
   out.clear();
-  if (accessorIndex < 0 || accessorIndex >= (int)model.accessors.size())
+  if (accessorIndex < 0 ||
+      accessorIndex >= static_cast<int>(model.accessors.size())) {
     return false;
+  }
 
   const tinygltf::Accessor &acc = model.accessors[accessorIndex];
-  const unsigned char *base = getAccessorPtr(model, acc);
+  unsigned char const* base = getAccessorPtr(model, acc);
   if (!base) return false;
 
   int stride = acc.ByteStride(model.bufferViews[acc.bufferView]);
@@ -121,11 +124,11 @@ static bool readIndices(const tinygltf::Model &model, int accessorIndex,
 
   out.resize(acc.count);
   for (size_t i = 0; i < acc.count; i++) {
-    const unsigned char *p = base + i * (size_t)stride;
+    unsigned char const* p = base + i * (size_t)stride;
     if (acc.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT) {
-      out[i] = *(const unsigned int *)p;
+      out[i] = *reinterpret_cast<unsigned int const*>(p);
     } else if (acc.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
-      out[i] = *(const unsigned short *)p;
+      out[i] = *reinterpret_cast<unsigned short const*>(p);
     } else if (acc.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE) {
       out[i] = p[0];
     } else {
@@ -136,32 +139,32 @@ static bool readIndices(const tinygltf::Model &model, int accessorIndex,
 }
 
 static Texture *loadTextureFromModel(const tinygltf::Model &model,
-                                     const std::string &basePath,
+                                     std::string const& basePath,
                                      int textureIndex, bool srgb) {
-  if (textureIndex < 0 || textureIndex >= (int)model.textures.size()) return NULL;
+  if (textureIndex < 0 || textureIndex >= static_cast<int>(model.textures.size())) return nullptr;
   int imageIndex = model.textures[textureIndex].source;
-  if (imageIndex < 0 || imageIndex >= (int)model.images.size()) return NULL;
+  if (imageIndex < 0 || imageIndex >= static_cast<int>(model.images.size())) return nullptr;
 
-  const std::string &uri = model.images[imageIndex].uri;
-  if (uri.empty()) return NULL;
+  std::string const& uri = model.images[imageIndex].uri;
+  if (uri.empty()) return nullptr;
 
   std::string path = basePath + uri;
   Texture *tex = new Texture();
   if (!tex->loadFromFile(path, srgb)) {
-    fprintf(stderr, "GltfLoader: failed to load texture %s\n", path.c_str());
+    std::fprintf(stderr, "GltfLoader: failed to load texture %s\n", path.c_str());
     delete tex;
-    return NULL;
+    return nullptr;
   }
   return tex;
 }
 
 static bool resolveTexturePath(const tinygltf::Model &model,
-                               const std::string &basePath,
+                               std::string const& basePath,
                                int textureIndex, std::string &outPath) {
-  if (textureIndex < 0 || textureIndex >= (int)model.textures.size()) return false;
+  if (textureIndex < 0 || textureIndex >= static_cast<int>(model.textures.size())) return false;
   int imageIndex = model.textures[textureIndex].source;
-  if (imageIndex < 0 || imageIndex >= (int)model.images.size()) return false;
-  const std::string &uri = model.images[imageIndex].uri;
+  if (imageIndex < 0 || imageIndex >= static_cast<int>(model.images.size())) return false;
+  std::string const& uri = model.images[imageIndex].uri;
   if (uri.empty()) return false;
   outPath = basePath + uri;
   return true;
@@ -172,15 +175,15 @@ static float clamp01(float v) {
 }
 
 static float srgbToLinear(float c) {
-  return (c <= 0.04045f) ? (c / 12.92f) : powf((c + 0.055f) / 1.055f, 2.4f);
+  return (c <= 0.04045f) ? (c / 12.92f) : std::pow((c + 0.055f) / 1.055f, 2.4f);
 }
 
 static float linearToSrgb(float c) {
   c = std::max(0.0f, c);
-  return (c <= 0.0031308f) ? (c * 12.92f) : (1.055f * powf(c, 1.0f / 2.4f) - 0.055f);
+  return (c <= 0.0031308f) ? (c * 12.92f) : (1.055f * std::pow(c, 1.0f / 2.4f) - 0.055f);
 }
 
-static const float *srgbToLinearLut() {
+static float const* srgbToLinearLut() {
   static float lut[256];
   static bool ready = false;
   if (!ready) {
@@ -206,10 +209,9 @@ static unsigned char linearToSrgbByte(float c) {
 }
 
 static float perceivedBrightness(float r, float g, float b) {
-  return sqrtf(0.299f * r * r + 0.587f * g * g + 0.114f * b * b);
+  return std::sqrt(0.299f * r * r + 0.587f * g * g + 0.114f * b * b);
 }
 
-// Khronos / glTF Toolkit：Specular-Glossiness → Metallic-Roughness（线性空间）
 static void convertSpecGlossPixel(float diffuseR, float diffuseG, float diffuseB, float diffuseA,
                                   float specularR, float specularG, float specularB,
                                   float glossiness,
@@ -230,7 +232,7 @@ static void convertSpecGlossPixel(float diffuseR, float diffuseG, float diffuseB
               + specularBrightness - 2.0f * dielectricSpecular;
     float c = dielectricSpecular - specularBrightness;
     float D = std::max(b * b - 4.0f * a * c, 0.0f);
-    metallic = clamp01((-b + sqrtf(D)) / (2.0f * a));
+    metallic = clamp01((-b + std::sqrt(D)) / (2.0f * a));
   }
 
   float invOneMinusMetal = 1.0f / std::max(1.0f - metallic, epsilon);
@@ -254,7 +256,7 @@ static void convertSpecGlossPixel(float diffuseR, float diffuseG, float diffuseB
   outRoughness = clamp01(1.0f - glossiness);
 }
 
-static void sampleRGBANearestBytes(const std::vector<unsigned char> &rgba, int w, int h,
+static void sampleRGBANearestBytes(std::vector<unsigned char> &rgba, int w, int h,
                                    int x, int y, unsigned char out[4]) {
   x = std::max(0, std::min(w - 1, x));
   y = std::max(0, std::min(h - 1, y));
@@ -265,10 +267,9 @@ static void sampleRGBANearestBytes(const std::vector<unsigned char> &rgba, int w
   out[3] = rgba[i + 3];
 }
 
-// 将 KHR_materials_pbrSpecularGlossiness 烘焙为 Metallic-Roughness 因子/贴图
 static bool applySpecularGlossinessConversion(const tinygltf::Material &gm,
                                               const tinygltf::Model &model,
-                                              const std::string &basePath,
+                                              std::string const& basePath,
                                               PBRMaterial *mat) {
   tinygltf::ExtensionMap::const_iterator it =
       gm.extensions.find("KHR_materials_pbrSpecularGlossiness");
@@ -284,16 +285,16 @@ static bool applySpecularGlossinessConversion(const tinygltf::Material &gm,
 
   if (ext.Has("diffuseFactor") && ext.Get("diffuseFactor").IsArray()) {
     const tinygltf::Value &arr = ext.Get("diffuseFactor");
-    for (int i = 0; i < 4 && i < (int)arr.ArrayLen(); i++)
-      diffuseFactor[i] = (float)arr.Get(i).GetNumberAsDouble();
+    for (int i = 0; i < 4 && i < static_cast<int>(arr.ArrayLen()); i++)
+      diffuseFactor[i] = static_cast<float>(arr.Get(i).GetNumberAsDouble());
   }
   if (ext.Has("specularFactor") && ext.Get("specularFactor").IsArray()) {
     const tinygltf::Value &arr = ext.Get("specularFactor");
-    for (int i = 0; i < 3 && i < (int)arr.ArrayLen(); i++)
-      specularFactor[i] = (float)arr.Get(i).GetNumberAsDouble();
+    for (int i = 0; i < 3 && i < static_cast<int>(arr.ArrayLen()); i++)
+      specularFactor[i] = static_cast<float>(arr.Get(i).GetNumberAsDouble());
   }
   if (ext.Has("glossinessFactor"))
-    glossinessFactor = (float)ext.Get("glossinessFactor").GetNumberAsDouble();
+    glossinessFactor = static_cast<float>(ext.Get("glossinessFactor").GetNumberAsDouble());
   if (ext.Has("diffuseTexture") && ext.Get("diffuseTexture").Has("index"))
     diffuseTexIndex = ext.Get("diffuseTexture").Get("index").GetNumberAsInt();
   if (ext.Has("specularGlossinessTexture") &&
@@ -311,7 +312,7 @@ static bool applySpecularGlossinessConversion(const tinygltf::Material &gm,
         Texture::loadPixelsRGBA(path, diffusePixels, diffW, diffH))
       hasDiffTex = true;
     else
-      fprintf(stderr, "GltfLoader: SpecGloss diffuse texture failed\n");
+      std::fprintf(stderr, "GltfLoader: SpecGloss diffuse texture failed\n");
   }
   if (specGlossTexIndex >= 0) {
     std::string path;
@@ -319,17 +320,16 @@ static bool applySpecularGlossinessConversion(const tinygltf::Material &gm,
         Texture::loadPixelsRGBA(path, specGlossPixels, sgW, sgH))
       hasSgTex = true;
     else
-      fprintf(stderr, "GltfLoader: SpecGloss specularGlossiness texture failed\n");
+      std::fprintf(stderr, "GltfLoader: SpecGloss specularGlossiness texture failed\n");
   }
 
   delete mat->baseColorTexture;
   delete mat->metallicRoughnessTexture;
-  mat->baseColorTexture = NULL;
-  mat->metallicRoughnessTexture = NULL;
+  mat->baseColorTexture = nullptr;
+  mat->metallicRoughnessTexture = nullptr;
 
   if (!hasDiffTex && !hasSgTex) {
     float baseR, baseG, baseB, baseA, metallic, roughness;
-    // diffuseFactor / specularFactor 已是线性值
     convertSpecGlossPixel(
         diffuseFactor[0], diffuseFactor[1], diffuseFactor[2], diffuseFactor[3],
         specularFactor[0], specularFactor[1], specularFactor[2], glossinessFactor,
@@ -340,7 +340,7 @@ static bool applySpecularGlossinessConversion(const tinygltf::Material &gm,
     mat->baseColorFactor[3] = baseA;
     mat->metallicFactor = metallic;
     mat->roughnessFactor = roughness;
-    fprintf(stderr, "GltfLoader: converted SpecGloss→MR (factors only) for '%s'\n",
+    std::fprintf(stderr, "GltfLoader: converted SpecGloss→MR (factors only) for '%s'\n",
            mat->name.c_str());
     return true;
   }
@@ -350,10 +350,9 @@ static bool applySpecularGlossinessConversion(const tinygltf::Material &gm,
   std::vector<unsigned char> baseColorOut((size_t)outW * (size_t)outH * 4);
   std::vector<unsigned char> mrOut((size_t)outW * (size_t)outH * 4);
 
-  const float *toLinear = srgbToLinearLut();
+  float const* toLinear = srgbToLinearLut();
   for (int y = 0; y < outH; y++) {
     for (int x = 0; x < outW; x++) {
-      // 因子为线性；贴图 RGB 为 sRGB，A/glossiness 为线性
       float diffLin[4] = {
           diffuseFactor[0], diffuseFactor[1], diffuseFactor[2], diffuseFactor[3]};
       float specLin[3] = {
@@ -407,14 +406,14 @@ static bool applySpecularGlossinessConversion(const tinygltf::Material &gm,
   mat->metallicFactor = 1.0f;
   mat->roughnessFactor = 1.0f;
 
-  fprintf(stderr, "GltfLoader: converted SpecGloss→MR (%dx%d) for '%s'\n",
+  std::fprintf(stderr, "GltfLoader: converted SpecGloss→MR (%dx%d) for '%s'\n",
          outW, outH, mat->name.c_str());
   return true;
 }
 
 static void parseMaterialExtensions(const tinygltf::Material &gm,
                                     const tinygltf::Model &model,
-                                    const std::string &basePath,
+                                    std::string const& basePath,
                                     PBRMaterial *mat) {
   tinygltf::ExtensionMap::const_iterator it;
 
@@ -424,7 +423,7 @@ static void parseMaterialExtensions(const tinygltf::Material &gm,
     mat->hasTransmission = true;
     mat->ior = 1.5f;
     if (ext.Has("transmissionFactor"))
-      mat->transmissionFactor = (float)ext.Get("transmissionFactor").GetNumberAsDouble();
+      mat->transmissionFactor = static_cast<float>(ext.Get("transmissionFactor").GetNumberAsDouble());
     if (ext.Has("transmissionTexture")) {
       const tinygltf::Value &tex = ext.Get("transmissionTexture");
       if (tex.Has("index"))
@@ -437,7 +436,7 @@ static void parseMaterialExtensions(const tinygltf::Material &gm,
   if (it != gm.extensions.end()) {
     const tinygltf::Value &ext = it->second;
     if (ext.Has("ior")) {
-      mat->ior = (float)ext.Get("ior").GetNumberAsDouble();
+      mat->ior = static_cast<float>(ext.Get("ior").GetNumberAsDouble());
       mat->hasIor = true;
     }
   }
@@ -447,15 +446,15 @@ static void parseMaterialExtensions(const tinygltf::Material &gm,
     const tinygltf::Value &ext = it->second;
     mat->hasVolume = true;
     if (ext.Has("thicknessFactor"))
-      mat->volumeThickness = (float)ext.Get("thicknessFactor").GetNumberAsDouble();
+      mat->volumeThickness = static_cast<float>(ext.Get("thicknessFactor").GetNumberAsDouble());
     if (ext.Has("attenuationDistance"))
-      mat->volumeAttenuationDistance = (float)ext.Get("attenuationDistance").GetNumberAsDouble();
+      mat->volumeAttenuationDistance = static_cast<float>(ext.Get("attenuationDistance").GetNumberAsDouble());
     if (ext.Has("attenuationColor")) {
       const tinygltf::Value &c = ext.Get("attenuationColor");
       if (c.IsArray() && c.ArrayLen() >= 3) {
-        mat->volumeAttenuationColor[0] = (float)c.Get(0).GetNumberAsDouble();
-        mat->volumeAttenuationColor[1] = (float)c.Get(1).GetNumberAsDouble();
-        mat->volumeAttenuationColor[2] = (float)c.Get(2).GetNumberAsDouble();
+        mat->volumeAttenuationColor[0] = static_cast<float>(c.Get(0).GetNumberAsDouble());
+        mat->volumeAttenuationColor[1] = static_cast<float>(c.Get(1).GetNumberAsDouble());
+        mat->volumeAttenuationColor[2] = static_cast<float>(c.Get(2).GetNumberAsDouble());
       }
     }
   }
@@ -468,9 +467,9 @@ static void parseMaterialExtensions(const tinygltf::Material &gm,
     const tinygltf::Value &ext = it->second;
     mat->hasClearcoat = true;
     if (ext.Has("clearcoatFactor"))
-      mat->clearcoatFactor = (float)ext.Get("clearcoatFactor").GetNumberAsDouble();
+      mat->clearcoatFactor = static_cast<float>(ext.Get("clearcoatFactor").GetNumberAsDouble());
     if (ext.Has("clearcoatRoughnessFactor"))
-      mat->clearcoatRoughnessFactor = (float)ext.Get("clearcoatRoughnessFactor").GetNumberAsDouble();
+      mat->clearcoatRoughnessFactor = static_cast<float>(ext.Get("clearcoatRoughnessFactor").GetNumberAsDouble());
     if (ext.Has("clearcoatTexture")) {
       const tinygltf::Value &tex = ext.Get("clearcoatTexture");
       if (tex.Has("index"))
@@ -489,19 +488,19 @@ static void parseMaterialExtensions(const tinygltf::Material &gm,
         mat->clearcoatNormalTexture = loadTextureFromModel(model, basePath,
           tex.Get("index").GetNumberAsInt(), false);
       if (tex.Has("scale"))
-        mat->clearcoatNormalScale = (float)tex.Get("scale").GetNumberAsDouble();
+        mat->clearcoatNormalScale = static_cast<float>(tex.Get("scale").GetNumberAsDouble());
     }
   }
 }
 
 GltfLoader::GltfLoader()
-  : model(NULL), loader(NULL), boundsValid(false) {}
+  : model(nullptr), loader(nullptr), boundsValid(false) {}
 
 GltfLoader::~GltfLoader() {
   destroy();
 }
 
-bool GltfLoader::load(const std::string &gltfPath) {
+bool GltfLoader::load(std::string const& gltfPath) {
   destroy();
 
   model = new tinygltf::Model();
@@ -511,9 +510,9 @@ bool GltfLoader::load(const std::string &gltfPath) {
   std::string err, warn;
 
   bool ok = loader->LoadASCIIFromFile(model, &err, &warn, gltfPath);
-  if (!warn.empty()) fprintf(stderr, "GltfLoader warn: %s\n", warn.c_str());
+  if (!warn.empty()) std::fprintf(stderr, "GltfLoader warn: %s\n", warn.c_str());
   if (!ok) {
-    fprintf(stderr, "GltfLoader error: %s\n", err.c_str());
+    std::fprintf(stderr, "GltfLoader error: %s\n", err.c_str());
     destroy();
     return false;
   }
@@ -534,7 +533,7 @@ bool GltfLoader::load(const std::string &gltfPath) {
     for (size_t i = 0; i < model->nodes.size(); i++) {
       bool isChild = false;
       for (size_t j = 0; j < model->nodes.size() && !isChild; j++) {
-        const std::vector<int> &ch = model->nodes[j].children;
+        std::vector<int> &ch = model->nodes[j].children;
         for (size_t k = 0; k < ch.size(); k++) {
           if (ch[k] == (int)i) { isChild = true; break; }
         }
@@ -544,28 +543,27 @@ bool GltfLoader::load(const std::string &gltfPath) {
   }
 
   if (meshes.empty()) {
-    fprintf(stderr, "GltfLoader: no meshes found in %s\n", gltfPath.c_str());
+    std::fprintf(stderr, "GltfLoader: no meshes found in %s\n", gltfPath.c_str());
     destroy();
     return false;
   }
 
-  printf("GltfLoader (tinygltf): %u mesh(es), %u material(s), scene %d\n",
-         (unsigned)meshes.size(), (unsigned)materials.size(), model->defaultScene);
+  std::printf("GltfLoader (tinygltf): %u mesh(es), %u material(s), scene %d\n",
+         static_cast<unsigned int>(meshes.size()), static_cast<unsigned int>(materials.size()), model->defaultScene);
   return true;
 }
 
 PBRMaterial *GltfLoader::buildMaterial(int materialIndex) {
-  if (materialIndex < 0) return NULL;
-  if (materialIndex < (int)materials.size() && materials[materialIndex] != NULL)
+  if (materialIndex < 0) return nullptr;
+  if (materialIndex < static_cast<int>(materials.size()) && materials[materialIndex] != nullptr)
     return materials[materialIndex];
 
-  while ((int)materials.size() <= materialIndex) materials.push_back(NULL);
-  if (materialIndex >= (int)model->materials.size()) return NULL;
+  while (static_cast<int>(materials.size()) <= materialIndex) materials.push_back(nullptr);
+  if (materialIndex >= (int)model->materials.size()) return nullptr;
 
   const tinygltf::Material &gm = model->materials[materialIndex];
   PBRMaterial *mat = new PBRMaterial();
   mat->name = gm.name;
-  // glTF 2.0：metallicFactor / roughnessFactor 默认为 1.0
   mat->metallicFactor = (float)gm.pbrMetallicRoughness.metallicFactor;
   mat->roughnessFactor = (float)gm.pbrMetallicRoughness.roughnessFactor;
   mat->normalScale = (float)gm.normalTexture.scale;
@@ -573,11 +571,11 @@ PBRMaterial *GltfLoader::buildMaterial(int materialIndex) {
   mat->alphaCutoff = (float)gm.alphaCutoff;
   mat->doubleSided = gm.doubleSided;
 
-  const std::vector<double> &bcf = gm.pbrMetallicRoughness.baseColorFactor;
+  std::vector<double> const& bcf = gm.pbrMetallicRoughness.baseColorFactor;
   for (int i = 0; i < 4; i++)
-    mat->baseColorFactor[i] = i < (int)bcf.size() ? (float)bcf[i] : 1.0f;
+    mat->baseColorFactor[i] = i < static_cast<int>(bcf.size()) ? static_cast<float>(bcf[i]) : 1.0f;
   for (int i = 0; i < 3; i++)
-    mat->emissiveFactor[i] = i < (int)gm.emissiveFactor.size() ? (float)gm.emissiveFactor[i] : 0.0f;
+    mat->emissiveFactor[i] = i < static_cast<int>(gm.emissiveFactor.size()) ? static_cast<float>(gm.emissiveFactor[i]) : 0.0f;
 
   if (gm.alphaMode == "MASK") mat->alphaMode = ALPHA_MASK;
   else if (gm.alphaMode == "BLEND") mat->alphaMode = ALPHA_BLEND;
@@ -594,7 +592,6 @@ PBRMaterial *GltfLoader::buildMaterial(int materialIndex) {
   mat->emissiveTexture = loadTextureFromModel(*model, basePath,
     gm.emissiveTexture.index, true);
 
-  // Specular-Glossiness → Metallic-Roughness（覆盖 MR 因子/贴图）
   applySpecularGlossinessConversion(gm, *model, basePath, mat);
 
   parseMaterialExtensions(gm, *model, basePath, mat);
@@ -603,7 +600,7 @@ PBRMaterial *GltfLoader::buildMaterial(int materialIndex) {
 }
 
 void GltfLoader::computeTangents(std::vector<Vertex> &vertices,
-                                 const std::vector<unsigned int> &indices) {
+                                 std::vector<unsigned int> const& indices) {
   std::vector<Vec3f> tan1(vertices.size());
   std::vector<Vec3f> tan2(vertices.size());
   for (size_t i = 0; i < tan1.size(); i++) {
@@ -616,9 +613,9 @@ void GltfLoader::computeTangents(std::vector<Vertex> &vertices,
     if (i0 >= vertices.size() || i1 >= vertices.size() || i2 >= vertices.size())
       continue;
 
-    const Vec3f &p0 = vertices[i0].position;
-    const Vec3f &p1 = vertices[i1].position;
-    const Vec3f &p2 = vertices[i2].position;
+    Vec3f const& p0 = vertices[i0].position;
+    Vec3f const& p1 = vertices[i1].position;
+    Vec3f const& p2 = vertices[i2].position;
     float u0 = vertices[i0].texCoord0.x(), v0 = vertices[i0].texCoord0.y();
     float u1 = vertices[i1].texCoord0.x(), v1 = vertices[i1].texCoord0.y();
     float u2 = vertices[i2].texCoord0.x(), v2 = vertices[i2].texCoord0.y();
@@ -629,7 +626,7 @@ void GltfLoader::computeTangents(std::vector<Vertex> &vertices,
     float s1 = u1 - u0, s2 = u2 - u0;
     float t1 = v1 - v0, t2 = v2 - v0;
     float denom = s1 * t2 - s2 * t1;
-    if (fabsf(denom) < 1e-8f) continue;
+    if (std::fabs(denom) < 1e-8f) continue;
     float r = 1.0f / denom;
 
     Vec3f sdir((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r);
@@ -639,7 +636,7 @@ void GltfLoader::computeTangents(std::vector<Vertex> &vertices,
   }
 
   for (size_t i = 0; i < vertices.size(); i++) {
-    const Vec3f &n = vertices[i].normal;
+    Vec3f const& n = vertices[i].normal;
     Vec3f t = tan1[i];
     Vec3f tangent = t - n * n.Dot3(t);
     tangent.Normalize();
@@ -650,7 +647,7 @@ void GltfLoader::computeTangents(std::vector<Vertex> &vertices,
   }
 }
 
-void GltfLoader::expandBounds(const Vec3f &p) {
+void GltfLoader::expandBounds(Vec3f const& p) {
   if (!boundsValid) {
     boundsMin = p;
     boundsMax = p;
@@ -666,17 +663,17 @@ void GltfLoader::expandBounds(const Vec3f &p) {
 }
 
 Mesh *GltfLoader::buildPrimitiveMesh(const tinygltf::Primitive &prim,
-                                     const Matrix &worldMatrix) {
+                                     Matrix const& worldMatrix) {
   std::map<std::string, int>::const_iterator itPos = prim.attributes.find("POSITION");
-  if (itPos == prim.attributes.end()) return NULL;
+  if (itPos == prim.attributes.end()) return nullptr;
 
   int posAcc = itPos->second;
-  if (posAcc < 0 || posAcc >= (int)model->accessors.size()) return NULL;
+  if (posAcc < 0 || posAcc >= (int)model->accessors.size()) return nullptr;
   size_t vertexCount = model->accessors[posAcc].count;
 
   std::vector<float> positions, normals, tangents, uvs;
   if (!readFloatAttribute(*model, posAcc, TINYGLTF_TYPE_VEC3, 3, positions))
-    return NULL;
+    return nullptr;
 
   std::map<std::string, int>::const_iterator itN = prim.attributes.find("NORMAL");
   bool hasNormal = (itN != prim.attributes.end()) &&
@@ -695,7 +692,7 @@ Mesh *GltfLoader::buildPrimitiveMesh(const tinygltf::Primitive &prim,
 
   std::vector<unsigned int> indices;
   if (prim.indices >= 0) {
-    if (!readIndices(*model, prim.indices, indices)) return NULL;
+    if (!readIndices(*model, prim.indices, indices)) return nullptr;
   } else {
     indices.resize(vertexCount);
     for (size_t i = 0; i < vertexCount; i++) indices[i] = (unsigned int)i;
@@ -740,7 +737,7 @@ Mesh *GltfLoader::buildPrimitiveMesh(const tinygltf::Primitive &prim,
   return mesh;
 }
 
-void GltfLoader::traverseNode(int nodeIndex, const Matrix &parentWorld) {
+void GltfLoader::traverseNode(int nodeIndex, Matrix const& parentWorld) {
   if (!model || nodeIndex < 0 || nodeIndex >= (int)model->nodes.size()) return;
 
   const tinygltf::Node &node = model->nodes[nodeIndex];
@@ -785,9 +782,9 @@ void GltfLoader::destroy() {
   materials.clear();
 
   delete model;
-  model = NULL;
+  model = nullptr;
   delete loader;
-  loader = NULL;
+  loader = nullptr;
 
   basePath.clear();
   boundsValid = false;

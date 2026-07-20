@@ -1,62 +1,39 @@
-#ifndef _OBJECT_3D_VECTOR_H_
-#define _OBJECT_3D_VECTOR_H_
+#pragma once
 
-#include "assert.h"
-class Object3D;
+#include <cassert>
 
-typedef Object3D* Object3DPtr;
+struct Object3D;
 
-// ====================================================================
-// ====================================================================
+using Object3DPtr = Object3D*;
 
-// Store an collection of Object3D.  The total number to be stored is
-// not known initially.  Resize as necessary.
-
-// ====================================================================
-// ====================================================================
-
-class Object3DVector {
-
-public:
-
-  // CONSTRUCTOR
+struct Object3DVector final {
   Object3DVector() {
     num_objects = 0;
     size = 10;
     objects = new Object3D*[size];
     for (int i = 0; i < size; i++)
-      objects[i] = NULL;
+      objects[i] = nullptr;
   }
 
-  // DESTRUCTOR
-  ~Object3DVector() {
-    // don't delete the objects, just the array to store the pointers
-    delete [] objects;
-  }
+  ~Object3DVector() { delete[] objects; }
 
-  // ACCESSORS
-  int getNumObjects() { return num_objects; }
-  Object3D* getObject(int i) { 
-    assert (i >= 0 && i < num_objects);
-    assert (objects[i] != NULL);
+  auto getNumObjects() -> int { return num_objects; }
+  auto getObject(int i) -> Object3D* {
+    assert(i >= 0 && i < num_objects);
+    assert(objects[i] != nullptr);
     return objects[i];
   }
 
-  // MODIFIERS
-  void addObject(Object3D *o) {
-    assert (o != NULL);
+  auto addObject(Object3D* o) -> void {
+    assert(o != nullptr);
     if (size == num_objects) {
-      // double the size of the array and copy the pointers
       int new_size = size * 2;
-      Object3D **new_objects = new Object3D*[new_size];
-      int i;
-      for (i = 0; i < size; i++) {
-	new_objects[i] = objects[i];
-      }
-      for (i = size; i < 2*size; i++) {
-	new_objects[i] = NULL;
-      }
-      delete [] objects;
+      Object3D** new_objects = new Object3D*[new_size];
+      for (int i = 0; i < size; i++)
+        new_objects[i] = objects[i];
+      for (int i = size; i < 2 * size; i++)
+        new_objects[i] = nullptr;
+      delete[] objects;
       objects = new_objects;
       size = new_size;
     }
@@ -64,16 +41,7 @@ public:
     num_objects++;
   }
 
-private:
-
-  // REPRESENTATION
-  Object3D **objects;
-  int size;
-  int num_objects;
-
+  Object3D** objects{};
+  int size{};
+  int num_objects{};
 };
-
-// ====================================================================
-// ====================================================================
-
-#endif

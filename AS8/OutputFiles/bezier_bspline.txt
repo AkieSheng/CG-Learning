@@ -1,0 +1,13 @@
+num_splines 2
+bspline
+num_vertices 4
+6 -14 0
+-6 4 0
+6 4 0
+-6 -14 0
+bspline
+num_vertices 4
+-48 -19 0
+12 -1 0
+-12 -1 0
+48 -19 0

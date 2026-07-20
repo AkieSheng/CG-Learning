@@ -1,66 +1,45 @@
-#ifndef _IMAGE_H_
-#define _IMAGE_H_
+#pragma once
 
-#include <assert.h>
+#include <cassert>
 #include "vectors.h"
 
-// ====================================================================
-// ====================================================================
-// Simple image class
-
-class Image {
-
-public:
-
-  // ========================
-  // CONSTRUCTOR & DESTRUCTOR
+struct Image final {
   Image(int w, int h) {
     width = w;
     height = h;
-    data = new Vec3f[width*height]; }
+    data = new Vec3f[width * height];
+  }
   ~Image() {
-    delete [] data; }
+    delete[] data;
+  }
 
-  // =========
-  // ACCESSORS
-  int Width() const { return width; }
-  int Height() const { return height; }
-  const Vec3f& GetPixel(int x, int y) const {
-    assert(x >= 0 && x < width);
-    assert(y >= 0 && y < height);
-    return data[y*width + x]; }
-  
-  // =========
-  // MODIFIERS
-  void SetAllPixels(const Vec3f &color) {
-    for (int i = 0; i < width*height; i++) {
-      data[i] = color; } }
-  void SetPixel(int x, int y, const Vec3f &color) {
-    assert(x >= 0 && x < width);
-    assert(y >= 0 && y < height);
-    data[y*width + x] = color; }
+  auto Width() const -> int { return width; }
+  auto Height() const -> int { return height; }
+  auto GetPixel(int x, int y) const -> Vec3f const& {
+    assert((x >= 0) && (x < width));
+    assert((y >= 0) && (y < height));
+    return data[y * width + x];
+  }
 
-  // ===========
-  // LOAD & SAVE
-  static Image* LoadPPM(const char *filename);
-  void SavePPM(const char *filename) const; 
-  static Image* LoadTGA(const char *filename);
-  void SaveTGA(const char *filename) const; 
-  
-  // extension for image comparison
-  static Image* Compare(Image* img1, Image* img2);
-  
-private:
+  auto SetAllPixels(Vec3f const& color) -> void {
+    for (auto i = 0; i < width * height; i++) {
+      data[i] = color;
+    }
+  }
+  auto SetPixel(int x, int y, Vec3f const& color) -> void {
+    assert((x >= 0) && (x < width));
+    assert((y >= 0) && (y < height));
+    data[y * width + x] = color;
+  }
 
-  // ==============
-  // REPRESENTATION
-  int width;
-  int height;
-  Vec3f *data;
+  static auto LoadPPM(char const* filename) -> Image*;
+  auto SavePPM(char const* filename) const -> void;
+  static auto LoadTGA(char const* filename) -> Image*;
+  auto SaveTGA(char const* filename) const -> void;
 
+  static auto Compare(Image* img1, Image* img2) -> Image*;
+
+  int width{};
+  int height{};
+  Vec3f* data{};
 };
-
-// ====================================================================
-// ====================================================================
-
-#endif

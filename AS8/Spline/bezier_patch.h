@@ -1,30 +1,22 @@
-#ifndef _BEZIER_PATCH_H_
-#define _BEZIER_PATCH_H_
+#pragma once
 
 #include "surface.h"
 
-class ArgParser;
+struct ArgParser;
 
-// 4x4 Bezier Patch
-class BezierPatch : public Surface {
-
-public:
+struct BezierPatch final : Surface {
   BezierPatch();
-  ~BezierPatch();
+  ~BezierPatch() override;
 
-  void set(int i, Vec3f v);  // 设置控制点
+  auto set(int i, Vec3f v) -> void;
 
-  void Paint(ArgParser *args);
-  void OutputBezier(FILE *file);
-  void OutputBSpline(FILE *file);
+  auto Paint(ArgParser* args) -> void override;
+  auto OutputBezier(FILE* file) -> void override;
+  auto OutputBSpline(FILE* file) -> void override;
 
-  int getNumVertices() { return 16; }
-  Vec3f getVertex(int i);
+  auto getNumVertices() -> int override { return 16; }
+  auto getVertex(int i) -> Vec3f override;
+  auto OutputTriangles(ArgParser* args) -> TriangleMesh* override;
 
-  TriangleMesh* OutputTriangles(ArgParser *args);
-
-protected:
-  Vec3f control_points[16];  // 控制点
+  Vec3f control_points[16]{};
 };
-
-#endif

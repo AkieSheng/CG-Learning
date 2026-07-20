@@ -1,24 +1,17 @@
-#ifndef _OBJECT3D_H_
-#define _OBJECT3D_H_
+#pragma once
 
 #include "material.h"
 #include "ray.h"
 #include "hit.h"
 
-// 物体抽象基类
-class Object3D {
-
-public:
-  Object3D() : material(NULL) {}
+struct Object3D {
+  Object3D() : material(nullptr) {}
   virtual ~Object3D() {}
 
-  virtual bool intersect(const Ray &r, Hit &h, float tmin) = 0;
-  virtual bool intersectShadow(const Ray &r, float tmin, float tmax, float &t,
-                               Material **outMaterial) = 0;
-  virtual void paint(void) const = 0;
+  virtual auto intersect(Ray const& r, Hit& h, float tmin) -> bool = 0;
+  virtual auto intersectShadow(Ray const& r, float tmin, float tmax, float& t,
+                               Material** outMaterial) -> bool = 0;
+  virtual auto paint() const -> void = 0;
 
-protected:
-  Material *material;  // 物体材质
+  Material* material{};
 };
-
-#endif

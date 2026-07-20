@@ -1,11 +1,11 @@
 #include "gl_headers.h"
 #include "boundingbox.h"
 
-// ====================================================================
-// ====================================================================
 
-void BoundingBox::paint() const {
-  // draw a wireframe box to represent the boundingbox
+
+
+auto BoundingBox::paint()const -> void {
+
   
   glColor3f(1,1,1);
   glDisable(GL_LIGHTING);
@@ -42,5 +42,4 @@ void BoundingBox::paint() const {
   glEnable(GL_LIGHTING);	   
 }
 
-// ====================================================================
-// ====================================================================
+

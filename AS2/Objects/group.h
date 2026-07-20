@@ -1,21 +1,14 @@
-#ifndef _GROUP_H_
-#define _GROUP_H_
+#pragma once
 
 #include "object3d.h"
 
-// 场景容器（intersect 时遍历所有子物体）
-class Group : public Object3D {
-
-public:
+struct Group final : Object3D {
   Group(int numObjects);
   ~Group();
 
-  void addObject(int index, Object3D *obj);
-  virtual bool intersect(const Ray &r, Hit &h, float tmin);
+  auto addObject(int index, Object3D* obj) -> void;
+  auto intersect(Ray const& r, Hit& h, float tmin) -> bool override;
 
-private:
-  Object3D **objects;  // 子物体指针数组
-  int numObjects;      // 数组容量
+  Object3D** objects{};
+  int numObjects{};
 };
-
-#endif

@@ -1,19 +1,13 @@
-#ifndef _WIND_FORCE_FIELD_H_
-#define _WIND_FORCE_FIELD_H_
+#pragma once
 
 #include "force_field.h"
 
-// 风场
-class WindForceField : public ForceField {
-
-public:
+struct WindForceField final : ForceField {
   WindForceField(float magnitude) { this->magnitude = magnitude; }
-  virtual ~WindForceField() {}
+  ~WindForceField() override {}
 
-  virtual Vec3f getAcceleration(const Vec3f &position, float mass, float t) const;
+  auto getAcceleration(Vec3f const& position, float mass, float t) const -> Vec3f override;
 
 private:
-  float magnitude;  // 风力强度
+  float magnitude{};
 };
-
-#endif

@@ -6,7 +6,7 @@
 #include <vector>
 #include <algorithm>
 
-static float modelDeterminant3x3(const Matrix &m) {
+static float modelDeterminant3x3(Matrix const&m) {
   return
     m.Get(0, 0) * (m.Get(1, 1) * m.Get(2, 2) - m.Get(2, 1) * m.Get(1, 2)) -
     m.Get(1, 0) * (m.Get(0, 1) * m.Get(2, 2) - m.Get(2, 1) * m.Get(0, 2)) +
@@ -53,16 +53,16 @@ bool Renderer::initialize(int width, int height) {
     return false;
   }
   if (!createSceneTargets(renderWidth, renderHeight)) {
-    fprintf(stderr, "Renderer: failed to create scene targets\n");
+    std::fprintf(stderr, "Renderer: failed to create scene targets\n");
     return false;
   }
   if (!createShadowMap()) {
-    fprintf(stderr, "Renderer: failed to create shadow map\n");
+    std::fprintf(stderr, "Renderer: failed to create shadow map\n");
     return false;
   }
-  glGenVertexArrays(1, &fullscreenVAO);
-  glViewport(0, 0, width, height);
-  fprintf(stderr, "Renderer: supersampling %.1fx (%dx%d -> %dx%d), FXAA off\n",
+  ::glGenVertexArrays(1, &fullscreenVAO);
+  ::glViewport(0, 0, width, height);
+  std::fprintf(stderr, "Renderer: supersampling %.1fx (%dx%d -> %dx%d), FXAA off\n",
           currentRenderScale(), viewportWidth, viewportHeight, renderWidth, renderHeight);
   return true;
 }
@@ -73,7 +73,7 @@ void Renderer::resize(int width, int height) {
   viewportHeight = height;
   updateRenderSize();
   createSceneTargets(renderWidth, renderHeight);
-  glViewport(0, 0, width, height);
+  ::glViewport(0, 0, width, height);
 }
 
 float Renderer::currentRenderScale() const {
@@ -92,11 +92,11 @@ float Renderer::cycleSupersampling() {
   renderScaleMode = (renderScaleMode + 1) % 3;
   updateRenderSize();
   if (!createSceneTargets(renderWidth, renderHeight)) {
-    fprintf(stderr, "Renderer: failed to resize supersampling targets\n");
+    std::fprintf(stderr, "Renderer: failed to resize supersampling targets\n");
   }
-  glViewport(0, 0, viewportWidth, viewportHeight);
+  ::glViewport(0, 0, viewportWidth, viewportHeight);
   float scale = currentRenderScale();
-  fprintf(stderr, "Supersampling: %.1fx (%dx%d -> %dx%d)\n",
+  std::fprintf(stderr, "Supersampling: %.1fx (%dx%d -> %dx%d)\n",
           scale, viewportWidth, viewportHeight, renderWidth, renderHeight);
   return scale;
 }
@@ -107,44 +107,44 @@ bool Renderer::toggleFXAA() {
 }
 
 void Renderer::setupGLState() {
-  glEnable(GL_DEPTH_TEST);
-  glEnable(GL_CULL_FACE);
-  glCullFace(GL_BACK);
-  glFrontFace(GL_CCW);
+  ::glEnable(GL_DEPTH_TEST);
+  ::glEnable(GL_CULL_FACE);
+  ::glCullFace(GL_BACK);
+  ::glFrontFace(GL_CCW);
 }
 
 bool Renderer::loadShaders() {
   if (!pbrShader.loadFromFiles("Shader/pbr.vert", "Shader/pbr.frag")) {
-    fprintf(stderr, "Renderer: failed to load PBR shader\n");
+    std::fprintf(stderr, "Renderer: failed to load PBR shader\n");
     return false;
   }
   if (!skyboxShader.loadFromFiles("Shader/skybox.vert", "Shader/skybox.frag")) {
-    fprintf(stderr, "Renderer: failed to load skybox shader\n");
+    std::fprintf(stderr, "Renderer: failed to load skybox shader\n");
     return false;
   }
   if (!tonemapShader.loadFromFiles("Shader/tonemap.vert", "Shader/tonemap.frag")) {
-    fprintf(stderr, "Renderer: failed to load tonemap shader\n");
+    std::fprintf(stderr, "Renderer: failed to load tonemap shader\n");
     return false;
   }
   if (!shadowShader.loadFromFiles("Shader/shadow_depth.vert", "Shader/shadow_depth.frag")) {
-    fprintf(stderr, "Renderer: failed to load shadow depth shader\n");
+    std::fprintf(stderr, "Renderer: failed to load shadow depth shader\n");
     return false;
   }
   if (!ibl.initialize()) {
-    fprintf(stderr, "Renderer: failed to initialize IBL\n");
+    std::fprintf(stderr, "Renderer: failed to initialize IBL\n");
     return false;
   }
   return true;
 }
 
 void Renderer::destroySceneTargets() {
-  if (msaaFBO) { glDeleteFramebuffers(1, &msaaFBO); msaaFBO = 0; }
-  if (msaaColorRbo) { glDeleteRenderbuffers(1, &msaaColorRbo); msaaColorRbo = 0; }
-  if (msaaDepthRbo) { glDeleteRenderbuffers(1, &msaaDepthRbo); msaaDepthRbo = 0; }
-  if (resolveFBO) { glDeleteFramebuffers(1, &resolveFBO); resolveFBO = 0; }
-  if (sceneColorTex) { glDeleteTextures(1, &sceneColorTex); sceneColorTex = 0; }
-  if (sceneSampleTex) { glDeleteTextures(1, &sceneSampleTex); sceneSampleTex = 0; }
-  if (sceneDepthRbo) { glDeleteRenderbuffers(1, &sceneDepthRbo); sceneDepthRbo = 0; }
+  if (msaaFBO) { ::glDeleteFramebuffers(1, &msaaFBO); msaaFBO = 0; }
+  if (msaaColorRbo) { ::glDeleteRenderbuffers(1, &msaaColorRbo); msaaColorRbo = 0; }
+  if (msaaDepthRbo) { ::glDeleteRenderbuffers(1, &msaaDepthRbo); msaaDepthRbo = 0; }
+  if (resolveFBO) { ::glDeleteFramebuffers(1, &resolveFBO); resolveFBO = 0; }
+  if (sceneColorTex) { ::glDeleteTextures(1, &sceneColorTex); sceneColorTex = 0; }
+  if (sceneSampleTex) { ::glDeleteTextures(1, &sceneSampleTex); sceneSampleTex = 0; }
+  if (sceneDepthRbo) { ::glDeleteRenderbuffers(1, &sceneDepthRbo); sceneDepthRbo = 0; }
   msaaSamples = 0;
 }
 
@@ -152,36 +152,34 @@ bool Renderer::createSceneTargets(int width, int height) {
   destroySceneTargets();
   if (width <= 0 || height <= 0) return false;
 
-  // 单采样颜色：tonemap / 折射采样源
-  glGenTextures(1, &sceneColorTex);
-  glBindTexture(GL_TEXTURE_2D, sceneColorTex);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  ::glGenTextures(1, &sceneColorTex);
+  ::glBindTexture(GL_TEXTURE_2D, sceneColorTex);
+  ::glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
+  ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-  glGenTextures(1, &sceneSampleTex);
-  glBindTexture(GL_TEXTURE_2D, sceneSampleTex);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  ::glGenTextures(1, &sceneSampleTex);
+  ::glBindTexture(GL_TEXTURE_2D, sceneSampleTex);
+  ::glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
+  ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-  glGenFramebuffers(1, &resolveFBO);
-  glBindFramebuffer(GL_FRAMEBUFFER, resolveFBO);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sceneColorTex, 0);
-  if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-    fprintf(stderr, "Renderer: resolve framebuffer incomplete\n");
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  ::glGenFramebuffers(1, &resolveFBO);
+  ::glBindFramebuffer(GL_FRAMEBUFFER, resolveFBO);
+  ::glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sceneColorTex, 0);
+  if (::glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+    std::fprintf(stderr, "Renderer: resolve framebuffer incomplete\n");
+    ::glBindFramebuffer(GL_FRAMEBUFFER, 0);
     destroySceneTargets();
     return false;
   }
 
-  // 查询可用 MSAA 级数，目标 8x；FBO 不完整时依次降到 4 / 2 / 0
   GLint maxSamples = 0;
-  glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
+  ::glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
   int candidates[3] = {8, 4, 2};
   msaaSamples = 0;
   for (int i = 0; i < 3; i++) {
@@ -189,67 +187,65 @@ bool Renderer::createSceneTargets(int width, int height) {
     if (candidates[i] > maxSamples) continue;
 
     int trySamples = candidates[i];
-    glGenRenderbuffers(1, &msaaColorRbo);
-    glBindRenderbuffer(GL_RENDERBUFFER, msaaColorRbo);
-    glRenderbufferStorageMultisample(GL_RENDERBUFFER, trySamples, GL_RGBA16F, width, height);
+    ::glGenRenderbuffers(1, &msaaColorRbo);
+    ::glBindRenderbuffer(GL_RENDERBUFFER, msaaColorRbo);
+    ::glRenderbufferStorageMultisample(GL_RENDERBUFFER, trySamples, GL_RGBA16F, width, height);
 
-    glGenRenderbuffers(1, &msaaDepthRbo);
-    glBindRenderbuffer(GL_RENDERBUFFER, msaaDepthRbo);
-    glRenderbufferStorageMultisample(GL_RENDERBUFFER, trySamples, GL_DEPTH_COMPONENT24, width, height);
+    ::glGenRenderbuffers(1, &msaaDepthRbo);
+    ::glBindRenderbuffer(GL_RENDERBUFFER, msaaDepthRbo);
+    ::glRenderbufferStorageMultisample(GL_RENDERBUFFER, trySamples, GL_DEPTH_COMPONENT24, width, height);
 
-    glGenFramebuffers(1, &msaaFBO);
-    glBindFramebuffer(GL_FRAMEBUFFER, msaaFBO);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, msaaColorRbo);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, msaaDepthRbo);
+    ::glGenFramebuffers(1, &msaaFBO);
+    ::glBindFramebuffer(GL_FRAMEBUFFER, msaaFBO);
+    ::glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, msaaColorRbo);
+    ::glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, msaaDepthRbo);
 
-    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    GLenum status = ::glCheckFramebufferStatus(GL_FRAMEBUFFER);
     if (status == GL_FRAMEBUFFER_COMPLETE) {
       msaaSamples = trySamples;
       static int loggedMsaa = -1;
       if (loggedMsaa != msaaSamples) {
-        fprintf(stderr, "Renderer: MSAA %dx enabled\n", msaaSamples);
+        std::fprintf(stderr, "Renderer: MSAA %dx enabled\n", msaaSamples);
         loggedMsaa = msaaSamples;
       }
       break;
     }
 
-    fprintf(stderr,
+    std::fprintf(stderr,
             "Renderer: MSAA %dx incomplete (0x%X), trying lower samples\n",
-            trySamples, (unsigned)status);
-    if (msaaFBO) { glDeleteFramebuffers(1, &msaaFBO); msaaFBO = 0; }
-    if (msaaColorRbo) { glDeleteRenderbuffers(1, &msaaColorRbo); msaaColorRbo = 0; }
-    if (msaaDepthRbo) { glDeleteRenderbuffers(1, &msaaDepthRbo); msaaDepthRbo = 0; }
+            trySamples, (unsigned int)status);
+    if (msaaFBO) { ::glDeleteFramebuffers(1, &msaaFBO); msaaFBO = 0; }
+    if (msaaColorRbo) { ::glDeleteRenderbuffers(1, &msaaColorRbo); msaaColorRbo = 0; }
+    if (msaaDepthRbo) { ::glDeleteRenderbuffers(1, &msaaDepthRbo); msaaDepthRbo = 0; }
   }
 
   if (msaaSamples <= 0) {
-    // 降级：单采样 FBO 直接画到 sceneColorTex + depth RBO
-    glGenRenderbuffers(1, &sceneDepthRbo);
-    glBindRenderbuffer(GL_RENDERBUFFER, sceneDepthRbo);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
+    ::glGenRenderbuffers(1, &sceneDepthRbo);
+    ::glBindRenderbuffer(GL_RENDERBUFFER, sceneDepthRbo);
+    ::glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
 
-    // 复用 resolveFBO 作为场景绘制目标，补深度附件
-    glBindFramebuffer(GL_FRAMEBUFFER, resolveFBO);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, sceneDepthRbo);
-    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    ::glBindFramebuffer(GL_FRAMEBUFFER, resolveFBO);
+    ::glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, sceneDepthRbo);
+    GLenum status = ::glCheckFramebufferStatus(GL_FRAMEBUFFER);
     if (status != GL_FRAMEBUFFER_COMPLETE) {
-      fprintf(stderr, "Renderer: single-sample framebuffer incomplete (0x%X)\n", (unsigned)status);
-      glBindFramebuffer(GL_FRAMEBUFFER, 0);
+      std::fprintf(stderr, "Renderer: single-sample framebuffer incomplete (0x%X)\n", (unsigned int)status);
+      ::glBindFramebuffer(GL_FRAMEBUFFER, 0);
       destroySceneTargets();
       return false;
     }
-    fprintf(stderr, "Renderer: MSAA disabled (single-sample path)\n");
+    std::fprintf(stderr, "Renderer: MSAA disabled (single-sample path)\n");
   }
 
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  glBindTexture(GL_TEXTURE_2D, 0);
-  glBindRenderbuffer(GL_RENDERBUFFER, 0);
+  ::glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  ::glBindTexture(GL_TEXTURE_2D, 0);
+  ::glBindRenderbuffer(GL_RENDERBUFFER, 0);
   return true;
 }
 
 void Renderer::destroyShadowMap() {
-  if (shadowFBO) { glDeleteFramebuffers(1, &shadowFBO); shadowFBO = 0; }
-  if (shadowDepthTex) { glDeleteTextures(1, &shadowDepthTex); shadowDepthTex = 0; }
-  if (shadowDepthRbo) { glDeleteRenderbuffers(1, &shadowDepthRbo); shadowDepthRbo = 0; }
+  if (shadowFBO) { ::glDeleteFramebuffers(1, &shadowFBO); shadowFBO = 0; }
+  if (shadowDepthTex) { ::glDeleteTextures(1, &shadowDepthTex); shadowDepthTex = 0; }
+  if (shadowDepthRbo) { ::glDeleteRenderbuffers(1, &shadowDepthRbo); shadowDepthRbo = 0; }
   shadowsEnabled = false;
 }
 
@@ -257,44 +253,43 @@ bool Renderer::createShadowMap() {
   destroyShadowMap();
   if (shadowMapSize <= 0) shadowMapSize = DEFAULT_SHADOW_MAP_SIZE;
 
-  // 用 RGBA16F 颜色纹理存储光源深度（本项目已验证可用），depth RBO 负责深度测试
-  glGenTextures(1, &shadowDepthTex);
-  glBindTexture(GL_TEXTURE_2D, shadowDepthTex);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F,
+  ::glGenTextures(1, &shadowDepthTex);
+  ::glBindTexture(GL_TEXTURE_2D, shadowDepthTex);
+  ::glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F,
                shadowMapSize, shadowMapSize, 0,
-               GL_RGBA, GL_FLOAT, NULL);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glBindTexture(GL_TEXTURE_2D, 0);
+               GL_RGBA, GL_FLOAT, nullptr);
+  ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  ::glBindTexture(GL_TEXTURE_2D, 0);
 
-  glGenRenderbuffers(1, &shadowDepthRbo);
-  glBindRenderbuffer(GL_RENDERBUFFER, shadowDepthRbo);
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24,
+  ::glGenRenderbuffers(1, &shadowDepthRbo);
+  ::glBindRenderbuffer(GL_RENDERBUFFER, shadowDepthRbo);
+  ::glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24,
                         shadowMapSize, shadowMapSize);
-  glBindRenderbuffer(GL_RENDERBUFFER, 0);
+  ::glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
-  glGenFramebuffers(1, &shadowFBO);
-  glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+  ::glGenFramebuffers(1, &shadowFBO);
+  ::glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO);
+  ::glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                          GL_TEXTURE_2D, shadowDepthTex, 0);
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+  ::glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
                             GL_RENDERBUFFER, shadowDepthRbo);
 
-  GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  GLenum status = ::glCheckFramebufferStatus(GL_FRAMEBUFFER);
+  ::glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
   if (status != GL_FRAMEBUFFER_COMPLETE) {
-    fprintf(stderr,
+    std::fprintf(stderr,
             "Renderer: shadow framebuffer incomplete (0x%X), shadows disabled\n",
-            (unsigned)status);
+            (unsigned int)status);
     destroyShadowMap();
     return true;
   }
 
   shadowsEnabled = true;
-  fprintf(stderr, "Renderer: shadow map enabled %dx%d\n", shadowMapSize, shadowMapSize);
+  std::fprintf(stderr, "Renderer: shadow map enabled %dx%d\n", shadowMapSize, shadowMapSize);
   return true;
 }
 
@@ -308,19 +303,16 @@ void Renderer::computeLightMatrix(Scene &scene) {
   if (0.5f * extent.y() > radius) radius = 0.5f * extent.y();
   if (0.5f * extent.z() > radius) radius = 0.5f * extent.z();
   if (radius < 0.01f) radius = 1.0f;
-  // 略放大包围球，避免边缘裁剪
   radius *= 1.15f;
 
   lightDirection.Normalize();
-  // lightDirection：光线前进方向；光源位于场景中心沿 -L 方向
   Vec3f toLight = lightDirection * -1.0f;
   Vec3f lightPos = center + toLight * (radius * 2.0f);
 
   Vec3f front = center - lightPos;
   front.Normalize();
   Vec3f worldUp(0.0f, 1.0f, 0.0f);
-  // 光线几乎与 up 平行时换备用 up
-  if (fabsf(front.Dot3(worldUp)) > 0.95f) {
+  if (std::fabs(front.Dot3(worldUp)) > 0.95f) {
     worldUp = Vec3f(0.0f, 0.0f, 1.0f);
   }
 
@@ -360,25 +352,24 @@ void Renderer::computeLightMatrix(Scene &scene) {
   lightViewProjection = lightProj * lightView;
 }
 
-void Renderer::renderShadowMap(const std::vector<Mesh *> &opaque) {
+void Renderer::renderShadowMap(std::vector<Mesh *> const& opaque) {
   if (!shadowsEnabled || !shadowFBO) return;
 
-  glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO);
-  glViewport(0, 0, shadowMapSize, shadowMapSize);
-  glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  ::glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO);
+  ::glViewport(0, 0, shadowMapSize, shadowMapSize);
+  ::glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+  ::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  glEnable(GL_DEPTH_TEST);
-  glDepthMask(GL_TRUE);
-  glDisable(GL_BLEND);
-  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+  ::glEnable(GL_DEPTH_TEST);
+  ::glDepthMask(GL_TRUE);
+  ::glDisable(GL_BLEND);
+  ::glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
-  // 多边形偏移减轻 shadow acne；正面剔除可进一步减轻自阴影瑕疵
-  glEnable(GL_POLYGON_OFFSET_FILL);
-  glPolygonOffset(1.1f, 4.0f);
-  glEnable(GL_CULL_FACE);
-  glCullFace(GL_FRONT);
-  glFrontFace(GL_CCW);
+  ::glEnable(GL_POLYGON_OFFSET_FILL);
+  ::glPolygonOffset(1.1f, 4.0f);
+  ::glEnable(GL_CULL_FACE);
+  ::glCullFace(GL_FRONT);
+  ::glFrontFace(GL_CCW);
 
   shadowShader.use();
   float *lvpPtr = lightViewProjection.glGet();
@@ -394,43 +385,43 @@ void Renderer::renderShadowMap(const std::vector<Mesh *> &opaque) {
     delete [] modelPtr;
 
     if (modelDeterminant3x3(mesh->getModelMatrix()) < 0.0f) {
-      glFrontFace(GL_CW);
+      ::glFrontFace(GL_CW);
     } else {
-      glFrontFace(GL_CCW);
+      ::glFrontFace(GL_CCW);
     }
     mesh->draw();
   }
 
-  glCullFace(GL_BACK);
-  glFrontFace(GL_CCW);
-  glDisable(GL_POLYGON_OFFSET_FILL);
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  ::glCullFace(GL_BACK);
+  ::glFrontFace(GL_CCW);
+  ::glDisable(GL_POLYGON_OFFSET_FILL);
+  ::glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Renderer::setLightDirection(const Vec3f &dir) {
+void Renderer::setLightDirection(Vec3f const&dir) {
   lightDirection = dir;
   lightDirection.Normalize();
 }
 
-void Renderer::setLightColor(const Vec3f &color) {
+void Renderer::setLightColor(Vec3f const&color) {
   lightColor = color;
 }
 
-void Renderer::setAmbientColor(const Vec3f &color) {
+void Renderer::setAmbientColor(Vec3f const&color) {
   ambientColor = color;
 }
 
-bool Renderer::isTransparentMesh(const Mesh *mesh) {
+bool Renderer::isTransparentMesh(Mesh const*mesh) {
   if (!mesh) return false;
-  const PBRMaterial *mat = mesh->getMaterial();
+  PBRMaterial const*mat = mesh->getMaterial();
   if (!mat) return false;
   if (mat->alphaMode == ALPHA_BLEND) return true;
   if (mat->hasTransmission && mat->transmissionFactor > 0.001f) return true;
   return false;
 }
 
-float Renderer::meshSortKey(const Mesh *mesh, const Vec3f &camPos) {
-  const Vec3f &c = mesh->getWorldCenter();
+float Renderer::meshSortKey(Mesh const*mesh, Vec3f const&camPos) {
+  Vec3f const&c = mesh->getWorldCenter();
   float dx = c.x() - camPos.x();
   float dy = c.y() - camPos.y();
   float dz = c.z() - camPos.z();
@@ -452,40 +443,40 @@ void Renderer::drawSingleMesh(Mesh *mesh, bool transparentPass) {
     normalMat.Get(1, 0), normalMat.Get(1, 1), normalMat.Get(1, 2),
     normalMat.Get(2, 0), normalMat.Get(2, 1), normalMat.Get(2, 2)
   };
-  glUniformMatrix3fv(glGetUniformLocation(pbrShader.programId(), "uNormalMatrix"),
+  ::glUniformMatrix3fv(::glGetUniformLocation(pbrShader.programId(), "uNormalMatrix"),
                      1, GL_FALSE, nm);
   delete [] modelPtr;
 
   if (mat) {
     if (mat->doubleSided || transparentPass) {
-      glDisable(GL_CULL_FACE);
+      ::glDisable(GL_CULL_FACE);
     } else {
-      glEnable(GL_CULL_FACE);
+      ::glEnable(GL_CULL_FACE);
       if (modelDeterminant3x3(mesh->getModelMatrix()) < 0.0f) {
-        glFrontFace(GL_CW);
+        ::glFrontFace(GL_CW);
       } else {
-        glFrontFace(GL_CCW);
+        ::glFrontFace(GL_CCW);
       }
     }
 
     if (transparentPass) {
-      glEnable(GL_BLEND);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      glDepthMask(GL_FALSE);
+      ::glEnable(GL_BLEND);
+      ::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+      ::glDepthMask(GL_FALSE);
     } else {
-      glDisable(GL_BLEND);
-      glDepthMask(GL_TRUE);
+      ::glDisable(GL_BLEND);
+      ::glDepthMask(GL_TRUE);
     }
 
     mat->bindTextures(pbrShader);
     mat->setUniforms(pbrShader);
   } else if (transparentPass) {
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glDepthMask(GL_FALSE);
+    ::glEnable(GL_BLEND);
+    ::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    ::glDepthMask(GL_FALSE);
   } else {
-    glDisable(GL_BLEND);
-    glDepthMask(GL_TRUE);
+    ::glDisable(GL_BLEND);
+    ::glDepthMask(GL_TRUE);
   }
 
   mesh->draw();
@@ -507,7 +498,6 @@ void Renderer::bindCommonPBRUniforms(Scene &scene) {
   delete [] projPtr;
 
   Vec3f camPos = cam.getPosition();
-  // 工作室主光：降低仰角拉长阴影，偏左偏相机侧；与 ibl.C 键光同向
   lightDirection.Normalize();
 
   pbrShader.setVec3("uCameraPos", camPos.x(), camPos.y(), camPos.z());
@@ -526,12 +516,11 @@ void Renderer::bindCommonPBRUniforms(Scene &scene) {
     float *lvpPtr = lightViewProjection.glGet();
     pbrShader.setMat4("uLightViewProjection", lvpPtr);
     delete [] lvpPtr;
-    glActiveTexture(GL_TEXTURE0 + SHADOW_MAP_UNIT);
-    glBindTexture(GL_TEXTURE_2D, shadowDepthTex);
+    ::glActiveTexture(GL_TEXTURE0 + SHADOW_MAP_UNIT);
+    ::glBindTexture(GL_TEXTURE_2D, shadowDepthTex);
     pbrShader.setInt("uShadowMap", SHADOW_MAP_UNIT);
   }
 
-  // 工作室水平灯带（几何自发光 + 近似直接光）
   bool useStrips = scene.hasLightStrips();
   pbrShader.setBool("uUseLightStrips", useStrips);
   pbrShader.setInt("uLightStripCount", useStrips ? LIGHT_STRIP_COUNT : 0);
@@ -555,9 +544,9 @@ void Renderer::bindCommonPBRUniforms(Scene &scene) {
   ibl.bindForPBR(pbrShader);
 }
 
-void Renderer::drawMeshes(Scene &scene, bool transparentPassOnly,
-                          const std::vector<Mesh *> *opaque,
-                          const std::vector<Mesh *> *transparent) {
+void Renderer::drawMeshes(Scene& scene, bool transparentPassOnly,
+                          std::vector<Mesh*> const* opaque,
+                          std::vector<Mesh*> const* transparent) {
   bindCommonPBRUniforms(scene);
 
   if (!transparentPassOnly && opaque) {
@@ -568,8 +557,8 @@ void Renderer::drawMeshes(Scene &scene, bool transparentPassOnly,
   }
 
   if (transparentPassOnly && transparent) {
-    glActiveTexture(GL_TEXTURE0 + SCENE_SAMPLE_UNIT);
-    glBindTexture(GL_TEXTURE_2D, sceneSampleTex);
+    ::glActiveTexture(GL_TEXTURE0 + SCENE_SAMPLE_UNIT);
+    ::glBindTexture(GL_TEXTURE_2D, sceneSampleTex);
     pbrShader.setInt("uSceneColorMap", SCENE_SAMPLE_UNIT);
     pbrShader.setBool("uHasSceneColor", true);
 
@@ -578,51 +567,50 @@ void Renderer::drawMeshes(Scene &scene, bool transparentPassOnly,
     }
   }
 
-  glEnable(GL_CULL_FACE);
-  glFrontFace(GL_CCW);
-  glDisable(GL_BLEND);
-  glDepthMask(GL_TRUE);
+  ::glEnable(GL_CULL_FACE);
+  ::glFrontFace(GL_CCW);
+  ::glDisable(GL_BLEND);
+  ::glDepthMask(GL_TRUE);
 }
 
 void Renderer::resolveMsaaToSceneColor() {
   if (msaaSamples <= 0 || !msaaFBO) return;
 
-  glBindFramebuffer(GL_READ_FRAMEBUFFER, msaaFBO);
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, resolveFBO);
-  glBlitFramebuffer(0, 0, renderWidth, renderHeight,
+  ::glBindFramebuffer(GL_READ_FRAMEBUFFER, msaaFBO);
+  ::glBindFramebuffer(GL_DRAW_FRAMEBUFFER, resolveFBO);
+  ::glBlitFramebuffer(0, 0, renderWidth, renderHeight,
                     0, 0, renderWidth, renderHeight,
                     GL_COLOR_BUFFER_BIT, GL_NEAREST);
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  ::glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void Renderer::captureSceneColorSample() {
-  // 从已 resolve 的 sceneColorTex 所在 FBO 拷贝到折射采样纹理
-  glBindFramebuffer(GL_FRAMEBUFFER, resolveFBO);
-  glBindTexture(GL_TEXTURE_2D, sceneSampleTex);
-  glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, renderWidth, renderHeight);
-  glGenerateMipmap(GL_TEXTURE_2D);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+  ::glBindFramebuffer(GL_FRAMEBUFFER, resolveFBO);
+  ::glBindTexture(GL_TEXTURE_2D, sceneSampleTex);
+  ::glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, renderWidth, renderHeight);
+  ::glGenerateMipmap(GL_TEXTURE_2D);
+  ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 }
 
 void Renderer::blitTonemapToScreen() {
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  glViewport(0, 0, viewportWidth, viewportHeight);
-  glDisable(GL_DEPTH_TEST);
-  glDisable(GL_BLEND);
-  glDepthMask(GL_TRUE);
+  ::glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  ::glViewport(0, 0, viewportWidth, viewportHeight);
+  ::glDisable(GL_DEPTH_TEST);
+  ::glDisable(GL_BLEND);
+  ::glDepthMask(GL_TRUE);
 
   tonemapShader.use();
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, sceneColorTex);
+  ::glActiveTexture(GL_TEXTURE0);
+  ::glBindTexture(GL_TEXTURE_2D, sceneColorTex);
   tonemapShader.setInt("uHdrColor", 0);
   tonemapShader.setVec2("uFramebufferSize", (float)renderWidth, (float)renderHeight);
   tonemapShader.setBool("uEnableFXAA", fxaaEnabled);
 
-  glBindVertexArray(fullscreenVAO);
-  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-  glBindVertexArray(0);
+  ::glBindVertexArray(fullscreenVAO);
+  ::glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+  ::glBindVertexArray(0);
 
-  glEnable(GL_DEPTH_TEST);
+  ::glEnable(GL_DEPTH_TEST);
 }
 
 void Renderer::render(Scene &scene) {
@@ -630,7 +618,7 @@ void Renderer::render(Scene &scene) {
   cam.setAspect((float)viewportWidth / (float)viewportHeight);
   cam.updateMatrices();
 
-  const std::vector<Mesh *> &meshes = scene.getMeshes();
+  std::vector<Mesh*> const& meshes = scene.getMeshes();
   std::vector<Mesh *> opaque;
   std::vector<Mesh *> transparent;
   opaque.reserve(meshes.size());
@@ -648,24 +636,22 @@ void Renderer::render(Scene &scene) {
 
   Vec3f camPos = cam.getPosition();
   std::sort(transparent.begin(), transparent.end(),
-    [&camPos](const Mesh *a, const Mesh *b) {
+    [&camPos](Mesh const*a, Mesh const*b) {
       return meshSortKey(a, camPos) > meshSortKey(b, camPos);
     });
 
-  // 方向光阴影深度 pass（opaque casters）
   if (shadowsEnabled && !opaque.empty()) {
     computeLightMatrix(scene);
     renderShadowMap(opaque);
   }
 
-  // 绘制目标：优先 MSAA FBO，否则单采样 resolveFBO
   unsigned int drawFBO = (msaaSamples > 0 && msaaFBO) ? msaaFBO : resolveFBO;
-  glBindFramebuffer(GL_FRAMEBUFFER, drawFBO);
-  glViewport(0, 0, renderWidth, renderHeight);
+  ::glBindFramebuffer(GL_FRAMEBUFFER, drawFBO);
+  ::glViewport(0, 0, renderWidth, renderHeight);
 
   Vec3f bg = scene.getBackgroundColor();
-  glClearColor(bg.x(), bg.y(), bg.z(), 1.0f);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  ::glClearColor(bg.x(), bg.y(), bg.z(), 1.0f);
+  ::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   float *viewPtr = cam.getViewMatrix().glGet();
   float *projPtr = cam.getProjectionMatrix().glGet();
@@ -675,20 +661,17 @@ void Renderer::render(Scene &scene) {
   delete [] viewPtr;
   delete [] projPtr;
 
-  drawMeshes(scene, false, &opaque, NULL);
+  drawMeshes(scene, false, &opaque, nullptr);
 
-  // 透明前：resolve 不透明 HDR，供屏幕空间折射
   if (!transparent.empty()) {
     resolveMsaaToSceneColor();
     captureSceneColorSample();
-    glBindFramebuffer(GL_FRAMEBUFFER, drawFBO);
-    drawMeshes(scene, true, NULL, &transparent);
+    ::glBindFramebuffer(GL_FRAMEBUFFER, drawFBO);
+    drawMeshes(scene, true, nullptr, &transparent);
   }
 
-  // 最终 resolve（有透明时覆盖完整场景；无透明时把 opaque resolve 出来）
   resolveMsaaToSceneColor();
   if (msaaSamples <= 0) {
-    // 单采样路径已直接写在 sceneColorTex 上，无需 blit
   }
 
   blitTonemapToScreen();
@@ -696,7 +679,7 @@ void Renderer::render(Scene &scene) {
 
 void Renderer::destroy() {
   if (fullscreenVAO) {
-    glDeleteVertexArrays(1, &fullscreenVAO);
+    ::glDeleteVertexArrays(1, &fullscreenVAO);
     fullscreenVAO = 0;
   }
   destroyShadowMap();

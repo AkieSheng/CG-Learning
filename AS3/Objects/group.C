@@ -1,40 +1,39 @@
 #include "group.h"
-#include <assert.h>
+#include <cassert>
 
-// 构造场景容器
 Group::Group(int numObjects) : numObjects(numObjects) {
   objects = new Object3D*[numObjects];
-  for (int i = 0; i < numObjects; i++)
-    objects[i] = NULL;
+  for (auto i = 0; i < numObjects; i++) {
+    objects[i] = nullptr;
+  }
 }
 
-// 析构时释放子物体
 Group::~Group() {
-  for (int i = 0; i < numObjects; i++)
+  for (auto i = 0; i < numObjects; i++) {
     delete objects[i];
-  delete [] objects;
+  }
+  delete[] objects;
 }
 
-// 添加子物体
-void Group::addObject(int index, Object3D *obj) {
+auto Group::addObject(int index, Object3D* obj) -> void {
   assert(index >= 0 && index < numObjects);
   objects[index] = obj;
 }
 
-// 求交
-bool Group::intersect(const Ray &r, Hit &h, float tmin) {
-  bool hit = false;
-  for (int i = 0; i < numObjects; i++) {
-    if (objects[i] != NULL && objects[i]->intersect(r, h, tmin))
+auto Group::intersect(Ray const& r, Hit& h, float tmin) -> bool {
+  auto hit = false;
+  for (auto i = 0; i < numObjects; i++) {
+    if (objects[i] != nullptr && objects[i]->intersect(r, h, tmin)) {
       hit = true;
+    }
   }
   return hit;
 }
 
-// OpenGL 绘制
-void Group::paint(void) const {
-  for (int i = 0; i < numObjects; i++) {
-    if (objects[i] != NULL)
+auto Group::paint() const -> void {
+  for (auto i = 0; i < numObjects; i++) {
+    if (objects[i] != nullptr) {
       objects[i]->paint();
+    }
   }
 }

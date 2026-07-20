@@ -1,72 +1,52 @@
-#ifndef _BOUNDING_BOX_H_
-#define _BOUNDING_BOX_H_
+#pragma once
 
 #include "vectors.h"
+#include <cassert>
+#include <cstdio>
 
-#include <assert.h>
-#include <stdio.h>
-
-#define min2(a,b) (((a)<(b))?(a):(b))
-#define max2(a,b) (((a)>(b))?(a):(b))
-
-// ====================================================================
-// ====================================================================
-
-class BoundingBox {
-
-public:
-
-  // CONSTRUCTOR & DESTRUCTOR
-  BoundingBox(Vec3f _min, Vec3f _max) {
-    Set(_min,_max); }
+struct BoundingBox final {
+  BoundingBox(Vec3f _min, Vec3f _max) { Set(_min, _max); }
   ~BoundingBox() {}
 
-  // ACCESSORS
-  void Get(Vec3f &_min, Vec3f &_max) const {
+  auto Get(Vec3f& _min, Vec3f& _max) const -> void {
     _min = min;
-    _max = max; }
-  Vec3f getMin() const { return min; }
-  Vec3f getMax() const { return max; }
+    _max = max;
+  }
+  auto getMin() const -> Vec3f { return min; }
+  auto getMax() const -> Vec3f { return max; }
 
-  // MODIFIERS
-  void Set(BoundingBox *bb) {
-    assert(bb != NULL);
+  auto Set(BoundingBox* bb) -> void {
+    assert(bb != nullptr);
     min = bb->min;
-    max = bb->max; }
-  void Set(Vec3f _min, Vec3f _max) {
-    assert (_min.x() <= _max.x() &&
-	    _min.y() <= _max.y() &&
-	    _min.z() <= _max.z());
+    max = bb->max;
+  }
+  auto Set(Vec3f _min, Vec3f _max) -> void {
+    assert(_min.x() <= _max.x() && _min.y() <= _max.y() &&
+           _min.z() <= _max.z());
     min = _min;
-    max = _max; }
-  void Extend(const Vec3f v) {
-    min = Vec3f(min2(min.x(),v.x()),
-		min2(min.y(),v.y()),
-		min2(min.z(),v.z()));
-    max = Vec3f(max2(max.x(),v.x()),
-		max2(max.y(),v.y()),
-		max2(max.z(),v.z())); }
-  void Extend(BoundingBox *bb) {
-    assert (bb != NULL);
+    max = _max;
+  }
+  auto Extend(Vec3f const& v) -> void {
+    min = Vec3f((min.x() < v.x()) ? min.x() : v.x(),
+                (min.y() < v.y()) ? min.y() : v.y(),
+                (min.z() < v.z()) ? min.z() : v.z());
+    max = Vec3f((max.x() > v.x()) ? max.x() : v.x(),
+                (max.y() > v.y()) ? max.y() : v.y(),
+                (max.z() > v.z()) ? max.z() : v.z());
+  }
+  auto Extend(BoundingBox* bb) -> void {
+    assert(bb != nullptr);
     Extend(bb->min);
-    Extend(bb->max); }
-
-  void Print() const {
-    printf("%f %f %f  -> %f %f %f\n", min.x(), min.y(), min.z(),
-           max.x(), max.y(), max.z());
+    Extend(bb->max);
   }
 
-private:
+  auto Print() const -> void {
+    ::printf("%f %f %f  -> %f %f %f\n", min.x(), min.y(), min.z(), max.x(),
+             max.y(), max.z());
+  }
 
-  BoundingBox() { assert(0); } // don't use this constructor
+  BoundingBox() = delete;
 
-  // REPRESENTATION
-  Vec3f min;
-  Vec3f max;
-
+  Vec3f min{};
+  Vec3f max{};
 };
-
-// ====================================================================
-// ====================================================================
-
-#endif

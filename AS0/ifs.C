@@ -1,79 +1,70 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <assert.h>
+#include <cstdlib>
+#include <cstdio>
+#include <cassert>
 
 #include "ifs.h"
 
-IFS::IFS() {
-  n = 0;
-  transforms = NULL;
-  probabilities = NULL;
-}
+IFS::IFS() = default;
 
 IFS::~IFS() {
-  delete [] transforms;
-  delete [] probabilities;
+  delete[] transforms;
+  delete[] probabilities;
 }
 
-// 读入 IFS
-void IFS::Input(const char *filename) {
-  assert(filename != NULL);
+auto IFS::Input(char const* filename) -> void {
+  assert(filename != nullptr);
 
-  FILE *input = fopen(filename, "r");
-  assert(input != NULL);
+  auto* input = ::fopen(filename, "r");
+  assert(input != nullptr);
 
-  fscanf(input, "%d", &n);
+  ::fscanf(input, "%d", &n);
   assert(n > 0);
 
-  // 重复调用 Input 前释放旧数组
-  delete [] transforms;
-  delete [] probabilities;
+  delete[] transforms;
+  delete[] probabilities;
 
-  transforms = new Matrix[n];  // 分配 n 个 3x3 仿射矩阵
-  probabilities = new float[n];  // 分配 n 个概率
+  transforms = new Matrix[n];
+  probabilities = new float[n];
 
-  for (int i = 0; i < n; i++) {
-    fscanf(input, "%f", &probabilities[i]);
-    transforms[i].Read3x3(input);  // 读取 3x3 仿射矩阵
+  for (auto i = 0; i < n; i++) {
+    ::fscanf(input, "%f", &probabilities[i]);
+    transforms[i].Read3x3(input);
   }
 
-  fclose(input);
+  ::fclose(input);
 }
 
-// 渲染
-void IFS::Render(Image *image, int num_points, int num_iters) const {
-  assert(image != NULL);
+auto IFS::Render(Image* image, int num_points, int num_iters) const -> void {
+  assert(image != nullptr);
   assert(n > 0);
   assert(num_points > 0);
   assert(num_iters >= 0);
 
-  int width = image->Width();
-  int height = image->Height();
+  auto width = image->Width();
+  auto height = image->Height();
 
-  image->SetAllPixels(Vec3f(0, 0, 0));  // 黑色背景
+  image->SetAllPixels(Vec3f(0, 0, 0));
 
-  for (int p = 0; p < num_points; p++) {
-    Vec2f v((float)rand() / RAND_MAX, (float)rand() / RAND_MAX);  // 随机起点（从单位正方形采样）
-    for (int k = 0; k < num_iters; k++) {  // 迭代 num_iters 次
-      float r = (float)rand() / RAND_MAX;
-      float sum = 0;  // 累积概率
-      int t = n - 1;
-      // 按累积概率选变换（概率大的变换被选更多，收敛更快）
-      for (int i = 0; i < n; i++) {
+  for (auto p = 0; p < num_points; p++) {
+    auto v = Vec2f(float(::rand()) / RAND_MAX, float(::rand()) / RAND_MAX);
+    for (auto k = 0; k < num_iters; k++) {
+      auto r = float(::rand()) / RAND_MAX;
+      auto sum = 0.0f;
+      auto t = n - 1;
+      for (auto i = 0; i < n; i++) {
         sum += probabilities[i];
         if (r < sum) {
           t = i;
           break;
         }
       }
-      transforms[t].Transform(v);  // 应用变换
+      transforms[t].Transform(v);
     }
 
-    // 映射像素（IFS [0,1]^2 → [0,width-1]×[0,height-1]）
-    int x = (int)(v.x() * (width - 1));
-    int y = (int)(v.y() * (height - 1));
-    if (x >= 0 && x < width && y >= 0 && y < height) {
-      image->SetPixel(x, y, Vec3f(1, 1, 1));  // 设置像素为白色
+    auto x = int(v.x() * (width - 1));
+    auto y = int(v.y() * (height - 1));
+    if ((x >= 0) && (x < width) && (y >= 0) && (y < height)) {
+      image->SetPixel(x, y, Vec3f(1, 1, 1));
     }
   }
 }

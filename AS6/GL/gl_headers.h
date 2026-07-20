@@ -1,5 +1,4 @@
-#ifndef _GL_HEADERS_H_
-#define _GL_HEADERS_H_
+#pragma once
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -9,5 +8,3 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <GL/glut.h>
-
-#endif

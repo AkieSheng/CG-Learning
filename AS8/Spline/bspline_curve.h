@@ -1,24 +1,18 @@
-#ifndef _BSPLINE_CURVE_H_
-#define _BSPLINE_CURVE_H_
+#pragma once
 
 #include "curve.h"
 
-// 均匀三次 B-Spline
-class BSplineCurve : public Curve {
-
-public:
+struct BSplineCurve final : Curve {
   BSplineCurve(int num_vertices);
-  ~BSplineCurve() {}
+  ~BSplineCurve() override {}
 
-  void OutputBezier(FILE *file);
-  void OutputBSpline(FILE *file);
+  auto OutputBezier(FILE* file) -> void override;
+  auto OutputBSpline(FILE* file) -> void override;
 
-protected:
-  int getNumSegments() const;
-  void getSegmentControlPoints(int segment, Vec3f pts[4]) const;
-  const Matrix &getSegmentBasis() const;
-  bool allowAddControlPoints() const { return true; }
-  bool allowDeleteControlPoints() const { return true; }
+ protected:
+  auto getNumSegments() const -> int override;
+  auto getSegmentControlPoints(int segment, Vec3f pts[4]) const -> void override;
+  auto getSegmentBasis() const -> Matrix const& override;
+  auto allowAddControlPoints() const -> bool override { return true; }
+  auto allowDeleteControlPoints() const -> bool override { return true; }
 };
-
-#endif

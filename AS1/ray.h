@@ -1,46 +1,27 @@
-#ifndef _RAY_H
-#define _RAY_H
+#pragma once
 
 #include <iostream>
-using namespace std;
-
 #include "vectors.h"
 
-// ====================================================================
-// ====================================================================
+struct Ray final {
+  Ray() {}
+  Ray(Vec3f const& orig, Vec3f const& dir) {
+    origin = orig;
+    direction = dir;
+  }
+  Ray(Ray const& r) { *this = r; }
 
-// Ray class mostly copied from Peter Shirley and Keith Morley
+  auto getOrigin() const -> Vec3f const& { return origin; }
+  auto getDirection() const -> Vec3f const& { return direction; }
+  auto pointAtParameter(float t) const -> Vec3f {
+    return origin + direction * t;
+  }
 
-class Ray {
-
-public:
-
-  // CONSTRUCTOR & DESTRUCTOR
-  Ray () {}
-  Ray (const Vec3f &orig, const Vec3f &dir) {
-    origin = orig; 
-    direction = dir; }
-  Ray (const Ray& r) {*this=r;}
-
-  // ACCESSORS
-  const Vec3f& getOrigin() const { return origin; }
-  const Vec3f& getDirection() const { return direction; }
-  Vec3f pointAtParameter(float t) const {
-    return origin+direction*t; }
-
-private:
-
-  // REPRESENTATION
-  Vec3f origin;
-  Vec3f direction;
+  Vec3f origin{};
+  Vec3f direction{};
 };
 
-inline ostream &operator<<(ostream &os, const Ray &r) {
-  os << "Ray <o:" <<r.getOrigin()<<", d:"<<r.getDirection()<<">";
+inline auto operator<<(std::ostream& os, Ray const& r) -> std::ostream& {
+  os << "Ray <o:" << r.getOrigin() << ", d:" << r.getDirection() << ">";
   return os;
 }
-
-// ====================================================================
-// ====================================================================
-
-#endif

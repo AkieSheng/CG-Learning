@@ -1,17 +1,11 @@
-#ifndef _RUNGE_KUTTA_INTEGRATOR_H_
-#define _RUNGE_KUTTA_INTEGRATOR_H_
+#pragma once
 
 #include "integrator.h"
 
-// 四阶 Runge-Kutta 积分
-class RungeKuttaIntegrator : public Integrator {
-
-public:
+struct RungeKuttaIntegrator final : Integrator {
   RungeKuttaIntegrator() {}
-  virtual ~RungeKuttaIntegrator() {}
+  ~RungeKuttaIntegrator() override {}
 
-  virtual void Update(Particle *particle, ForceField *forcefield, float t, float dt);
-  virtual Vec3f getColor() const { return Vec3f(0, 0, 1); } // 蓝色
+  auto Update(Particle* particle, ForceField* forcefield, float t, float dt) -> void override;
+  auto getColor() const -> Vec3f override { return Vec3f(0, 0, 1); }
 };
-
-#endif

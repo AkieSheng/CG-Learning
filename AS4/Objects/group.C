@@ -1,46 +1,44 @@
 #include "group.h"
-#include <assert.h>
+#include <cassert>
 
-// 构造场景容器
 Group::Group(int numObjects) : numObjects(numObjects) {
   objects = new Object3D*[numObjects];
-  for (int i = 0; i < numObjects; i++)
-    objects[i] = NULL;
+  for (auto i = 0; i < numObjects; i++) {
+    objects[i] = nullptr;
+  }
 }
 
-// 析构时释放子物体
 Group::~Group() {
-  for (int i = 0; i < numObjects; i++)
+  for (auto i = 0; i < numObjects; i++) {
     delete objects[i];
-  delete [] objects;
+  }
+  delete[] objects;
 }
 
-// 添加子物体
-void Group::addObject(int index, Object3D *obj) {
+auto Group::addObject(int index, Object3D* obj) -> void {
   assert(index >= 0 && index < numObjects);
   objects[index] = obj;
 }
 
-// 求交
-bool Group::intersect(const Ray &r, Hit &h, float tmin) {
-  bool hit = false;
-  for (int i = 0; i < numObjects; i++) {
-    if (objects[i] != NULL && objects[i]->intersect(r, h, tmin))
+auto Group::intersect(Ray const& r, Hit& h, float tmin) -> bool {
+  auto hit = false;
+  for (auto i = 0; i < numObjects; i++) {
+    if (objects[i] != nullptr && objects[i]->intersect(r, h, tmin)) {
       hit = true;
+    }
   }
   return hit;
 }
 
-// 阴影射线求交
-bool Group::intersectShadow(const Ray &r, float tmin, float tmax, float &t,
-                            Material **outMaterial) {
-  // 如果 outMaterial 为 NULL，则返回最近交点
-  if (outMaterial == NULL) {
-    for (int i = 0; i < numObjects; i++) {
-      if (objects[i] == NULL)
+auto Group::intersectShadow(Ray const& r, float tmin, float tmax, float& t,
+                            Material** outMaterial) -> bool {
+  if (outMaterial == nullptr) {
+    for (auto i = 0; i < numObjects; i++) {
+      if (objects[i] == nullptr) {
         continue;
+      }
       float hitT;
-      if (objects[i]->intersectShadow(r, tmin, tmax, hitT, NULL)) {
+      if (objects[i]->intersectShadow(r, tmin, tmax, hitT, nullptr)) {
         t = hitT;
         return true;
       }
@@ -48,15 +46,15 @@ bool Group::intersectShadow(const Ray &r, float tmin, float tmax, float &t,
     return false;
   }
 
-  // 如果 outMaterial 不为 NULL，则返回物体材质
-  bool hit = false;
-  float bestT = tmax;
-  Material *bestMat = NULL;
-  for (int i = 0; i < numObjects; i++) {
-    if (objects[i] == NULL)
+  auto hit = false;
+  auto bestT = tmax;
+  Material* bestMat = nullptr;
+  for (auto i = 0; i < numObjects; i++) {
+    if (objects[i] == nullptr) {
       continue;
+    }
     float hitT;
-    Material *hitMat = NULL;
+    Material* hitMat = nullptr;
     if (objects[i]->intersectShadow(r, tmin, bestT, hitT, &hitMat)) {
       bestT = hitT;
       bestMat = hitMat;
@@ -70,10 +68,10 @@ bool Group::intersectShadow(const Ray &r, float tmin, float tmax, float &t,
   return hit;
 }
 
-// OpenGL 绘制
-void Group::paint(void) const {
-  for (int i = 0; i < numObjects; i++) {
-    if (objects[i] != NULL)
+auto Group::paint() const -> void {
+  for (auto i = 0; i < numObjects; i++) {
+    if (objects[i] != nullptr) {
       objects[i]->paint();
+    }
   }
 }

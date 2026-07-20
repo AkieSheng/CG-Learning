@@ -1,88 +1,86 @@
-#ifndef _GRID_H_
-#define _GRID_H_
+#pragma once
 
 #include "object3d.h"
 #include "object3dvector.h"
 
-class BoundingBox;
-class MarchingInfo;
-class Ray;
-class Hit;
-class Matrix;
-class PhongMaterial;
+struct BoundingBox;
+struct MarchingInfo;
+struct Ray;
+struct Hit;
+struct Matrix;
+struct PhongMaterial;
 
-// 均匀体素网格
-class Grid : public Object3D {
+struct Grid : Object3D {
+  Grid(BoundingBox* bb, int nx, int ny, int nz);
+  ~Grid() override;
 
-public:
-  Grid(BoundingBox *bb, int nx, int ny, int nz);
-  virtual ~Grid();
+  auto getBoundingBox() const -> BoundingBox* { return sceneBounds; }
 
-  BoundingBox *getBoundingBox() const { return sceneBounds; }
+  auto getNX() const -> int { return nx; }
+  auto getNY() const -> int { return ny; }
+  auto getNZ() const -> int { return nz; }
 
-  int getNX() const { return nx; }
-  int getNY() const { return ny; }
-  int getNZ() const { return nz; }
+  auto getVoxelCenter(int i, int j, int k) const -> Vec3f;
+  auto getVoxelHalfDiagonal() const -> float;
 
-  Vec3f getVoxelCenter(int i, int j, int k) const;  // 获取体素中心点
-  float getVoxelHalfDiagonal() const;  // 获取体素半对角线长度
+  auto insertObject(int i, int j, int k, Object3D* obj) -> void;
+  auto getObjectCount(int i, int j, int k) const -> int;
+  auto isOccupied(int i, int j, int k) const -> bool;
 
-  void insertObject(int i, int j, int k, Object3D *obj);  // 将物体插入体素网格
-  int getObjectCount(int i, int j, int k) const;  // 获取体素内物体数量
-  bool isOccupied(int i, int j, int k) const;  // 获取体素占用标记
+  auto insertObjectInBBox(BoundingBox* bb, Object3D* obj, Matrix* m = nullptr) -> void;
+  auto insertObjectInWorldAABB(Vec3f const& wmin, Vec3f const& wmax,
+                               Object3D* obj, Matrix* m = nullptr) -> void;
 
-  void insertObjectInBBox(BoundingBox *bb, Object3D *obj, Matrix *m = NULL);  // 将物体插入包围盒
-  void insertObjectInWorldAABB(const Vec3f &wmin, const Vec3f &wmax,
-                               Object3D *obj, Matrix *m = NULL);
+  auto printOccupancy() const -> void;
 
-  void printOccupancy() const;  // [DEBUG] 打印占用情况
+  auto getDensityColor(int count) const -> Vec3f;
+  auto getDensityMaterial(int count) const -> Material*;
 
-  Vec3f getDensityColor(int count) const;  // 获取密度着色颜色
-  Material *getDensityMaterial(int count) const;  // 获取密度着色材质
+  auto initializeRayMarch(MarchingInfo& mi, Ray const& r, float tmin) const -> void;
 
-  void initializeRayMarch(MarchingInfo &mi, const Ray &r, float tmin) const;
+  auto addInfiniteObject(Object3D* obj) -> void;
+  auto getCell(int i, int j, int k) -> Object3DVector*;
+  auto getInfiniteObjects() const -> Object3DVector const& {
+    return *infiniteObjects;
+  }
 
-  void addInfiniteObject(Object3D *obj);  // 添加无限图元
-  Object3DVector *getCell(int i, int j, int k);  // 获取体素
-  const Object3DVector &getInfiniteObjects() const { return *infiniteObjects; }  // 获取无限图元
+  auto wrapForGrid(Object3D* obj, Matrix* m) -> Object3D*;
 
-  Object3D *wrapForGrid(Object3D *obj, Matrix *m);  // 包装物体
+  auto inBounds(int i, int j, int k) const -> bool;
 
-  bool inBounds(int i, int j, int k) const;  // 判断体素是否在边界内
-
-  virtual bool intersect(const Ray &r, Hit &h, float tmin);  // 求交
-  virtual bool intersectShadow(const Ray &r, float tmin, float tmax, float &t,
-                               Material **outMaterial);  // 求交阴影
-  virtual void paint(void) const;  // 渲染
+  auto intersect(Ray const& r, Hit& h, float tmin) -> bool override;
+  auto intersectShadow(Ray const& r, float tmin, float tmax, float& t,
+                       Material** outMaterial) -> bool override;
+  auto paint() const -> void override;
 
 private:
-  static const int MAX_DENSITY_LEVELS = 16;  // 最大密度着色等级
+  static int const MAX_DENSITY_LEVELS = 16;
 
-  int index(int i, int j, int k) const;  // 获取体素索引
-  void getVoxelBounds(int i, int j, int k, Vec3f &vmin, Vec3f &vmax) const;  // 获取体素边界
-  void getWorldBBox(BoundingBox *bb, Matrix *m, Vec3f &wmin, Vec3f &wmax) const;  // 获取世界边界
-  void voxelIndexRange(const Vec3f &wmin, const Vec3f &wmax,  // 获取体素索引范围
-                       int &i0, int &i1, int &j0, int &j1, int &k0, int &k1) const;  // 获取体素索引范围
+  auto index(int i, int j, int k) const -> int;
+  auto getVoxelBounds(int i, int j, int k, Vec3f& vmin, Vec3f& vmax) const -> void;
+  auto getWorldBBox(BoundingBox* bb, Matrix* m, Vec3f& wmin, Vec3f& wmax) const -> void;
+  auto voxelIndexRange(Vec3f const& wmin, Vec3f const& wmax,
+                       int& i0, int& i1, int& j0, int& j1, int& k0, int& k1) const -> void;
 
-  // 射线与包围盒求交，返回进入/离开参数
-  bool intersectRayBox(const Ray &r, float tmin, float &tEnter, float &tExit,
-                       Vec3f &entryNormal) const;
+  auto intersectRayBox(Ray const& r, float tmin, float& tEnter, float& tExit,
+                       Vec3f& entryNormal) const -> bool;
 
-  // [DEBUG] 记录遍历到的体素与进入面
-  void addRayTreeTraversal(int i, int j, int k, const Vec3f &entryNormal,
-                           int step) const;
-  void addRayTreeHitCell(int i, int j, int k, int step) const;
-  void paintVoxelFace(const Vec3f &a, const Vec3f &b, const Vec3f &c,
-                      const Vec3f &d, const Vec3f &normal, int count) const;
-  int getOccupiedCount() const;
+  auto addRayTreeTraversal(int i, int j, int k, Vec3f const& entryNormal,
+                           int step) const -> void;
+  auto addRayTreeHitCell(int i, int j, int k, int step) const -> void;
+  auto paintVoxelFace(Vec3f const& a, Vec3f const& b, Vec3f const& c,
+                      Vec3f const& d, Vec3f const& normal, int count) const -> void;
+  auto getOccupiedCount() const -> int;
 
-  BoundingBox *sceneBounds;  // 场景包围盒
-  int nx, ny, nz;  // 体素网格分辨率
-  float dx, dy, dz;  // 体素网格边长
-  Object3DVector *cells;  // 体素网格
-  Object3DVector *infiniteObjects;  // 无限图元
-  Object3DVector *gridWrappers;  // Transform 包装器
-  PhongMaterial **densityMaterials;  // 密度着色材质
+  BoundingBox* sceneBounds{};
+  int nx{};
+  int ny{};
+  int nz{};
+  float dx{};
+  float dy{};
+  float dz{};
+  Object3DVector* cells{};
+  Object3DVector* infiniteObjects{};
+  Object3DVector* gridWrappers{};
+  PhongMaterial** densityMaterials{};
 };
-
-#endif

@@ -1,55 +1,47 @@
 #include "gl_headers.h"
 #include "particle.h"
 
-
-void Particle::increaseAge(float a) { 
-  // interpolate towards dead_color as the clock ticks down  
-  float t = 1;
-  if (timeToDeath > 0) 
+auto Particle::increaseAge(float a) -> void {
+  auto t = 1.0f;
+  if (timeToDeath > 0) {
     t = a / timeToDeath;
-  if (t > 1) t = 1;
-  color += t*(dead_color-color); 
-
-  // adjust the clock
-  timeToDeath -= a; 
+  }
+  if (t > 1.0f) {
+    t = 1.0f;
+  }
+  color += t * (dead_color - color);
+  timeToDeath -= a;
 }
 
-
-void Particle::Paint(float dt, int integrator_color, int draw_vectors, int motion_blur) const {
-
-  // grab the particle color
+auto Particle::Paint(float dt, int integrator_color, int draw_vectors, int motion_blur) const -> void {
   if (integrator_color == 0) {
-    glColor3f(color.x(),color.y(),color.z());
+    ::glColor3f(color.x(), color.y(), color.z());
   }
 
-  // use slightly larger points if it's not motion blurred
   if (motion_blur == 0) {
-    glPointSize(3);
-    glBegin(GL_POINTS);
-    glVertex3f(position.x(),position.y(),position.z());
-    glEnd();
+    ::glPointSize(3);
+    ::glBegin(GL_POINTS);
+    ::glVertex3f(position.x(), position.y(), position.z());
+    ::glEnd();
   }
 
-  // draw the velocity vectors
   if (draw_vectors == 1) {
-    glLineWidth(1);
-    glBegin(GL_LINES);
-    Vec3f a = position;
-    Vec3f b = position + dt*velocity;
-    glVertex3f(a.x(),a.y(),a.z());
-    glVertex3f(b.x(),b.y(),b.z());
-    glEnd();
+    ::glLineWidth(1);
+    ::glBegin(GL_LINES);
+    auto a = position;
+    auto b = position + dt * velocity;
+    ::glVertex3f(a.x(), a.y(), a.z());
+    ::glVertex3f(b.x(), b.y(), b.z());
+    ::glEnd();
   }
 
-  // draw motion blur lines
   if (motion_blur == 1) {
-    glLineWidth(1);
-    glBegin(GL_LINES);
-    Vec3f a = position;
-    Vec3f b = last_position;
-    glVertex3f(a.x(),a.y(),a.z());
-    glVertex3f(b.x(),b.y(),b.z());
-    glEnd();
+    ::glLineWidth(1);
+    ::glBegin(GL_LINES);
+    auto a = position;
+    auto b = last_position;
+    ::glVertex3f(a.x(), a.y(), a.z());
+    ::glVertex3f(b.x(), b.y(), b.z());
+    ::glEnd();
   }
 }
-

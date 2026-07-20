@@ -1,27 +1,20 @@
-#ifndef _GROUP_H_
-#define _GROUP_H_
+#pragma once
 
 #include "object3d.h"
 
-class Grid;
-class Matrix;
+struct Grid;
+struct Matrix;
 
-// 场景容器
-class Group : public Object3D {
-
-public:
+struct Group final : Object3D {
   Group(int numObjects);
-  ~Group();
+  ~Group() override;
 
-  void addObject(int index, Object3D *obj);
-  virtual bool intersect(const Ray &r, Hit &h, float tmin);
-  virtual bool intersectShadow(const Ray &r, float tmin, float tmax, float &t,
-                               Material **outMaterial);
-  virtual void insertIntoGrid(Grid *g, Matrix *m);
+  auto addObject(int index, Object3D* obj) -> void;
+  auto intersect(Ray const& r, Hit& h, float tmin) -> bool override;
+  auto intersectShadow(Ray const& r, float tmin, float tmax, float& t,
+                       Material** outMaterial) -> bool override;
+  auto insertIntoGrid(Grid* g, Matrix* m) -> void override;
 
-private:
-  Object3D **objects;  // 子物体指针数组
-  int numObjects;      // 数组容量
+  Object3D** objects{};
+  int numObjects{};
 };
-
-#endif

@@ -1,18 +1,11 @@
-#ifndef _GAUSSIAN_FILTER_H_
-#define _GAUSSIAN_FILTER_H_
+#pragma once
 
 #include "filter.h"
 
-// 高斯滤波：w = exp(-d²/(2σ²))，d > 2σ 时钳制为 0
-class GaussianFilter : public Filter {
-
-public:
+struct GaussianFilter final : Filter {
   GaussianFilter(float sigma);
-  virtual float getWeight(float x, float y);
-  virtual int getSupportRadius();
+  auto getWeight(float x, float y) -> float override;
+  auto getSupportRadius() -> int override;
 
-private:
-  float sigma;  // 高斯核的标准差
+  float sigma{};
 };
-
-#endif

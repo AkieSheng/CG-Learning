@@ -1,9 +1,9 @@
 #include "marchinginfo.h"
 #include "raytracing_stats.h"
 
-#include <math.h>
+#include <cmath>
 
-static const float MARCH_INF = 1.0e30f;  // 射线步进的最大距离
+static const float MARCH_INF = 1.0e30f;
 
 MarchingInfo::MarchingInfo()
     : tmin(0), t_exit(MARCH_INF), valid(false),
@@ -14,66 +14,66 @@ MarchingInfo::MarchingInfo()
       normal(Vec3f(0, 0, 0)) {}
 
 
-// 选择最小的 t_next_*，前进到相邻体素并更新进入面的法线
-void MarchingInfo::nextCell() {
+
+auto MarchingInfo::nextCell() -> void {
   RayTracingStats::IncrementNumGridCellsTraversed();
   if (t_next_x < t_next_y) {
     if (t_next_x < t_next_z) {
       i += sign_x;
       tmin = t_next_x;
       t_next_x += d_tx;
-      normal = Vec3f(-(float)sign_x, 0.0f, 0.0f);
+      normal = Vec3f(-static_cast<float>(sign_x), 0.0f, 0.0f);
     } else {
       k += sign_z;
       tmin = t_next_z;
       t_next_z += d_tz;
-      normal = Vec3f(0.0f, 0.0f, -(float)sign_z);
+      normal = Vec3f(0.0f, 0.0f, -static_cast<float>(sign_z));
     }
   } else {
     if (t_next_y < t_next_z) {
       j += sign_y;
       tmin = t_next_y;
       t_next_y += d_ty;
-      normal = Vec3f(0.0f, -(float)sign_y, 0.0f);
+      normal = Vec3f(0.0f, -static_cast<float>(sign_y), 0.0f);
     } else {
       k += sign_z;
       tmin = t_next_z;
       t_next_z += d_tz;
-      normal = Vec3f(0.0f, 0.0f, -(float)sign_z);
+      normal = Vec3f(0.0f, 0.0f, -static_cast<float>(sign_z));
     }
   }
 }
 
-float MarchingInfo::getTMin() const { return tmin; }
-int MarchingInfo::getI() const { return i; }
-int MarchingInfo::getJ() const { return j; }
-int MarchingInfo::getK() const { return k; }
-float MarchingInfo::getTNextX() const { return t_next_x; }
-float MarchingInfo::getTNextY() const { return t_next_y; }
-float MarchingInfo::getTNextZ() const { return t_next_z; }
-float MarchingInfo::getDTx() const { return d_tx; }
-float MarchingInfo::getDTy() const { return d_ty; }
-float MarchingInfo::getDTz() const { return d_tz; }
-int MarchingInfo::getSignX() const { return sign_x; }
-int MarchingInfo::getSignY() const { return sign_y; }
-int MarchingInfo::getSignZ() const { return sign_z; }
-Vec3f MarchingInfo::getNormal() const { return normal; }
-bool MarchingInfo::isValid() const { return valid; }
-float MarchingInfo::getTExit() const { return t_exit; }
+auto MarchingInfo::getTMin()const -> float { return tmin; }
+auto MarchingInfo::getI()const -> int { return i; }
+auto MarchingInfo::getJ()const -> int { return j; }
+auto MarchingInfo::getK()const -> int { return k; }
+auto MarchingInfo::getTNextX()const -> float { return t_next_x; }
+auto MarchingInfo::getTNextY()const -> float { return t_next_y; }
+auto MarchingInfo::getTNextZ()const -> float { return t_next_z; }
+auto MarchingInfo::getDTx()const -> float { return d_tx; }
+auto MarchingInfo::getDTy()const -> float { return d_ty; }
+auto MarchingInfo::getDTz()const -> float { return d_tz; }
+auto MarchingInfo::getSignX()const -> int { return sign_x; }
+auto MarchingInfo::getSignY()const -> int { return sign_y; }
+auto MarchingInfo::getSignZ()const -> int { return sign_z; }
+auto MarchingInfo::getNormal()const -> Vec3f { return normal; }
+auto MarchingInfo::isValid()const -> bool { return valid; }
+auto MarchingInfo::getTExit()const -> float { return t_exit; }
 
-void MarchingInfo::setTMin(float t) { tmin = t; }
-void MarchingInfo::setI(int v) { i = v; }
-void MarchingInfo::setJ(int v) { j = v; }
-void MarchingInfo::setK(int v) { k = v; }
-void MarchingInfo::setTNextX(float t) { t_next_x = t; }
-void MarchingInfo::setTNextY(float t) { t_next_y = t; }
-void MarchingInfo::setTNextZ(float t) { t_next_z = t; }
-void MarchingInfo::setDTx(float d) { d_tx = d; }
-void MarchingInfo::setDTy(float d) { d_ty = d; }
-void MarchingInfo::setDTz(float d) { d_tz = d; }
-void MarchingInfo::setSignX(int s) { sign_x = s; }
-void MarchingInfo::setSignY(int s) { sign_y = s; }
-void MarchingInfo::setSignZ(int s) { sign_z = s; }
-void MarchingInfo::setNormal(const Vec3f &n) { normal = n; }
-void MarchingInfo::setTExit(float t) { t_exit = t; }
-void MarchingInfo::setValid(bool v) { valid = v; }
+auto MarchingInfo::setTMin(float t) -> void { tmin = t; }
+auto MarchingInfo::setI(int v) -> void { i = v; }
+auto MarchingInfo::setJ(int v) -> void { j = v; }
+auto MarchingInfo::setK(int v) -> void { k = v; }
+auto MarchingInfo::setTNextX(float t) -> void { t_next_x = t; }
+auto MarchingInfo::setTNextY(float t) -> void { t_next_y = t; }
+auto MarchingInfo::setTNextZ(float t) -> void { t_next_z = t; }
+auto MarchingInfo::setDTx(float d) -> void { d_tx = d; }
+auto MarchingInfo::setDTy(float d) -> void { d_ty = d; }
+auto MarchingInfo::setDTz(float d) -> void { d_tz = d; }
+auto MarchingInfo::setSignX(int s) -> void { sign_x = s; }
+auto MarchingInfo::setSignY(int s) -> void { sign_y = s; }
+auto MarchingInfo::setSignZ(int s) -> void { sign_z = s; }
+auto MarchingInfo::setNormal(Vec3f const&n) -> void { normal = n; }
+auto MarchingInfo::setTExit(float t) -> void { t_exit = t; }
+auto MarchingInfo::setValid(bool v) -> void { valid = v; }

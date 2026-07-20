@@ -1,59 +1,61 @@
-#ifndef _MARCHING_INFO_H_
-#define _MARCHING_INFO_H_
+#pragma once
 
 #include "vectors.h"
 
-// 3D DDA 射线步进状态
-class MarchingInfo {
-public:
+struct MarchingInfo final {
   MarchingInfo();
 
-  void nextCell();  // 步进到下一个体素
+  auto nextCell() -> void;
 
-  float getTMin() const;
-  int getI() const;
-  int getJ() const;
-  int getK() const;
-  float getTNextX() const;
-  float getTNextY() const;
-  float getTNextZ() const;
-  float getDTx() const;
-  float getDTy() const;
-  float getDTz() const;
-  int getSignX() const;
-  int getSignY() const;
-  int getSignZ() const;
-  Vec3f getNormal() const;
+  auto getTMin() const -> float;
+  auto getI() const -> int;
+  auto getJ() const -> int;
+  auto getK() const -> int;
+  auto getTNextX() const -> float;
+  auto getTNextY() const -> float;
+  auto getTNextZ() const -> float;
+  auto getDTx() const -> float;
+  auto getDTy() const -> float;
+  auto getDTz() const -> float;
+  auto getSignX() const -> int;
+  auto getSignY() const -> int;
+  auto getSignZ() const -> int;
+  auto getNormal() const -> Vec3f;
 
-  void setTMin(float t);
-  void setI(int i);
-  void setJ(int j);
-  void setK(int k);
-  void setTNextX(float t);
-  void setTNextY(float t);
-  void setTNextZ(float t);
-  void setDTx(float d);
-  void setDTy(float d);
-  void setDTz(float d);
-  void setSignX(int s);
-  void setSignY(int s);
-  void setSignZ(int s);
-  void setNormal(const Vec3f &n);
-  void setTExit(float t);
-  void setValid(bool v);
+  auto setTMin(float t) -> void;
+  auto setI(int i) -> void;
+  auto setJ(int j) -> void;
+  auto setK(int k) -> void;
+  auto setTNextX(float t) -> void;
+  auto setTNextY(float t) -> void;
+  auto setTNextZ(float t) -> void;
+  auto setDTx(float d) -> void;
+  auto setDTy(float d) -> void;
+  auto setDTz(float d) -> void;
+  auto setSignX(int s) -> void;
+  auto setSignY(int s) -> void;
+  auto setSignZ(int s) -> void;
+  auto setNormal(Vec3f const& n) -> void;
+  auto setTExit(float t) -> void;
+  auto setValid(bool v) -> void;
 
-  bool isValid() const;
-  float getTExit() const;
+  auto isValid() const -> bool;
+  auto getTExit() const -> float;
 
-private:
-  float tmin;  // 进入参数
-  float t_exit;  // 离开参数
-  bool valid;  // 是否有效
-  int i, j, k;  // 体素索引
-  float t_next_x, t_next_y, t_next_z;  // 步进参数
-  float d_tx, d_ty, d_tz;  // 步进方向
-  int sign_x, sign_y, sign_z;  // 步进方向符号
-  Vec3f normal;  // 进入面法线
+  float tmin{};
+  float t_exit{};
+  bool valid{};
+  int i{};
+  int j{};
+  int k{};
+  float t_next_x{};
+  float t_next_y{};
+  float t_next_z{};
+  float d_tx{};
+  float d_ty{};
+  float d_tz{};
+  int sign_x{};
+  int sign_y{};
+  int sign_z{};
+  Vec3f normal{};
 };
-
-#endif

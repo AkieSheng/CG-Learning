@@ -4,10 +4,6 @@
 raytracer
 Makefile.depend
 
-# Generated output images
-OutputFiles/
-*.tga
-
 # Editor / temp files
 *~
 *bak

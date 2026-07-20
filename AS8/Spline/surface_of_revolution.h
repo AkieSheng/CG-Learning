@@ -1,33 +1,24 @@
-#ifndef _SURFACE_OF_REVOLUTION_H_
-#define _SURFACE_OF_REVOLUTION_H_
+#pragma once
 
 #include "surface.h"
 
-class ArgParser;
-class Curve;
+struct ArgParser;
+struct Curve;
 
-// 旋转曲面
-class SurfaceOfRevolution : public Surface {
+struct SurfaceOfRevolution final : Surface {
+  SurfaceOfRevolution(Curve* profile);
+  ~SurfaceOfRevolution() override;
 
-public:
-  SurfaceOfRevolution(Curve *profile);
-  ~SurfaceOfRevolution();
+  auto Paint(ArgParser* args) -> void override;
+  auto OutputBezier(FILE* file) -> void override;
+  auto OutputBSpline(FILE* file) -> void override;
 
-  void Paint(ArgParser *args);
-  void OutputBezier(FILE *file);
-  void OutputBSpline(FILE *file);
+  auto getNumVertices() -> int override;
+  auto getVertex(int i) -> Vec3f override;
+  auto moveControlPoint(int selectedPoint, float x, float y) -> void override;
+  auto addControlPoint(int selectedPoint, float x, float y) -> void override;
+  auto deleteControlPoint(int selectedPoint) -> void override;
+  auto OutputTriangles(ArgParser* args) -> TriangleMesh* override;
 
-  // 编辑操作委托到 2D 曲线
-  int getNumVertices();
-  Vec3f getVertex(int i);
-  void moveControlPoint(int selectedPoint, float x, float y);
-  void addControlPoint(int selectedPoint, float x, float y);
-  void deleteControlPoint(int selectedPoint);
-
-  TriangleMesh* OutputTriangles(ArgParser *args);
-
-protected:
-  Curve *profile_curve;  // 截面曲线
+  Curve* profile_curve{};
 };
-
-#endif

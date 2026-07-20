@@ -1,19 +1,13 @@
-#ifndef _GRAVITY_FORCE_FIELD_H_
-#define _GRAVITY_FORCE_FIELD_H_
+#pragma once
 
 #include "force_field.h"
 
-// 重力场
-class GravityForceField : public ForceField {
-
-public:
+struct GravityForceField final : ForceField {
   GravityForceField(Vec3f gravity) { this->gravity = gravity; }
-  virtual ~GravityForceField() {}
+  ~GravityForceField() override {}
 
-  virtual Vec3f getAcceleration(const Vec3f &position, float mass, float t) const;
+  auto getAcceleration(Vec3f const& position, float mass, float t) const -> Vec3f override;
 
 private:
-  Vec3f gravity;  // 重力加速度
+  Vec3f gravity{};
 };
-
-#endif

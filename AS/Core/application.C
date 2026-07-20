@@ -1,9 +1,9 @@
 #include "application.h"
 #include "gl_headers.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 #ifndef GLUT_WHEEL_UP
 #define GLUT_WHEEL_UP 3
@@ -12,22 +12,20 @@
 #define GLUT_WHEEL_DOWN 4
 #endif
 
-Application *Application::instance = NULL;
+Application* Application::instance = nullptr;
 
-Application::Application()
-  : windowWidth(1280),
-    windowHeight(720),
-    mouseX(0),
-    mouseY(0),
-    mouseButton(-1) {
+Application::Application() {
   instance = this;
 }
 
 Application::~Application() {
-  if (instance == this) instance = NULL;
+  if (instance == this) {
+    instance = nullptr;
+  }
 }
 
-bool Application::initialize(int argc, char **argv, const std::string &path) {
+auto Application::initialize(int argc, char** argv, std::string const& path)
+    -> bool {
   modelPath = path;
 
   glutInit(&argc, argv);
@@ -36,7 +34,7 @@ bool Application::initialize(int argc, char **argv, const std::string &path) {
   glutCreateWindow("AS PBR Viewer");
 
   if (!loadOpenGLFunctions()) {
-    fprintf(stderr, "Failed to load OpenGL 3.3 functions.\n");
+    std::fprintf(stderr, "Failed to load OpenGL 3.3 functions.\n");
     return false;
   }
 
@@ -45,8 +43,10 @@ bool Application::initialize(int argc, char **argv, const std::string &path) {
   }
 
   if (!modelPath.empty()) {
-    if (!scene.loadModel(modelPath, (float)windowWidth / (float)windowHeight)) {
-      fprintf(stderr, "Warning: model not loaded, showing empty scene.\n");
+    if (!scene.loadModel(modelPath,
+                         static_cast<float>(windowWidth) /
+                             static_cast<float>(windowHeight))) {
+      std::fprintf(stderr, "Warning: model not loaded, showing empty scene.\n");
     }
   }
 
@@ -56,42 +56,49 @@ bool Application::initialize(int argc, char **argv, const std::string &path) {
   glutMouseFunc(mouseButtonCallback);
   glutMotionFunc(mouseMotionCallback);
 
-  printf("Controls: LMB=rotate, RMB/MMB=pan, wheel/+/-=zoom, S=supersampling, F=FXAA, Q=quit\n");
+  std::printf(
+      "Controls: LMB=rotate, RMB/MMB=pan, wheel/+/-=zoom, S=supersampling, "
+      "F=FXAA, Q=quit\n");
   return true;
 }
 
-void Application::run() {
-  glutMainLoop();
-}
+auto Application::run() -> void { glutMainLoop(); }
 
-void Application::displayCallback() {
-  if (!instance) return;
+auto Application::displayCallback() -> void {
+  if (!instance) {
+    return;
+  }
   instance->renderer.render(instance->scene);
   glutSwapBuffers();
 }
 
-void Application::reshapeCallback(int w, int h) {
-  if (!instance) return;
+auto Application::reshapeCallback(int w, int h) -> void {
+  if (!instance) {
+    return;
+  }
   instance->windowWidth = w;
   instance->windowHeight = h;
   instance->renderer.resize(w, h);
 }
 
-void Application::keyboardCallback(unsigned char key, int x, int y) {
-  (void)x; (void)y;
-  if (!instance) return;
+auto Application::keyboardCallback(unsigned char key, int x, int y) -> void {
+  (void)x;
+  (void)y;
+  if (!instance) {
+    return;
+  }
 
-  OrbitCamera &cam = instance->scene.getCamera();
+  OrbitCamera& cam = instance->scene.getCamera();
   switch (key) {
     case 27:
     case 'q':
     case 'Q':
-      exit(0);
+      std::exit(0);
       break;
     case 'f':
     case 'F': {
       bool enabled = instance->renderer.toggleFXAA();
-      fprintf(stderr, "FXAA: %s\n", enabled ? "on" : "off");
+      std::fprintf(stderr, "FXAA: %s\n", enabled ? "on" : "off");
       break;
     }
     case 's':
@@ -112,12 +119,15 @@ void Application::keyboardCallback(unsigned char key, int x, int y) {
   glutPostRedisplay();
 }
 
-void Application::mouseButtonCallback(int button, int state, int x, int y) {
-  if (!instance) return;
+auto Application::mouseButtonCallback(int button, int state, int x, int y)
+    -> void {
+  if (!instance) {
+    return;
+  }
 
   if (state == GLUT_DOWN &&
       (button == GLUT_WHEEL_UP || button == GLUT_WHEEL_DOWN)) {
-    OrbitCamera &cam = instance->scene.getCamera();
+    OrbitCamera& cam = instance->scene.getCamera();
     if (button == GLUT_WHEEL_UP) {
       cam.zoom(0.1f);
     } else {
@@ -136,23 +146,27 @@ void Application::mouseButtonCallback(int button, int state, int x, int y) {
   }
 }
 
-void Application::mouseMotionCallback(int x, int y) {
-  if (!instance || instance->mouseButton < 0) return;
+auto Application::mouseMotionCallback(int x, int y) -> void {
+  if (!instance || instance->mouseButton < 0) {
+    return;
+  }
 
   int dx = x - instance->mouseX;
   int dy = y - instance->mouseY;
   instance->mouseX = x;
   instance->mouseY = y;
 
-  OrbitCamera &cam = instance->scene.getCamera();
+  OrbitCamera& cam = instance->scene.getCamera();
   float sensitivity = 0.3f;
   float panScale = cam.getDistance() * 0.002f;
 
   if (instance->mouseButton == GLUT_LEFT_BUTTON) {
-    cam.rotate((float)dx * sensitivity, (float)-dy * sensitivity);
+    cam.rotate(static_cast<float>(dx) * sensitivity,
+               static_cast<float>(-dy) * sensitivity);
   } else if (instance->mouseButton == GLUT_RIGHT_BUTTON ||
              instance->mouseButton == GLUT_MIDDLE_BUTTON) {
-    cam.pan((float)-dx * panScale, (float)dy * panScale);
+    cam.pan(static_cast<float>(-dx) * panScale,
+            static_cast<float>(dy) * panScale);
   }
   glutPostRedisplay();
 }

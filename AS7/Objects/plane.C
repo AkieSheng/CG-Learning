@@ -7,42 +7,38 @@ Plane::Plane(Vec3f normal, float d, Material *m)
     : normal(normal), d(d) {
   material = m;
   normal.Normalize();
-  bbox = NULL;
+  bbox = nullptr;
 }
 
 void Plane::insertIntoGrid(Grid *g, Matrix *m) {
-  if (g != NULL)
+  if (g != nullptr)
     g->addInfiniteObject(this);
 }
 
-// 射线-平面求交
-// 将 P(t)=O+tD 代入 P·n=d → t = (d - O·n) / (D·n)
-bool Plane::intersect(const Ray &r, Hit &h, float tmin) {
+bool Plane::intersect(Ray const&r, Hit &h, float tmin) {
   RayTracingStats::IncrementNumIntersections();
-  float denom = normal.Dot3(r.getDirection());  // D·n
-  if (fabs(denom) < 1e-6f)  // 容差
-    return false;  // 射线与平面平行
+  float denom = normal.Dot3(r.getDirection());
+  if (::fabs(denom) < 1e-6f)
+    return false;
 
-  float t = (d - normal.Dot3(r.getOrigin())) / denom;  // t = (d - O·n) / (D·n)
+  float t = (d - normal.Dot3(r.getOrigin())) / denom;
   if (t >= tmin && t < h.getT()) {
-    h.set(t, material, normal, r);  // 交点
+    h.set(t, material, normal, r);
     return true;
   }
   return false;
 }
 
-// 阴影射线求交
-bool Plane::intersectShadow(const Ray &r, float tmin, float tmax, float &t,
+bool Plane::intersectShadow(Ray const&r, float tmin, float tmax, float &t,
                             Material **outMaterial) {
-  float denom = normal.Dot3(r.getDirection());  // D·n
-  if (fabs(denom) < 1e-6f)  // 容差
+  float denom = normal.Dot3(r.getDirection());
+  if (::fabs(denom) < 1e-6f)
     return false;
 
-  // 计算交点t
-  float hitT = (d - normal.Dot3(r.getOrigin())) / denom;  // t = (d - O·n) / (D·n)
+  float hitT = (d - normal.Dot3(r.getOrigin())) / denom;
   if (hitT >= tmin && hitT <= tmax) {
     t = hitT;
-    if (outMaterial != NULL)
+    if (outMaterial != nullptr)
       *outMaterial = material;
     return true;
   }

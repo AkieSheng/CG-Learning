@@ -1,122 +1,112 @@
-#ifndef _MATRIX_H_
-#define _MATRIX_H_
+#pragma once
 
-//
-// originally implemented by Justin Legakis
-//
-
-#include <math.h>
-#include <assert.h>
+#include <cmath>
+#include <cassert>
+#include <cstdio>
 
 #include "vectors.h"
 
-// ====================================================================
-// ====================================================================
-
-class Matrix {
-
-public:
-
-  // CONSTRUCTORS & DESTRUCTOR
+struct Matrix final {
   Matrix() { Clear(); }
-  Matrix(const Matrix& m);
-  Matrix(const float *m);
+  Matrix(Matrix const& m);
+  Matrix(float const* m);
   ~Matrix() {}
-  
-  // ACCESSORS
-  float* glGet(void) const {
-    float *glMat = new float[16];
-     glMat[0]=data[0][0];  glMat[1]=data[1][0];  glMat[2]=data[2][0];  glMat[3]=data[3][0];
-     glMat[4]=data[0][1];  glMat[5]=data[1][1];  glMat[6]=data[2][1];  glMat[7]=data[3][1];
-     glMat[8]=data[0][2];  glMat[9]=data[1][2]; glMat[10]=data[2][2]; glMat[11]=data[3][2];
-    glMat[12]=data[0][3]; glMat[13]=data[1][3]; glMat[14]=data[2][3]; glMat[15]=data[3][3];
+
+  auto glGet() const -> float* {
+    auto* glMat = new float[16];
+    glMat[0] = data[0][0];
+    glMat[1] = data[1][0];
+    glMat[2] = data[2][0];
+    glMat[3] = data[3][0];
+    glMat[4] = data[0][1];
+    glMat[5] = data[1][1];
+    glMat[6] = data[2][1];
+    glMat[7] = data[3][1];
+    glMat[8] = data[0][2];
+    glMat[9] = data[1][2];
+    glMat[10] = data[2][2];
+    glMat[11] = data[3][2];
+    glMat[12] = data[0][3];
+    glMat[13] = data[1][3];
+    glMat[14] = data[2][3];
+    glMat[15] = data[3][3];
     return glMat;
   }
-  float Get(int x, int y) const { 
-    assert (x >= 0 && x < 4);
-    assert (y >= 0 && y < 4);
-    return data[y][x]; }
-  
-  // MODIFIERS
-  void Set(int x, int y, float v) {
-    assert (x >= 0 && x < 4);
-    assert (y >= 0 && y < 4);
-    data[y][x] = v; }
-  void SetToIdentity();
-  void Clear();
+  auto Get(int x, int y) const -> float {
+    assert((x >= 0) && (x < 4));
+    assert((y >= 0) && (y < 4));
+    return data[y][x];
+  }
 
-  void Transpose(Matrix &m) const;
-  void Transpose() { Transpose(*this); }
+  auto Set(int x, int y, float v) -> void {
+    assert((x >= 0) && (x < 4));
+    assert((y >= 0) && (y < 4));
+    data[y][x] = v;
+  }
+  auto SetToIdentity() -> void;
+  auto Clear() -> void;
 
-  int Inverse(Matrix &m, float epsilon = 1e-08) const;
-  int Inverse(float epsilon = 1e-08) { return Inverse(*this,epsilon); }
+  auto Transpose(Matrix& m) const -> void;
+  auto Transpose() -> void { Transpose(*this); }
 
-  // OVERLOADED OPERATORS
-  Matrix& operator=(const Matrix& m);
-  int operator==(const Matrix& m) const;
-  int operator!=(const Matrix &m) const { return !(*this==m); }
-  friend Matrix operator+(const Matrix &m1, const Matrix &m2);
-  friend Matrix operator-(const Matrix &m1, const Matrix &m2);
-  friend Matrix operator*(const Matrix &m1, const Matrix &m2);
-  friend Matrix operator*(const Matrix &m1, float f);
-  friend Matrix operator*(float f, const Matrix &m) { return m * f; }
-  Matrix& operator+=(const Matrix& m) { *this = *this + m; return *this; }
-  Matrix& operator-=(const Matrix& m) { *this = *this - m; return *this; }
-  Matrix& operator*=(const float f)   { *this = *this * f; return *this; }
-  Matrix& operator*=(const Matrix& m) { *this = *this * m; return *this; }
+  auto Inverse(Matrix& m, float epsilon = 1e-08f) const -> int;
+  auto Inverse(float epsilon = 1e-08f) -> int { return Inverse(*this, epsilon); }
 
-  // TRANSFORMATIONS
-  static Matrix MakeTranslation(const Vec3f &v);
-  static Matrix MakeScale(const Vec3f &v);
-  static Matrix MakeScale(float s) { return MakeScale(Vec3f(s,s,s)); }
-  static Matrix MakeXRotation(float theta);
-  static Matrix MakeYRotation(float theta);
-  static Matrix MakeZRotation(float theta);
-  static Matrix MakeAxisRotation(const Vec3f &v, float theta);
+  auto operator=(Matrix const& m) -> Matrix&;
+  auto operator==(Matrix const& m) const -> int;
+  auto operator!=(Matrix const& m) const -> int { return !(*this == m); }
+  friend auto operator+(Matrix const& m1, Matrix const& m2) -> Matrix;
+  friend auto operator-(Matrix const& m1, Matrix const& m2) -> Matrix;
+  friend auto operator*(Matrix const& m1, Matrix const& m2) -> Matrix;
+  friend auto operator*(Matrix const& m1, float f) -> Matrix;
+  friend auto operator*(float f, Matrix const& m) -> Matrix { return m * f; }
+  auto operator+=(Matrix const& m) -> Matrix& {
+    *this = *this + m;
+    return *this;
+  }
+  auto operator-=(Matrix const& m) -> Matrix& {
+    *this = *this - m;
+    return *this;
+  }
+  auto operator*=(float const f) -> Matrix& {
+    *this = *this * f;
+    return *this;
+  }
+  auto operator*=(Matrix const& m) -> Matrix& {
+    *this = *this * m;
+    return *this;
+  }
 
-  // Use to transform a point with a matrix
-  // that may include translation
-  void Transform(Vec4f &v) const;
-  void Transform(Vec3f &v) const {
-    Vec4f v2 = Vec4f(v.x(),v.y(),v.z(),1);
+  static auto MakeTranslation(Vec3f const& v) -> Matrix;
+  static auto MakeScale(Vec3f const& v) -> Matrix;
+  static auto MakeScale(float s) -> Matrix { return MakeScale(Vec3f(s, s, s)); }
+  static auto MakeXRotation(float theta) -> Matrix;
+  static auto MakeYRotation(float theta) -> Matrix;
+  static auto MakeZRotation(float theta) -> Matrix;
+  static auto MakeAxisRotation(Vec3f const& v, float theta) -> Matrix;
+
+  auto Transform(Vec4f& v) const -> void;
+  auto Transform(Vec3f& v) const -> void {
+    auto v2 = Vec4f(v.x(), v.y(), v.z(), 1);
     Transform(v2);
-    v.Set(v2.x(),v2.y(),v2.z()); }
-  void Transform(Vec2f &v) const {
-    Vec4f v2 = Vec4f(v.x(),v.y(),1,1);
+    v.Set(v2.x(), v2.y(), v2.z());
+  }
+  auto Transform(Vec2f& v) const -> void {
+    auto v2 = Vec4f(v.x(), v.y(), 1, 1);
     Transform(v2);
-    v.Set(v2.x(),v2.y()); }
+    v.Set(v2.x(), v2.y());
+  }
 
-  // Use to transform the direction of the ray
-  // (ignores any translation)
-  void TransformDirection(Vec3f &v) const {
-    Vec4f v2 = Vec4f(v.x(),v.y(),v.z(),0);
+  auto TransformDirection(Vec3f& v) const -> void {
+    auto v2 = Vec4f(v.x(), v.y(), v.z(), 0);
     Transform(v2);
-    v.Set(v2.x(),v2.y(),v2.z()); }
+    v.Set(v2.x(), v2.y(), v2.z());
+  }
 
-  // INPUT / OUTPUT
-  void Write(FILE *F = stdout) const;
-  void Write3x3(FILE *F = stdout) const;
-  void Read(FILE *F);
-  void Read3x3(FILE *F);
+  auto Write(FILE* F = stdout) const -> void;
+  auto Write3x3(FILE* F = stdout) const -> void;
+  auto Read(FILE* F) -> void;
+  auto Read3x3(FILE* F) -> void;
 
-  static float det4x4(float a1, float a2, float a3, float a4, 
-		      float b1, float b2, float b3, float b4, 
-		      float c1, float c2, float c3, float c4, 
-		      float d1, float d2, float d3, float d4);
-  static float det3x3(float a1,float a2,float a3,
-		      float b1,float b2,float b3,
-		      float c1,float c2,float c3);
-  static float det2x2(float a, float b,
-		      float c, float d);
-
-private:
-
-  // REPRESENTATION
-  float	data[4][4];
-
+  float data[4][4]{};
 };
-
-// ====================================================================
-// ====================================================================
-
-#endif

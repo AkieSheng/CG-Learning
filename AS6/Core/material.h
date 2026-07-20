@@ -1,56 +1,54 @@
-#ifndef _MATERIAL_H_
-#define _MATERIAL_H_
+#pragma once
 
 #include "vectors.h"
 #include "ray.h"
 #include "hit.h"
 
-// 材质抽象基类
-class Material {
-
-public:
+struct Material {
   virtual ~Material() {}
 
-  virtual Vec3f getDiffuseColor(const Vec3f &point) const = 0;
-  virtual Vec3f getSpecularColor(const Vec3f &point) const;
-  virtual float getExponent(const Vec3f &point) const;
-  virtual Vec3f getReflectiveColor(const Vec3f &point) const;
-  virtual Vec3f getTransparentColor(const Vec3f &point) const;
-  virtual float getIndexOfRefraction(const Vec3f &point) const;
+  virtual auto getDiffuseColor(Vec3f const& point) const -> Vec3f = 0;
+  virtual auto getSpecularColor(Vec3f const& point) const -> Vec3f;
+  virtual auto getExponent(Vec3f const& point) const -> float;
+  virtual auto getReflectiveColor(Vec3f const& point) const -> Vec3f;
+  virtual auto getTransparentColor(Vec3f const& point) const -> Vec3f;
+  virtual auto getIndexOfRefraction(Vec3f const& point) const -> float;
 
-  virtual Vec3f Shade(const Ray &ray, const Hit &hit,
-                      const Vec3f &dirToLight,
-                      const Vec3f &lightColor) const = 0;
-  virtual void glSetMaterial(void) const = 0;
+  virtual auto Shade(Ray const& ray, Hit const& hit, Vec3f const& dirToLight,
+                     Vec3f const& lightColor) const -> Vec3f = 0;
+  virtual auto glSetMaterial() const -> void = 0;
 };
 
-// Phong 材质
-class PhongMaterial : public Material {
+struct PhongMaterial final : Material {
+  PhongMaterial(Vec3f const& diffuseColor, Vec3f const& specularColor,
+                float exponent, Vec3f const& reflectiveColor,
+                Vec3f const& transparentColor, float indexOfRefraction);
 
-public:
-  PhongMaterial(const Vec3f &diffuseColor, const Vec3f &specularColor,
-                float exponent, const Vec3f &reflectiveColor,
-                const Vec3f &transparentColor, float indexOfRefraction);
+  auto getDiffuseColor(Vec3f const& point) const -> Vec3f override {
+    return diffuseColor;
+  }
+  auto getSpecularColor(Vec3f const& point) const -> Vec3f override {
+    return specularColor;
+  }
+  auto getExponent(Vec3f const& point) const -> float override { return exponent; }
+  auto getReflectiveColor(Vec3f const& point) const -> Vec3f override {
+    return reflectiveColor;
+  }
+  auto getTransparentColor(Vec3f const& point) const -> Vec3f override {
+    return transparentColor;
+  }
+  auto getIndexOfRefraction(Vec3f const& point) const -> float override {
+    return indexOfRefraction;
+  }
 
-  virtual Vec3f getDiffuseColor(const Vec3f &point) const;
-  virtual Vec3f getSpecularColor(const Vec3f &point) const;
-  virtual float getExponent(const Vec3f &point) const;
-  virtual Vec3f getReflectiveColor(const Vec3f &point) const;
-  virtual Vec3f getTransparentColor(const Vec3f &point) const;
-  virtual float getIndexOfRefraction(const Vec3f &point) const;
+  auto Shade(Ray const& ray, Hit const& hit, Vec3f const& dirToLight,
+             Vec3f const& lightColor) const -> Vec3f override;
+  auto glSetMaterial() const -> void override;
 
-  virtual Vec3f Shade(const Ray &ray, const Hit &hit,
-                      const Vec3f &dirToLight,
-                      const Vec3f &lightColor) const;
-  virtual void glSetMaterial(void) const;
-
-private:
-  Vec3f diffuseColor;  // 漫反射颜色 kd
-  Vec3f specularColor;  // 高光颜色 ks
-  float exponent;  // 高光指数 n
-  Vec3f reflectiveColor;  // 反射颜色 kr
-  Vec3f transparentColor;  // 透明颜色 kt
-  float indexOfRefraction;  // 折射率
+  Vec3f diffuseColor{};
+  Vec3f specularColor{};
+  float exponent{};
+  Vec3f reflectiveColor{};
+  Vec3f transparentColor{};
+  float indexOfRefraction{};
 };
-
-#endif

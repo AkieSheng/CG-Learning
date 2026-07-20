@@ -1,53 +1,47 @@
-#ifndef _ORBIT_CAMERA_H_
-#define _ORBIT_CAMERA_H_
+#pragma once
 
 #include "vectors.h"
 #include "matrix.h"
 
-// 轨道相机
-class OrbitCamera {
-public:
+struct OrbitCamera final {
   OrbitCamera();
 
-  void setTarget(const Vec3f &t);
-  void setDistance(float d);
-  void setAspect(float aspect);
-  void setFovY(float degrees);
+  auto setTarget(Vec3f const& t) -> void;
+  auto setDistance(float d) -> void;
+  auto setAspect(float aspect) -> void;
+  auto setFovY(float degrees) -> void;
 
-  void rotate(float deltaYaw, float deltaPitch);  // 绕Y轴旋转
-  void pan(float deltaX, float deltaY);  // 平移
-  void zoom(float delta);  // 缩放
+  auto rotate(float deltaYaw, float deltaPitch) -> void;
+  auto pan(float deltaX, float deltaY) -> void;
+  auto zoom(float delta) -> void;
 
-  void updateMatrices();
+  auto updateMatrices() -> void;
 
-  const Matrix &getViewMatrix() const { return viewMatrix; }
-  const Matrix &getProjectionMatrix() const { return projectionMatrix; }
-  Vec3f getPosition() const { return position; }
-  Vec3f getTarget() const { return target; }
-  float getDistance() const { return distance; }
-  float getNear() const { return nearZ; }
-  float getFar() const { return farZ; }
-  Vec3f getFront() const;  // 获取视线方向
-  Vec3f getUp() const { return worldUp; }
+  auto getViewMatrix() const -> Matrix const& { return viewMatrix; }
+  auto getProjectionMatrix() const -> Matrix const& { return projectionMatrix; }
+  auto getPosition() const -> Vec3f { return position; }
+  auto getTarget() const -> Vec3f { return target; }
+  auto getDistance() const -> float { return distance; }
+  auto getNear() const -> float { return nearZ; }
+  auto getFar() const -> float { return farZ; }
+  auto getFront() const -> Vec3f;
+  auto getUp() const -> Vec3f { return worldUp; }
 
-  void frameBounds(const Vec3f &bmin, const Vec3f &bmax);  // 根据模型包围盒自动设置观察距离
+  auto frameBounds(Vec3f const& bmin, Vec3f const& bmax) -> void;
 
-private:
-  void updatePosition();
+  Vec3f target{};
+  Vec3f worldUp{0.0f, 1.0f, 0.0f};
+  float distance{5.0f};
+  float yaw{};
+  float pitch{20.0f};
+  float fovY{45.0f};
+  float aspect{1.0f};
+  float nearZ{0.01f};
+  float farZ{100.0f};
 
-  Vec3f target;
-  Vec3f worldUp;
-  float distance;
-  float yaw;  // 绕Y轴旋转角
-  float pitch;  // 绕X轴旋转角
-  float fovY;  // 垂直FOV
-  float aspect;  // 宽高比
-  float nearZ;  // 近裁剪平面距离
-  float farZ;  // 远裁剪平面距离
+  Vec3f position{};
+  Matrix viewMatrix{};
+  Matrix projectionMatrix{};
 
-  Vec3f position;
-  Matrix viewMatrix;  // 视图矩阵
-  Matrix projectionMatrix;  // 投影矩阵
+  auto updatePosition() -> void;
 };
-
-#endif

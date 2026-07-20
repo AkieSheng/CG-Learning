@@ -1,5 +1,4 @@
-#ifndef _GLTF_LOADER_H_
-#define _GLTF_LOADER_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -13,39 +12,33 @@ class TinyGLTF;
 struct Primitive;
 }
 
-// glTF 2.0 加载器（后端：tinygltf）
-class GltfLoader {
-public:
+struct GltfLoader final {
   GltfLoader();
   ~GltfLoader();
 
-  bool load(const std::string &gltfPath);
-  const std::vector<Mesh *> &getMeshes() const { return meshes; }
+  auto load(std::string const& gltfPath) -> bool;
+  auto getMeshes() const -> std::vector<Mesh*> const& { return meshes; }
+  auto getBounds(Vec3f& bmin, Vec3f& bmax) const -> void;
+  auto destroy() -> void;
+  auto getBasePath() const -> std::string const& { return basePath; }
 
-  // 场景 AABB
-  void getBounds(Vec3f &bmin, Vec3f &bmax) const;
-  void destroy();
+  GltfLoader(GltfLoader const&) = delete;
+  auto operator=(GltfLoader const&) -> GltfLoader& = delete;
 
-  const std::string &getBasePath() const { return basePath; }
+  tinygltf::Model* model{};
+  tinygltf::TinyGLTF* loader{};
+  std::string basePath{};
+  std::vector<Mesh*> meshes{};
+  std::vector<PBRMaterial*> materials{};
+  bool boundsValid{};
+  Vec3f boundsMin{};
+  Vec3f boundsMax{};
 
-private:
-  GltfLoader(const GltfLoader &);
-  GltfLoader &operator=(const GltfLoader &);
-
-  PBRMaterial *buildMaterial(int materialIndex);
-  Mesh *buildPrimitiveMesh(const tinygltf::Primitive &prim, const Matrix &worldMatrix);
-  void traverseNode(int nodeIndex, const Matrix &parentWorld);
-  void computeTangents(std::vector<Vertex> &vertices, const std::vector<unsigned int> &indices);
-  void expandBounds(const Vec3f &p);
-
-  tinygltf::Model *model;
-  tinygltf::TinyGLTF *loader;
-  std::string basePath;
-  std::vector<Mesh *> meshes;
-  std::vector<PBRMaterial *> materials;
-  bool boundsValid;
-  Vec3f boundsMin;
-  Vec3f boundsMax;
+  auto buildMaterial(int materialIndex) -> PBRMaterial*;
+  auto buildPrimitiveMesh(tinygltf::Primitive const& prim,
+                          Matrix const& worldMatrix) -> Mesh*;
+  auto traverseNode(int nodeIndex, Matrix const& parentWorld) -> void;
+  auto computeTangents(std::vector<Vertex>& vertices,
+                       std::vector<unsigned int> const& indices) -> void;
+  auto expandBounds(Vec3f const& p) -> void;
 };
-
-#endif

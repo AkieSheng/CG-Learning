@@ -1,43 +1,36 @@
-#ifndef _TEXTURE_H_
-#define _TEXTURE_H_
+#pragma once
 
 #include <string>
 #include <vector>
 
-// OpenGL 纹理（PNG/JPEG）
-class Texture {
-public:
+struct Texture final {
   Texture();
   ~Texture();
 
-  bool loadFromFile(const std::string &path, bool srgb = false);
-  void bind(unsigned int unit) const;
-  void destroy();
+  auto loadFromFile(std::string const& path, bool srgb = false) -> bool;
+  auto bind(unsigned int unit) const -> void;
+  auto destroy() -> void;
 
-  unsigned int id() const { return textureId; }
-  int width() const { return texWidth; }
-  int height() const { return texHeight; }
-  bool valid() const { return textureId != 0; }
+  auto id() const -> unsigned int { return textureId; }
+  auto width() const -> int { return texWidth; }
+  auto height() const -> int { return texHeight; }
+  auto valid() const -> bool { return textureId != 0; }
 
-  static Texture *createSolid(unsigned char r, unsigned char g, unsigned char b, unsigned char a = 255);  // 默认纯色纹理
-  static Texture *createDefaultNormal();  // 默认法线纹理
+  static auto createSolid(unsigned char r, unsigned char g, unsigned char b,
+                          unsigned char a = 255) -> Texture*;
+  static auto createDefaultNormal() -> Texture*;
 
-  // 读入文件为 RGBA8
-  static bool loadPixelsRGBA(const std::string &path,
-                             std::vector<unsigned char> &rgba,
-                             int &outWidth, int &outHeight);
-  // 从 RGBA8 像素上传，srgb 控制内部格式（baseColor 用 true，MR 用 false）
-  static Texture *createFromRGBA(const unsigned char *rgba, int width, int height,
-                                 bool srgb);
+  static auto loadPixelsRGBA(std::string const& path,
+                             std::vector<unsigned char>& rgba, int& outWidth,
+                             int& outHeight) -> bool;
+  static auto createFromRGBA(unsigned char const* rgba, int width, int height,
+                             bool srgb) -> Texture*;
 
-private:
-  unsigned int textureId;  // OpenGL 纹理ID
-  // 纹理分辨率
-  int texWidth;
-  int texHeight;
-  bool srgbColorSpace;  // 是否用 sRGB 内部格式
+  unsigned int textureId{};
+  int texWidth{};
+  int texHeight{};
+  bool srgbColorSpace{};
 
-  void uploadRGBA(const unsigned char *rgba, int width, int height, bool srgb);
+  auto uploadRGBA(unsigned char const* rgba, int width, int height, bool srgb)
+      -> void;
 };
-
-#endif

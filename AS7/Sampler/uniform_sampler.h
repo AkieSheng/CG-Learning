@@ -1,17 +1,10 @@
-#ifndef _UNIFORM_SAMPLER_H_
-#define _UNIFORM_SAMPLER_H_
+#pragma once
 
 #include "sampler.h"
 
-// 像素内规则网格采样
-class UniformSampler : public Sampler {
-
-public:
+struct UniformSampler final : Sampler {
   UniformSampler(int num_samples);
-  virtual Vec2f getSamplePosition(int n);
+  auto getSamplePosition(int n) -> Vec2f override;
 
-private:
-  int gridSize;  // 网格边长 d，符合 d*d == numSamples
+  int gridSize{};
 };
-
-#endif

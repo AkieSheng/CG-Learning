@@ -11,51 +11,51 @@ Wood::~Wood() {
   delete mapping;
 }
 
-// 混合权重，采用圆柱坐标系
-float Wood::blendWeight(const Vec3f &worldPoint) const {
+
+auto Wood::blendWeight(Vec3f const&worldPoint)const -> float {
   Vec3f p = mapToTextureSpace(mapping, worldPoint);
   return woodBlendWeight(p, octaves, frequency, amplitude);
 }
 
-Vec3f Wood::getDiffuseColor(const Vec3f &point) const {
+auto Wood::getDiffuseColor(Vec3f const&point)const -> Vec3f {
   float t = blendWeight(point);
   return lerpVec3(mat1->getDiffuseColor(point), mat2->getDiffuseColor(point), t);
 }
 
-Vec3f Wood::getSpecularColor(const Vec3f &point) const {
+auto Wood::getSpecularColor(Vec3f const&point)const -> Vec3f {
   float t = blendWeight(point);
   return lerpVec3(mat1->getSpecularColor(point), mat2->getSpecularColor(point), t);
 }
 
-float Wood::getExponent(const Vec3f &point) const {
+auto Wood::getExponent(Vec3f const&point)const -> float {
   float t = blendWeight(point);
   return lerpFloat(mat1->getExponent(point), mat2->getExponent(point), t);
 }
 
-Vec3f Wood::getReflectiveColor(const Vec3f &point) const {
+auto Wood::getReflectiveColor(Vec3f const&point)const -> Vec3f {
   float t = blendWeight(point);
   return lerpVec3(mat1->getReflectiveColor(point), mat2->getReflectiveColor(point), t);
 }
 
-Vec3f Wood::getTransparentColor(const Vec3f &point) const {
+auto Wood::getTransparentColor(Vec3f const&point)const -> Vec3f {
   float t = blendWeight(point);
   return lerpVec3(mat1->getTransparentColor(point), mat2->getTransparentColor(point), t);
 }
 
-float Wood::getIndexOfRefraction(const Vec3f &point) const {
+auto Wood::getIndexOfRefraction(Vec3f const&point)const -> float {
   float t = blendWeight(point);
   return lerpFloat(mat1->getIndexOfRefraction(point), mat2->getIndexOfRefraction(point), t);
 }
 
-Vec3f Wood::Shade(const Ray &ray, const Hit &hit,
-                  const Vec3f &dirToLight,
-                  const Vec3f &lightColor) const {
+auto Wood::Shade(Ray const&ray, Hit const&hit,
+                  Vec3f const&dirToLight,
+                  Vec3f const&lightColor)const -> Vec3f {
   float t = blendWeight(hit.getIntersectionPoint());
   Vec3f s1 = mat1->Shade(ray, hit, dirToLight, lightColor);
   Vec3f s2 = mat2->Shade(ray, hit, dirToLight, lightColor);
   return lerpVec3(s1, s2, t);
 }
 
-void Wood::glSetMaterial(void) const {
+auto Wood::glSetMaterial(void)const -> void {
   mat1->glSetMaterial();
 }

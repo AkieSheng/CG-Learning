@@ -1,71 +1,53 @@
-#ifndef _SceneParser_H_
-#define _SceneParser_H_
+#pragma once
 
 #include "vectors.h"
-#include <assert.h>
+#include <cassert>
+#include <cstdio>
 
-class Camera;
-class Material;
-class Object3D;
-class Group;
-class Sphere;
+struct Camera;
+struct Material;
+struct Object3D;
+struct Group;
+struct Sphere;
 
-#define MAX_PARSER_TOKEN_LENGTH 100
+constexpr auto MAX_PARSER_TOKEN_LENGTH = 100;
 
-// ====================================================================
-// ====================================================================
-
-class SceneParser {
-
-public:
-
-  // CONSTRUCTOR & DESTRUCTOR
-  SceneParser(const char *filename);
+struct SceneParser final {
+  SceneParser(char const* filename);
   ~SceneParser();
 
-  // ACCESSORS
-  Camera* getCamera() const { return camera; }
-  Vec3f getBackgroundColor() const { return background_color; }
-  int getNumMaterials() const { return num_materials; }
-  Material* getMaterial(int i) const { 
-    assert(i >= 0 && i < num_materials); 
-    return materials[i]; }  
-  Group* getGroup() const { return group; }
+  auto getCamera() const -> Camera* { return camera; }
+  auto getBackgroundColor() const -> Vec3f { return background_color; }
+  auto getNumMaterials() const -> int { return num_materials; }
+  auto getMaterial(int i) const -> Material* {
+    assert((i >= 0) && (i < num_materials));
+    return materials[i];
+  }
+  auto getGroup() const -> Group* { return group; }
 
-private:
+  SceneParser() { assert(0); }
 
-  SceneParser() { assert(0); } // don't use
+  auto parseFile() -> void;
+  auto parseOrthographicCamera() -> void;
+  auto parseBackground() -> void;
+  auto parseMaterials() -> void;
+  auto parseMaterial() -> Material*;
 
-  // PARSING
-  void parseFile();
-  void parseOrthographicCamera();
-  void parseBackground();
-  void parseMaterials();
-  Material* parseMaterial();
+  auto parseObject(char token[MAX_PARSER_TOKEN_LENGTH]) -> Object3D*;
+  auto parseGroup() -> Group*;
+  auto parseSphere() -> Sphere*;
 
-  Object3D* parseObject(char token[MAX_PARSER_TOKEN_LENGTH]);
-  Group* parseGroup();
-  Sphere* parseSphere();
+  auto getToken(char token[MAX_PARSER_TOKEN_LENGTH]) -> int;
+  auto readVec3f() -> Vec3f;
+  auto readVec2f() -> Vec2f;
+  auto readFloat() -> float;
+  auto readInt() -> int;
 
-  // HELPER FUNCTIONS
-  int getToken(char token[MAX_PARSER_TOKEN_LENGTH]);
-  Vec3f readVec3f();
-  Vec2f readVec2f();
-  float readFloat();
-  int readInt();
-
-  // ==============
-  // REPRESENTATION
-  FILE *file;
-  Camera *camera;
-  Vec3f background_color;
-  int num_materials;
-  Material **materials;
-  Material *current_material;
-  Group *group;
+  FILE* file{};
+  Camera* camera{};
+  Vec3f background_color{};
+  int num_materials{};
+  Material** materials{};
+  Material* current_material{};
+  Group* group{};
 };
-
-// ====================================================================
-// ====================================================================
-
-#endif
